@@ -12,6 +12,12 @@ class HardwareController(object):
     def detach(self):
         pass
 
+    # called to periodically update this device
+    # cur_time_s: current time in seconds
+    # returns: True to keep the device attached, False to detach it
+    def update(self, cur_time_s):
+        return True
+
     # called to identify if any device that this controller controls is in
     # the serial ports
     # ports: list of pyserial COM ports
