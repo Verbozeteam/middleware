@@ -1,3 +1,4 @@
+import traceback
 
 #
 # Verbosity level, from almost silent to most verbose
@@ -23,6 +24,9 @@ class Log(object):
 
     @staticmethod
     def log(log_level, *args, **kwargs):
+        print_dump = kwargs.get("exception", False)
+        if "exception" in kwargs: del kwargs["exception"]
+        if print_dump: traceback.print_exc()
         if log_level <= Log.verbozity:
             print(*args, **kwargs)
 

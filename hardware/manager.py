@@ -27,7 +27,7 @@ class HardwareManager(object):
             self.controller_types[controller_type][1][device.serial_number] = device
             Log.info("Device attached: {}".format(device.serial_number))
         except Exception as e:
-            Log.error("Failed to safely attach device {}:".format(device.serial_number), e)
+            Log.error("Failed to safely attach device {}:".format(device.serial_number), e, exception=True)
 
     # detaches a device to this manager
     # controller_type: type of the device controller ("arduino", ...)
@@ -36,7 +36,7 @@ class HardwareManager(object):
         try:
             device.detach()
         except Exception as e:
-            Log.error("Failed to safely detach device {}:".format(device.serial_number), e)
+            Log.error("Failed to safely detach device {}:".format(device.serial_number), e, exception=True)
         del self.controller_types[controller_type][1][device.serial_number]
         Log.info("Device detached: {}".format(device.serial_number))
 
@@ -59,7 +59,7 @@ class HardwareManager(object):
                         if sn not in registered_serials:
                             self.attach_device(ct_type, controller_class(com_ports[sn]))
             except Exception as e:
-                Log.error("Unknown error while identifying COM ports:", e)
+                Log.error("Unknown error while identifying COM ports:", e, exception=True)
 
         # update all currently attached devices
         for ct_type in self.controller_types.keys():
@@ -70,10 +70,10 @@ class HardwareManager(object):
                 try:
                     keep = device.update(cur_time_s)
                 except Exception as e:
-                    Log.error("Device failed to update:", e)
+                    Log.error("Device failed to update:", e, exception=True)
                     keep = False
                 if not keep:
-                    self.detach_device(device)
+                    self.detach_device(ct_type, device)
 
         
 
