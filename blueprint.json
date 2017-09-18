@@ -1,0 +1,28 @@
+[{
+    "name": {
+        "english": "Room 1"
+    },
+    "curtains": [{
+        "name": {
+            "english": "Curtain 1"
+        },
+        "ports": [22, 23]
+    }, {
+        "name": {
+            "english": "Curtain 2"
+        },
+        "ports": [24, 25]
+    }],
+    "dimmers": [{
+        "name": {
+            "english": "Dimmer 1"
+        },
+        "ports": [2]
+    }],
+    "light_switches": [{
+        "name": {
+            "english": "Light switch 1"
+        },
+        "ports": [41]
+    }]
+}]

@@ -11,8 +11,44 @@ SYNC_SEQUENCE = bytearray([254, 6, 252, 11, 76, 250, 250, 255])
 # values on all the input pins of the Arduino
 #
 class ArduinoState(object):
+    # Represents the state of a pin on the Arduino
+    class Pin(object):
+        class MODE:
+            UNKNOWN = 0
+            OUTPUT = 1
+            INPUT = 2
+
+        def __init__(self, mode=MODE.UNKNOWN, value=0):
+            self.mode = mode
+            self.value = value
+
     def __init__(self):
-        pass
+        self.analog_pins = []
+        self.digital_pins = []
+
+    # Set an analog pin's state
+    # value Value to set the pin to
+    # mode  Mode to set the pin to
+    def set_analog_pin(self, index, value=None, mode=None):
+        num_missing_pins = (index - len(self.analog_pins)) + 1
+        for pin in num_missing_pins:
+            self.analog_pins.append(ArduinoState.Pin())
+        if value:
+            self.analog_pins[index].value = value
+        if mode:
+            self.analog_pins[index].mode = mode
+
+    # Set a digital pin's state
+    # value Value to set the pin to
+    # mode  Mode to set the pin to
+    def set_digital_pin(self, index, value=None, mode=None):
+        num_missing_pins = (index - len(self.digital_pins)) + 1
+        for pin in num_missing_pins:
+            self.digital_pins.append(ArduinoState.Pin())
+        if value:
+            self.digital_pins[index].value = value
+        if mode:
+            self.digital_pins[index].mode = mode
 
     def on_message(self, message_type, message):
         return True
@@ -109,3 +145,66 @@ class ArduinoController(HardwareController):
                 if type(a) == type("") and "arduino" in a.lower():
                     ret.append(p.serial_number)
         return ret
+
+#
+# A legacy Arduino controller that uses the old protocol for communication
+#
+class ArduinoLegacyController(ArduinoController):
+    def __init__(self, comport):
+        super(self.__class__, self).__init__(comport, baud=9600)
+        self.read_buffer = bytearray([])
+        self.state = ArduinoState()
+        self.BEGINNING_BYTE = 254
+        self.ENDING_BYTE = 255
+
+    # Syncing the controller is handled while reading the buffer
+    def sync_input_buffer(self, cur_time_s):
+        return True
+
+    # Parse the read buffer's messages and interpret them. If any message
+    # corruption is detected, it will discard the message(s) until a new
+    # beginning is detected
+    # returns True if the connection should continue, False otherwise
+    def process_read_buffer(self):
+        while True:
+            beg_idx = self.read_buffer.index(self.BEGINNING_BYTE)
+            if beg_idx == -1:
+                break
+            self.read_buffer = self.read_buffer[beg_idx:]
+            end_idx = self.read_buffer.index(self.ENDING_BYTE)
+            if end_idx == -1:
+                break
+            msg = self.read_buffer[beg_idx+1:end_idx-1]
+            self.read_buffer = self.read_buffer[end_idx+1:]
+            self.on_message(msg)
+        return True
+
+    # Called when a message has been found on the read buffer.
+    # message      The contents of the message
+    # returns      True if the message is valid, False otherwise
+    def on_message(self, message):
+        try:
+            base_idx = 0
+            ACs = [] # list of (AC fan speed, AC Set point * 2.0f, temperate)
+            num_acs = message[base_idx]
+            base_idx += 1
+            for ac in num_acs:
+                ACs.append((messages[base_idx+0*num_acs+ac], messages[base_idx+1*num_acs+ac], messages[base_idx+2*num_acs+ac]))
+            base_idx += 3*num_acs
+            num_dimmers = message[base_idx]
+            base_idx += 1
+            dimmers = list(message[base_idx:base_idx+num_dimmers])
+            base_idx += num_dimmers
+            num_lights = message[base_idx]
+            base_idx += 1
+            lights = list(message[base_idx:base_idx+num_lights])
+            base_idx += num_lights
+            num_curtains = message[base_idx]
+            base_idx += 1
+            if base_idx != len(message):
+                raise 1 # invalid message...
+
+            return True
+        except:
+            return False
+

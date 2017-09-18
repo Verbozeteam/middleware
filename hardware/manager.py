@@ -1,5 +1,5 @@
 from config.hardware_config import HARDWARE_CONFIG
-from hardware.arduino_controller import ArduinoController
+from hardware.arduino_controller import ArduinoController, ArduinoLegacyController
 from logs import Log
 
 import time
@@ -7,14 +7,15 @@ import serial.tools.list_ports
 
 #
 # Hardware manager is responsible for all interaction with hardware
-# 
+#
 class HardwareManager(object):
     def __init__(self):
         # list of (hardware controller type, dictionary) where dictionary
         # is a dictionary mapping a serial number to a HardwareController
         # object
         self.controller_types = {
-            "arduino": (ArduinoController, {})
+            "arduino": (ArduinoController, {}),
+            "arduino_legacy": (ArduinoLegacyController, {})
         }
         # used for periodic updates
         self.update_timer = 0
@@ -75,5 +76,5 @@ class HardwareManager(object):
                 if not keep:
                     self.detach_device(ct_type, device)
 
-        
+
 
