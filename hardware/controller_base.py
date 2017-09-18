@@ -7,11 +7,12 @@ import serial
 #
 class HardwareController(object):
     # called when the device is detected by the hardware manager
-    def __init__(self, comport, baud=9600):
+    def __init__(self, hw_manager, comport, baud=9600):
+        self.hw_manager = hw_manager
         self.serial_number = comport.serial_number
         try:
             self.serial_port = serial.Serial()
-            self.serial_port.baudrate = 9600
+            self.serial_port.baudrate = baud
             self.serial_port.port = comport.device
             self.serial_port.open()
         except Exception as e:

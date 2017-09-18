@@ -9,13 +9,14 @@ import serial.tools.list_ports
 # Hardware manager is responsible for all interaction with hardware
 #
 class HardwareManager(object):
-    def __init__(self):
+    def __init__(self, core):
+        self.core = core
         # list of (hardware controller type, dictionary) where dictionary
         # is a dictionary mapping a serial number to a HardwareController
         # object
         self.controller_types = {
-            "arduino": (ArduinoController, {}),
-            "arduino_legacy": (ArduinoLegacyController, {})
+            #"arduino": (ArduinoController, {}),
+            "arduino_legacy": (ArduinoLegacyController, {}),
         }
         # used for periodic updates
         self.update_timer = 0
@@ -58,7 +59,7 @@ class HardwareManager(object):
                             self.detach_device(ct_type, controller_devices[sn])
                     for sn in ct_serials:
                         if sn not in registered_serials:
-                            self.attach_device(ct_type, controller_class(com_ports[sn]))
+                            self.attach_device(ct_type, controller_class(self, com_ports[sn]))
             except Exception as e:
                 Log.error("Unknown error while identifying COM ports:", e, exception=True)
 
@@ -70,11 +71,17 @@ class HardwareManager(object):
                 device = controller_devices[sn]
                 try:
                     keep = device.update(cur_time_s)
-                except Exception as e:
-                    Log.error("Device failed to update:", e, exception=True)
+                except:
                     keep = False
                 if not keep:
                     self.detach_device(ct_type, device)
 
-
+    # Called by a device when it has an updated value on a port
+    # device  The HardwareController device that has updated
+    # port    The port on which the update happened
+    # value   The new value on that port
+    def on_port_update(self, device, port, value):
+        # @TODO: map local port to global port
+        # Forward the update to the core
+        self.core.on_hardware_data(port, value)
 

@@ -6,6 +6,24 @@ import struct
 # to sync the communication
 SYNC_SEQUENCE = bytearray([254, 6, 252, 11, 76, 250, 250, 255])
 
+class MESSAGE_TYPE:
+    SYNC_SEQUENCE = 254
+    FROMDEVICE_PINSTATE = 0
+
+class PIN_TYPE:
+    UNKNOWN = (-1, "")
+    ANALOG = (0, "a")
+    DIGITAL = (1, "d")
+    VIRTUAL = (2, "v")
+
+    @staticmethod
+    def from_id(id):
+        for attr in dir(PIN_TYPE):
+            attr = getattr(PIN_TYPE, attr)
+            if type(attr) == type(()) and len(attr) == 2 and attr[0] == id:
+                return attr
+        return (-1, "")
+
 #
 # Represents the current state of a connected Arduino. The state includes the
 # values on all the input pins of the Arduino
@@ -22,9 +40,10 @@ class ArduinoState(object):
             self.mode = mode
             self.value = value
 
-    def __init__(self):
+    def __init__(self, controller):
         self.analog_pins = []
         self.digital_pins = []
+        self.controller = controller
 
     # Set an analog pin's state
     # value Value to set the pin to
@@ -51,19 +70,26 @@ class ArduinoState(object):
             self.digital_pins[index].mode = mode
 
     def on_message(self, message_type, message):
+        if message_type == MESSAGE_TYPE.FROMDEVICE_PINSTATE:
+            # expected message: bytearray([port_type, port_number, value])
+            if len(message) != 3:
+                return False
+            (port_type, port_number, value) = message
+            port_type = PIN_TYPE.from_id(port_type)[1]
+            self.controller.hw_manager.on_port_update(self.controller, port_type+str(port_number), value)
         return True
 
 #
 # An Arduino controller
 #
 class ArduinoController(HardwareController):
-    def __init__(self, comport):
-        super(self.__class__, self).__init__(comport, baud=9600)
+    def __init__(self, hw_manager, comport):
+        super(ArduinoController, self).__init__(hw_manager, comport, baud=9600)
         self.read_buffer = bytearray([])
         self.wait_for_sync = True
         self.sync_send_timer = 0
         self.sync_send_period = 1
-        self.state = ArduinoState()
+        self.state = ArduinoState(self)
 
     # Synchronizes the read buffer with the Arduino if its not already in sync.
     # returns True if the buffer is in sync, False otherwise
@@ -150,10 +176,23 @@ class ArduinoController(HardwareController):
 # A legacy Arduino controller that uses the old protocol for communication
 #
 class ArduinoLegacyController(ArduinoController):
-    def __init__(self, comport):
-        super(self.__class__, self).__init__(comport, baud=9600)
+
+    # Legacy Arduino pin layout
+    # curtains   : 22+ (UP, DOWN, UP, DOWN, ...)
+    # onoff      : 37-
+    # fans       : 48-49
+    # ACs        : 50-51
+    # temp sensor: 53
+    # dimmers    : 4-7 (analog PWM output)
+    # central ACs: 8-9 (analog PWM output)
+    # SYNC       : digital 3
+    # hotel card : 44 (input 0v/5v)
+    # hotel power: 42 (output 0v/5v)
+
+    def __init__(self, hw_manager, comport):
+        super(ArduinoLegacyController, self).__init__(hw_manager, comport)
         self.read_buffer = bytearray([])
-        self.state = ArduinoState()
+        self.state = ArduinoState(self)
         self.BEGINNING_BYTE = 254
         self.ENDING_BYTE = 255
 
@@ -167,14 +206,16 @@ class ArduinoLegacyController(ArduinoController):
     # returns True if the connection should continue, False otherwise
     def process_read_buffer(self):
         while True:
-            beg_idx = self.read_buffer.index(self.BEGINNING_BYTE)
-            if beg_idx == -1:
+            try:
+                beg_idx = self.read_buffer.index(bytearray([self.BEGINNING_BYTE]))
+            except:
                 break
             self.read_buffer = self.read_buffer[beg_idx:]
-            end_idx = self.read_buffer.index(self.ENDING_BYTE)
-            if end_idx == -1:
+            try:
+                end_idx = self.read_buffer.index(bytearray([self.ENDING_BYTE]))
+            except:
                 break
-            msg = self.read_buffer[beg_idx+1:end_idx-1]
+            msg = self.read_buffer[beg_idx+1:end_idx]
             self.read_buffer = self.read_buffer[end_idx+1:]
             self.on_message(msg)
         return True
@@ -188,8 +229,8 @@ class ArduinoLegacyController(ArduinoController):
             ACs = [] # list of (AC fan speed, AC Set point * 2.0f, temperate)
             num_acs = message[base_idx]
             base_idx += 1
-            for ac in num_acs:
-                ACs.append((messages[base_idx+0*num_acs+ac], messages[base_idx+1*num_acs+ac], messages[base_idx+2*num_acs+ac]))
+            for ac in range(num_acs):
+                ACs.append((message[base_idx+0*num_acs+ac], message[base_idx+1*num_acs+ac], message[base_idx+2*num_acs+ac]))
             base_idx += 3*num_acs
             num_dimmers = message[base_idx]
             base_idx += 1
@@ -203,8 +244,13 @@ class ArduinoLegacyController(ArduinoController):
             base_idx += 1
             if base_idx != len(message):
                 raise 1 # invalid message...
-
+            for i in range(len(ACs)):
+                self.state.on_message(MESSAGE_TYPE.FROMDEVICE_PINSTATE, bytearray([PIN_TYPE.VIRTUAL[0], i, ACs[i][2]]))
+            for i in range(len(dimmers)):
+                self.state.on_message(MESSAGE_TYPE.FROMDEVICE_PINSTATE, bytearray([PIN_TYPE.DIGITAL[0], 4+i, dimmers[i]]))
+            for i in range(len(lights)):
+                self.state.on_message(MESSAGE_TYPE.FROMDEVICE_PINSTATE, bytearray([PIN_TYPE.DIGITAL[0], 37-i, lights[i]]))
             return True
-        except:
+        except Exception as e:
             return False
 
