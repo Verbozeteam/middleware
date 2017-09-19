@@ -27,6 +27,7 @@ class CentralAC(Thing):
         super(CentralAC, self).__init__()
         self.listening_ports = ac_json.get("ports", [])
         self.id = "central-ac-" + self.listening_ports[0] + "-" + self.listening_ports[1]
+        self.current_set_point = 25
         self.current_temperature = 25
         self.temperature_port = self.listening_ports[1]
 
@@ -44,4 +45,7 @@ class CentralAC(Thing):
         pass
 
     def get_state(self):
-        return {}
+        return {
+            "temp": self.current_temperature,
+            "set_pt": self.current_set_point,
+        }

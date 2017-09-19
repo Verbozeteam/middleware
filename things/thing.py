@@ -2,9 +2,10 @@ from logs import Log
 
 class Thing(object):
     def __init__(self):
-        self.listening_ports = []
-        self.dirty = False
-        self.id = ""
+        self.listening_ports = []   # List of ports that this Thing is listening for changes on
+        self.dirty = False          # If True, then this Thing's state has changed since it was last broadcasted to controllers
+        self.pending_commands = []  # List of pending messages to be sent to the hardware
+        self.id = ""                # id of this Thing
 
     # Should be implemented to return the key in the blueprint that this Thing captures
     @staticmethod

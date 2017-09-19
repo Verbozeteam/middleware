@@ -76,6 +76,14 @@ class HardwareManager(object):
                 if not keep:
                     self.detach_device(ct_type, device)
 
+    # Called when this manager needs to free all its resources
+    def cleanup(self):
+        # detach all devices
+        for ct_Type in self.controller_types.keys():
+            (_, controller_devices) = self.controller_types[ct_type]
+            for device in controller_devices.values():
+                self.detach_device(ct_type, device)
+
     # Called by a device when it has an updated value on a port
     # device  The HardwareController device that has updated
     # port    The port on which the update happened
@@ -83,5 +91,5 @@ class HardwareManager(object):
     def on_port_update(self, device, port, value):
         # @TODO: map local port to global port
         # Forward the update to the core
-        self.core.on_hardware_data(port, value)
+        self.core.blueprint.on_hardware_data(port, value)
 

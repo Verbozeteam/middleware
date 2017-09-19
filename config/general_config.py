@@ -1,3 +1,3 @@
 
 class GENERAL_CONFIG:
-    pass
+    BLUEPRINT_FILENAME = "blueprint.json"

@@ -2,11 +2,14 @@ from things.light import Dimmer, LightSwitch
 from things.curtain import Curtain
 from things.air_conditioner import SplitAC, CentralAC
 from logs import Log
+from config.general_config import GENERAL_CONFIG
 
 import json
 
 class Blueprint(object):
-    def __init__(self, filename):
+    def __init__(self, core):
+        self.core = core
+
         # dictionary mapping tag name -> Thing class that encapsulates it
         self.things_templates = dict(map(lambda t: (t.get_blueprint_tag(), t), [
             Dimmer,
@@ -16,15 +19,16 @@ class Blueprint(object):
             CentralAC,
         ]))
 
+        filename = GENERAL_CONFIG.BLUEPRINT_FILENAME
         try:
             F = open(filename, "r")
         except:
-            Log.error("Cannot find blueprint file {}".format(filename))
+            Log.fatal("Cannot find blueprint file {}".format(filename))
             return
         try:
             J = json.load(F)
         except Exception as e:
-            Log.error("Invalid blueprint: {}".format(str(e)))
+            Log.fatal("Invalid blueprint: {}".format(str(e)))
             return
 
         self.rooms = []
@@ -74,7 +78,15 @@ class Blueprint(object):
                     continue
                 for thing in room[things]:
                     if thing.dirty:
+                        thing.dirty = False
                         self.broadcast_thing_state(thing)
+                    if len(thing.pending_commands) > 0:
+                        for command in thing.pending_commands:
+                            pass # @TODO: send this command to the hardware manager
+
+    # Called when this manager needs to free all its resources
+    def cleanup(self):
+        pass
 
     # returns  The controller-friendly view of the blueprint
     def get_controller_view(self):
@@ -84,8 +96,10 @@ class Blueprint(object):
     def get_hardware_view(self):
         pass
 
+    # Called when a Thing updates its state so it broadcasts the new state
+    # thing  Thing that wants to broadcast its state
     def broadcast_thing_state(self, thing):
-        core.broadcast_thing_state(thing.id, thing.get_state())
+        self.core.ctrl_manager.broadcast_thing_state(thing.id, thing.get_state())
 
     # Called when the hardware has an updated value on a port. This function
     # should dispatch the update to the interested Things
