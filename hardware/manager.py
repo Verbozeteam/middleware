@@ -15,9 +15,11 @@ class HardwareManager(object):
         # is a dictionary mapping a serial number to a HardwareController
         # object
         self.controller_types = {
-            #"arduino": (ArduinoController, {}),
-            "arduino_legacy": (ArduinoLegacyController, {}),
+            "arduino": (ArduinoController, {}),
         }
+        if HARDWARE_CONFIG.LEGACY_MODE:
+            self.controller_types["arduino"] = (ArduinoLegacyController, {})
+
         # used for periodic updates
         self.update_timer = 0
 
@@ -93,3 +95,12 @@ class HardwareManager(object):
         # Forward the update to the core
         self.core.blueprint.on_hardware_data(port, value)
 
+    # Called by the blueprint when hardware is being commanded
+    # port   Port being commanded
+    # value  Value to set port to
+    def on_command(self, port, value):
+        # @TODO: map global port to local port (and pick right HW controller)
+        for ct_type in self.controller_types.keys():
+            (_, controller_devices) = self.controller_types[ct_type]
+            if len(controller_devices) > 0:
+                controller_devices[list(controller_devices.keys())[0]].set_port_value(port, value)

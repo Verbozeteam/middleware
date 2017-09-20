@@ -30,7 +30,7 @@ class ConnectionManager(object):
                 collected_commands = {}
                 control_commands = []
                 for command in controller.pending_commands:
-                    if "thing_id" in command:
+                    if "thing" in command:
                         thing_id = command["thing"]
                         del command["thing"]
                         if thing_id in collected_commands:

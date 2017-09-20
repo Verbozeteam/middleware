@@ -17,7 +17,12 @@ class Curtain(Thing):
         pass
 
     def on_controller_data(self, data):
-        pass
+        if data["curtain"] == 0:
+            self.pending_commands += [(self.listening_ports[0], 0), (self.listening_ports[1], 0)]
+        elif data["curtain"] == 1:
+            self.pending_commands.append((self.listening_ports[0], 1))
+        elif data["curtain"] == 2:
+            self.pending_commands.append((self.listening_ports[1], 1))
 
     def get_state(self):
         return {}

@@ -28,11 +28,17 @@ class HardwareController(object):
         except Exception as e:
             Log.warning("Failed to safely close serial port communication for device {}".format(self.serial_number), exception=True)
 
-    # called to periodically update this device
+    # Called to periodically update this device
     # cur_time_s: current time in seconds
     # returns: True to keep the device attached, False to detach it
     def update(self, cur_time_s):
         return True
+
+    # Called when this controller is supposed to set the value of a port
+    # port   Port to set
+    # value  Value to set the port to
+    def set_port_value(self, port, value):
+        pass
 
     # called to identify if any device that this controller controls is in
     # the serial ports

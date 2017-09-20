@@ -29,7 +29,7 @@ class Log(object):
         if "exception" in kwargs: del kwargs["exception"]
         if log_level <= Log.verbozity:
             if print_dump: traceback.print_exc()
-            else: print(*args, **kwargs)
+            print(*args, **kwargs)
 
     @staticmethod
     def fatal(*args, **kwargs):

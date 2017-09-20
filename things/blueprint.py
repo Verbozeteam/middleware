@@ -81,8 +81,9 @@ class Blueprint(object):
                         thing.dirty = False
                         self.broadcast_thing_state(thing)
                     if len(thing.pending_commands) > 0:
-                        for command in thing.pending_commands:
-                            pass # @TODO: send this command to the hardware manager
+                        for (port, value) in thing.pending_commands:
+                            self.core.hw_manager.on_command(port, value)
+                        thing.pending_commands = []
 
     # Called when this manager needs to free all its resources
     def cleanup(self):
@@ -124,4 +125,5 @@ class Blueprint(object):
                     continue
                 for thing in room[things]:
                     if thing_id == thing.id:
-                        thing.on_controller_data(data)
+                        for D in data:
+                            thing.on_controller_data(D)

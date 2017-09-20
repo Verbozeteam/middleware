@@ -29,7 +29,6 @@ class CentralAC(Thing):
         self.id = "central-ac-" + self.listening_ports[0] + "-" + self.listening_ports[1]
         self.current_set_point = 25
         self.current_temperature = 25
-        self.temperature_port = self.listening_ports[1]
 
     # Should return the key in the blueprint that this Thing captures
     @staticmethod
@@ -37,12 +36,15 @@ class CentralAC(Thing):
         return "central_acs"
 
     def on_hardware_data(self, port, value):
-        if port == self.temperature_port:
+        if port == self.listening_ports[1]:
             self.current_temperature = value
             self.dirty = True
 
     def on_controller_data(self, data):
-        pass
+        if "set_pt" in data:
+            self.current_set_point = data["set_pt"]
+            self.dirty = True
+            self.pending_commands.append((self.listening_ports[0], self.current_set_point))
 
     def get_state(self):
         return {

@@ -160,6 +160,10 @@ class ArduinoController(HardwareController):
 
         return True
 
+    def set_port_value(self, port, value):
+        # @TODO: Implement
+        pass
+
     # To identify an arduino on a COM port, find "arduino" anywhere in the
     # hardware description
     @staticmethod
@@ -253,4 +257,21 @@ class ArduinoLegacyController(ArduinoController):
             return True
         except Exception as e:
             return False
+
+    def set_port_value(self, port, value):
+        try:
+            port_type = port[0]
+            port = int(port[1:])
+            if port >= 22 and port <= 29: # curtain
+                curtain = (port - 22) / 2
+                value = 0 if value == 0 else (1 if port % 2 == 0 else 2)
+                self.serial_port.write("c{}:{}\n".format(curtain, value))
+            elif port >= 30 and port <= 37: # switch
+                self.serial_port.write("t{}:{}\n".format(37 - port, value))
+            elif port >= 4 and port <= 7: # dimmer
+                self.serial_port.write("l{}:{}\n".format(port - 4, value))
+            elif port >= 8 and port <= 9: # central AC
+                self.serial_port.write("a{}:{}\n".format(port - 8, value))
+        except:
+            pass
 
