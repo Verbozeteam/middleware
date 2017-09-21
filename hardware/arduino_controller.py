@@ -249,6 +249,7 @@ class ArduinoLegacyController(ArduinoController):
             if base_idx != len(message):
                 raise 1 # invalid message...
             for i in range(len(ACs)):
+                self.state.on_message(MESSAGE_TYPE.FROMDEVICE_PINSTATE, bytearray([PIN_TYPE.DIGITAL[0], 48+i, ACs[i][0]]))
                 self.state.on_message(MESSAGE_TYPE.FROMDEVICE_PINSTATE, bytearray([PIN_TYPE.VIRTUAL[0], i, ACs[i][2]]))
             for i in range(len(dimmers)):
                 self.state.on_message(MESSAGE_TYPE.FROMDEVICE_PINSTATE, bytearray([PIN_TYPE.DIGITAL[0], 4+i, dimmers[i]]))
@@ -262,16 +263,20 @@ class ArduinoLegacyController(ArduinoController):
         try:
             port_type = port[0]
             port = int(port[1:])
-            if port >= 22 and port <= 29: # curtain
+            if port_type == "v" and port == 0: # AC set point
+                self.serial_port.write("a{}:{}\n".format(port, int(value*2)).encode('utf-8'))
+            if port >= 22 and port <= 27: # curtain
                 curtain = (port - 22) / 2
                 value = 0 if value == 0 else (1 if port % 2 == 0 else 2)
-                self.serial_port.write("c{}:{}\n".format(curtain, value))
-            elif port >= 30 and port <= 37: # switch
-                self.serial_port.write("t{}:{}\n".format(37 - port, value))
+                self.serial_port.write("c{}:{}\n".format(curtain, value).encode('utf-8'))
+            elif port >= 28 and port <= 37: # switch
+                self.serial_port.write("t{}:{}\n".format(37 - port, value).encode('utf-8'))
             elif port >= 4 and port <= 7: # dimmer
-                self.serial_port.write("l{}:{}\n".format(port - 4, value))
+                self.serial_port.write("l{}:{}\n".format(port - 4, value).encode('utf-8'))
             elif port >= 8 and port <= 9: # central AC
-                self.serial_port.write("a{}:{}\n".format(port - 8, value))
+                self.serial_port.write("a{}:{}\n".format(port - 8, value).encode('utf-8'))
+            elif port >= 48 and port <= 49:
+                self.serial_port.write("f{}:{}\n".format(port - 48, value).encode('utf-8'))
         except:
             pass
 

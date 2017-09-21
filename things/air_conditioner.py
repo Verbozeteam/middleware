@@ -29,6 +29,7 @@ class CentralAC(Thing):
         self.id = "central-ac-" + self.listening_ports[0] + "-" + self.listening_ports[1]
         self.current_set_point = 25
         self.current_temperature = 25
+        self.current_fan_speed = 0
 
     # Should return the key in the blueprint that this Thing captures
     @staticmethod
@@ -44,7 +45,11 @@ class CentralAC(Thing):
         if "set_pt" in data:
             self.current_set_point = data["set_pt"]
             self.dirty = True
-            self.pending_commands.append((self.listening_ports[0], self.current_set_point))
+            self.pending_commands.append((self.listening_ports[1], self.current_set_point))
+        elif "fan" in data:
+            self.current_fan_speed = data["fan"]
+            self.dirty = True
+            self.pending_commands.append((self.listening_ports[0], self.current_fan_speed))
 
     def get_state(self):
         return {

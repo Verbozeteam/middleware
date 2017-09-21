@@ -29,8 +29,8 @@ class HardwareController(object):
             Log.warning("Failed to safely close serial port communication for device {}".format(self.serial_number), exception=True)
 
     # Called to periodically update this device
-    # cur_time_s: current time in seconds
-    # returns: True to keep the device attached, False to detach it
+    # cur_time_s current time in seconds
+    # returns True to keep the device attached, False to detach it
     def update(self, cur_time_s):
         return True
 
@@ -42,8 +42,8 @@ class HardwareController(object):
 
     # called to identify if any device that this controller controls is in
     # the serial ports
-    # ports: list of pyserial COM ports
-    # returns: list of serial numbers that this controller should control
+    # ports  list of pyserial COM ports
+    # returns list of serial numbers that this controller should control
     @staticmethod
     def identify(ports):
         return []

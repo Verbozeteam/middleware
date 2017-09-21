@@ -76,38 +76,47 @@ class SocketLegacyController(SocketController):
             return False
         try:
             self.buffer += read
-            newline_idx = self.buffer.index(bytes([ord("\n")]))
-            if newline_idx >= 0:
-                command = self.buffer[:newline_idx+1].decode('utf-8')
-                self.buffer = self.buffer[newline_idx+1:]
-                m = re.search("^(?P<type>[atlfc])(?P<index>[0-9]+):(?P<value>[0-9]+)\n$", command)
-                if m:
-                    (t, index, value) = m.groups()
-                    index = int(index)
-                    value = int(value)
-                    command_json = {}
-                    if t == 'c':
-                        command_json = {
-                            "thing": "curtain-" + "d" + str(22+index*2) + "-d" + str(23+index*2),
-                            "curtain": value
-                        }
-                    elif t == 't':
-                        command_json = {
-                            "thing": "lightswitch-" + str(37-index),
-                            "intensity": value
-                        }
-                    elif t == 'l':
-                        command_json = {
-                            "thing": "dimmer-" + str(4+index),
-                            "intensity": value
-                        }
-                    elif t == 'a':
-                        command_json = {
-                            "thing": "central-ac-" + str(8+index),
-                            "set_pt": value
-                        }
-                    if command_json != {}:
-                        self.on_command(command_json)
+            while True:
+                try:
+                    newline_idx = self.buffer.index(bytes([ord("\n")]))
+                    if newline_idx >= 0:
+                        command = self.buffer[:newline_idx+1].decode('utf-8')
+                        self.buffer = self.buffer[newline_idx+1:]
+                        m = re.search("^(?P<type>[atlfc])(?P<index>[0-9]+):(?P<value>[0-9]+)\n$", command)
+                        if m:
+                            (t, index, value) = m.groups()
+                            index = int(index)
+                            value = int(value)
+                            command_json = {}
+                            if t == 'c':
+                                command_json = {
+                                    "thing": "curtain-d" + str(22+index*2) + "-d" + str(23+index*2),
+                                    "curtain": value
+                                }
+                            elif t == 't':
+                                command_json = {
+                                    "thing": "lightswitch-d" + str(37-index),
+                                    "intensity": value
+                                }
+                            elif t == 'l':
+                                command_json = {
+                                    "thing": "dimmer-d" + str(4+index),
+                                    "intensity": value
+                                }
+                            elif t == 'a':
+                                command_json = {
+                                    "thing": "central-ac-d" + str(48+index) + "-v" + str(index),
+                                    "set_pt": float(value) / 2
+                                }
+                            elif t == 'f':
+                                command_json = {
+                                    "thing": "central-ac-d" + str(48+index) + "-v" + str(index),
+                                    "fan": value
+                                }
+                            if command_json != {}:
+                                self.on_command(command_json)
+                except:
+                    break
             return True
         except Exception as e:
             Log.warning(str(e), exception=True)
@@ -128,19 +137,18 @@ class SocketLegacyController(SocketController):
                 curtains += room.get(Curtain.get_blueprint_tag(), [])
             acs = sorted(acs, key=lambda t: t.id)
             dimmers = sorted(dimmers, key=lambda t: t.id)
-            switches = sorted(switches, key=lambda t: t.id)
+            switches = sorted(switches, key=lambda t: t.id, reverse=True)
             curtains = sorted(curtains, key=lambda t: t.id)
             msg = bytearray([254])
             msg += bytearray([len(acs)])
             for ac in acs:
-                msg += bytearray([0, ac.current_set_point*2, ac.current_temperature])
+                msg += bytearray([ac.current_fan_speed, int(ac.current_set_point*2), ac.current_temperature])
             msg += bytearray([len(dimmers)] + list(map(lambda t: t.intensity, dimmers)))
             msg += bytearray([len(switches)] + list(map(lambda t: t.intensity, switches)))
             msg += bytearray([len(curtains), 255])
             self.connection.send(msg)
             return True
         except Exception as e:
-            print (e)
             return False
 
 #
@@ -157,6 +165,7 @@ class SocketConnectionManager(ConnectionManager):
 
     # non-blocking listening to new connections and connected controllers
     def update(self, cur_time_s):
+        # Check if some interfaces disconnected or new interfaces connected
         if cur_time_s >= self.reconnect_timer:
             self.reconnect_timer = cur_time_s + CONTROLLERS_CONFIG.SOCKET_SERVER_RECONNECT_TIMEOUT
             available_interfaces = SocketConnectionManager.discover_interfaces()
@@ -172,6 +181,7 @@ class SocketConnectionManager(ConnectionManager):
                         self.server_socks[iface] = s
                         Log.info("Listening on {}:{}".format(ip, CONTROLLERS_CONFIG.SOCKET_SERVER_BIND_PORT))
 
+        # perform a nonblocking select on server sockets and all connections
         controllers_descriptors = list(map(lambda c: c.connection, self.connected_controllers))
         server_descriptors = list(self.server_socks.values())
         try:

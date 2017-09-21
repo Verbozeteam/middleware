@@ -81,7 +81,7 @@ class Blueprint(object):
                         thing.dirty = False
                         self.broadcast_thing_state(thing)
                     if len(thing.pending_commands) > 0:
-                        for (port, value) in thing.pending_commands:
+                        for (port, value) in thing.get_clean_pending_commands():
                             self.core.hw_manager.on_command(port, value)
                         thing.pending_commands = []
 

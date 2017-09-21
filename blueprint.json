@@ -18,17 +18,67 @@
             "english": "Dimmer 1"
         },
         "ports": ["d4"]
+    }, {
+        "name": {
+            "english": "Dimmer 2"
+        },
+        "ports": ["d5"]
     }],
     "light_switches": [{
         "name": {
             "english": "Light switch 1"
         },
         "ports": ["d37"]
+    }, {
+        "name": {
+            "english": "Light switch 2"
+        },
+        "ports": ["d36"]
+    }, {
+        "name": {
+            "english": "Light switch 3"
+        },
+        "ports": ["d35"]
+    }, {
+        "name": {
+            "english": "Light switch 4"
+        },
+        "ports": ["d34"]
+    }, {
+        "name": {
+            "english": "Bathroom light switch 1"
+        },
+        "ports": ["d33"]
+    }, {
+        "name": {
+            "english": "Bathroom light switch 2"
+        },
+        "ports": ["d32"]
+    }, {
+        "name": {
+            "english": "Bathroom light switch 3"
+        },
+        "ports": ["d31"]
+    }, {
+        "name": {
+            "english": "Bathroom light switch 4"
+        },
+        "ports": ["d30"]
+    }, {
+        "name": {
+            "english": "Do not disturb"
+        },
+        "ports": ["d29"]
+    }, {
+        "name": {
+            "english": "Room service"
+        },
+        "ports": ["d28"]
     }],
     "central_acs": [{
         "name": {
             "english": "Air conditioner"
         },
-        "ports": ["d8", "v0"]
+        "ports": ["d48", "v0"]
     }]
 }]

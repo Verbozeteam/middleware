@@ -2,10 +2,11 @@ from logs import Log
 
 class Thing(object):
     def __init__(self):
-        self.listening_ports = []   # List of ports that this Thing is listening for changes on
-        self.dirty = False          # If True, then this Thing's state has changed since it was last broadcasted to controllers
-        self.pending_commands = []  # List of pending messages to be sent to the hardware
-        self.id = ""                # id of this Thing
+        self.listening_ports = []               # List of ports that this Thing is listening for changes on
+        self.dirty = False                      # If True, then this Thing's state has changed since it was last broadcasted to controllers
+        self.pending_commands = []              # List of pending messages to be sent to the hardware
+        self.allow_duplicate_commands = False   # If set to False, commands will be truncated in get_clean_pending_commands() if they target the same port
+        self.id = ""                            # id of this Thing
 
     # Should be implemented to return the key in the blueprint that this Thing captures
     @staticmethod
@@ -15,6 +16,21 @@ class Thing(object):
     # Should be implemented to return the state of this Thing that will be sent to controllers (JSON-serializable dictionary)
     def get_state(self):
         return {}
+
+    # Retrieves the pending commands (form controllers)
+    # return  A (cleaned) list of pending commands
+    def get_clean_pending_commands(self):
+        # if pending commands are allowed to duplicate, just return all pending_commands
+        if self.allow_duplicate_commands:
+            return self.pending_commands
+
+        commands = []
+        added_ports = []
+        for command in self.pending_commands:
+            if command[0] not in added_ports:
+                added_ports.append(command[0])
+                commands = [command] + commands
+        return commands
 
     # Called by the blueprint when hardware has an updated value on a port
     # port   Port that has updated its value
