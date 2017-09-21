@@ -82,39 +82,43 @@ class SocketLegacyController(SocketController):
                     if newline_idx >= 0:
                         command = self.buffer[:newline_idx+1].decode('utf-8')
                         self.buffer = self.buffer[newline_idx+1:]
-                        m = re.search("^(?P<type>[atlfc])(?P<index>[0-9]+):(?P<value>[0-9]+)\n$", command)
-                        if m:
-                            (t, index, value) = m.groups()
-                            index = int(index)
-                            value = int(value)
-                            command_json = {}
-                            if t == 'c':
-                                command_json = {
-                                    "thing": "curtain-d" + str(22+index*2) + "-d" + str(23+index*2),
-                                    "curtain": value
-                                }
-                            elif t == 't':
-                                command_json = {
-                                    "thing": "lightswitch-d" + str(37-index),
-                                    "intensity": value
-                                }
-                            elif t == 'l':
-                                command_json = {
-                                    "thing": "dimmer-d" + str(4+index),
-                                    "intensity": value
-                                }
-                            elif t == 'a':
-                                command_json = {
-                                    "thing": "central-ac-d" + str(48+index) + "-v" + str(index),
-                                    "set_pt": float(value) / 2
-                                }
-                            elif t == 'f':
-                                command_json = {
-                                    "thing": "central-ac-d" + str(48+index) + "-v" + str(index),
-                                    "fan": value
-                                }
-                            if command_json != {}:
-                                self.on_command(command_json)
+                        if command == "S\n":
+                            # Heartbeat support: just reply with garbage byte
+                            self.connection.send(bytearray([0]))
+                        else:
+                            m = re.search("^(?P<type>[atlfc])(?P<index>[0-9]+):(?P<value>[0-9]+)\n$", command)
+                            if m:
+                                (t, index, value) = m.groups()
+                                index = int(index)
+                                value = int(value)
+                                command_json = {}
+                                if t == 'c':
+                                    command_json = {
+                                        "thing": "curtain-d" + str(22+index*2) + "-d" + str(23+index*2),
+                                        "curtain": value
+                                    }
+                                elif t == 't':
+                                    command_json = {
+                                        "thing": "lightswitch-d" + str(37-index),
+                                        "intensity": value
+                                    }
+                                elif t == 'l':
+                                    command_json = {
+                                        "thing": "dimmer-d" + str(4+index),
+                                        "intensity": value
+                                    }
+                                elif t == 'a':
+                                    command_json = {
+                                        "thing": "central-ac-d" + str(48+index) + "-v" + str(index),
+                                        "set_pt": float(value) / 2
+                                    }
+                                elif t == 'f':
+                                    command_json = {
+                                        "thing": "central-ac-d" + str(48+index) + "-v" + str(index),
+                                        "fan": value
+                                    }
+                                if command_json != {}:
+                                    self.on_command(command_json)
                 except:
                     break
             return True
@@ -149,6 +153,7 @@ class SocketLegacyController(SocketController):
             self.connection.send(msg)
             return True
         except Exception as e:
+            Log.warning("FAILED SocketLegacyController::on_send_data({})".format(json_data))
             return False
 
 #
