@@ -38,6 +38,7 @@ class HardwareController(object):
     # port   Port to set
     # value  Value to set the port to
     def set_port_value(self, port, value):
+        print("hm..")
         pass
 
     # called to identify if any device that this controller controls is in

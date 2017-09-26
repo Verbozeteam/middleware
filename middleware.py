@@ -34,9 +34,6 @@ class Core(object):
         self.ctrl_manager.cleanup()
 
 if __name__ == '__main__':
-    # Initialize logging
-    Log.initialize()
-
     # Initialize and run the core
     core = Core()
     core.run()

@@ -1,4 +1,5 @@
 from hardware.controller_base import HardwareController
+from logs import Log
 
 import struct
 
@@ -70,6 +71,7 @@ class ArduinoState(object):
             self.digital_pins[index].mode = mode
 
     def on_message(self, message_type, message):
+        Log.hammoud("ArduinoState::on_message({}, {})".format(message_type, message))
         if message_type == MESSAGE_TYPE.FROMDEVICE_PINSTATE:
             # expected message: bytearray([port_type, port_number, value])
             if len(message) != 3:
@@ -95,9 +97,10 @@ class ArduinoController(HardwareController):
     # returns True if the buffer is in sync, False otherwise
     def sync_input_buffer(self, cur_time_s):
         global SYNC_SEQUENCE
-        if self.sync_send_timer >= cur_time_s:
+        if cur_time_s >= self.sync_send_timer:
             self.sync_send_timer = cur_time_s + self.sync_send_period
             self.serial_port.write(SYNC_SEQUENCE)
+            Log.hammoud("ArduinoController::sync_input_buffer() wrote a sync sequence")
 
         if self.wait_for_sync:
             self.sync_send_period = 1
@@ -113,6 +116,7 @@ class ArduinoController(HardwareController):
                     break
 
             if found_sync:
+                Log.hammoud("ArduinoController::sync_input_buffer() found sync sequence")
                 self.read_buffer = self.read_buffer[sync_start+len(SYNC_SEQUENCE):]
                 self.wait_for_sync = False
                 self.sync_send_period = 10
@@ -129,7 +133,7 @@ class ArduinoController(HardwareController):
     # returns True if the connection should continue, False otherwise
     def process_read_buffer(self):
         while len(self.read_buffer) > 2:
-            (msg_type, msg_len) = struct.unpack(self.read_buffer, 'ii')
+            (msg_type, msg_len) = struct.unpack('BB', self.read_buffer[:2])
             if len(self.read_buffer) >= 2 + msg_len:
                 msg = self.read_buffer[2:2+msg_len]
                 self.read_buffer = self.read_buffer[2+msg_len:]
@@ -137,6 +141,8 @@ class ArduinoController(HardwareController):
                     # Failed to understand the message, need to sync again
                     self.wait_for_sync = True
                     break
+            else:
+                break
         return True
 
     # Called when a message has been found on the read buffer.
@@ -263,6 +269,7 @@ class ArduinoLegacyController(ArduinoController):
         try:
             port_type = port[0]
             port = int(port[1:])
+            Log.hammoud("ArduinoLegacyController::set_port_value({}, {})".format(port, value))
             if port_type == "v" and port == 0: # AC set point
                 self.serial_port.write("a{}:{}\n".format(port, int(value*2)).encode('utf-8'))
             if port >= 22 and port <= 27: # curtain

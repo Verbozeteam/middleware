@@ -73,7 +73,8 @@ class HardwareManager(object):
                 device = controller_devices[sn]
                 try:
                     keep = device.update(cur_time_s)
-                except:
+                except Exception as e:
+                    Log.warning("Hardware controller failure", exception=True)
                     keep = False
                 if not keep:
                     self.detach_device(ct_type, device)
@@ -100,7 +101,9 @@ class HardwareManager(object):
     # value  Value to set port to
     def on_command(self, port, value):
         # @TODO: map global port to local port (and pick right HW controller)
+        Log.hammoud("HardwareManager::on_command({}, {})".format(port, value))
         for ct_type in self.controller_types.keys():
             (_, controller_devices) = self.controller_types[ct_type]
+            Log.hammoud("HardwareManager::on_command => {} {} controller devices".format(ct_type, len(controller_devices)))
             if len(controller_devices) > 0:
                 controller_devices[list(controller_devices.keys())[0]].set_port_value(port, value)

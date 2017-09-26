@@ -1,3 +1,4 @@
+from config.general_config import GENERAL_CONFIG
 import traceback
 import sys
 
@@ -17,17 +18,11 @@ class VERBOZITY:
 # Singleton class to facilitate logging
 #
 class Log(object):
-    verbozity = VERBOZITY.INFO
-
-    @staticmethod
-    def initialize(verbozity=VERBOZITY.INFO):
-        Log.verbozity = verbozity
-
     @staticmethod
     def log(log_level, *args, **kwargs):
         print_dump = kwargs.get("exception", False)
         if "exception" in kwargs: del kwargs["exception"]
-        if log_level <= Log.verbozity:
+        if log_level <= GENERAL_CONFIG.LOG_VERBOZITY:
             if print_dump: traceback.print_exc()
             print(*args, **kwargs)
 

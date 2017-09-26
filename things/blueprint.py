@@ -119,6 +119,7 @@ class Blueprint(object):
     # thing_id  id of the Thing that the controller is trying to talk to
     # data      data that the controller is sending to the Thing
     def on_controller_data(self, thing_id, data):
+        Log.hammoud("Blueprint::on_controller_data({}, {})".format(thing_id, data))
         for room in self.rooms:
             for things in room.keys():
                 if things == "name":

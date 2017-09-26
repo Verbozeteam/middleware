@@ -49,6 +49,7 @@ class SocketController(Controller):
                     self.on_command(json.loads(command.decode("utf-8")))
             return True
         except Exception as e:
+            Log.warning("SocketController::on_read_data()", exception=True)
             return False
 
     # Called when data needs to be sent to the remote controller on the socket
@@ -86,6 +87,7 @@ class SocketLegacyController(SocketController):
                             # Heartbeat support: just reply with garbage byte
                             self.connection.send(bytearray([0]))
                         else:
+                            Log.hammoud("SocketLegacyController::on_read_data({})".format(command))
                             m = re.search("^(?P<type>[atlfc])(?P<index>[0-9]+):(?P<value>[0-9]+)\n$", command)
                             if m:
                                 (t, index, value) = m.groups()
