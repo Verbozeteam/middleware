@@ -31,6 +31,9 @@ class CentralAC(Thing):
         self.current_set_point = 25
         self.current_temperature = 25
         self.current_fan_speed = 0
+        self.homeostasis = 0.49
+        self.current_airflow = 0
+        self.next_airflow_update = 0
 
     # Should return the key in the blueprint that this Thing captures
     @staticmethod
@@ -51,10 +54,15 @@ class CentralAC(Thing):
         elif "fan" in data:
             self.current_fan_speed = data["fan"]
             self.dirty = True
-            self.pending_commands.append((self.digital_writing_ports[0], self.current_fan_speed))
+            self.pending_commands.append((self.fan_port, self.current_fan_speed))
 
     def update(self, cur_time_s):
-        print ("hola")
+        temp_diff = self.current_temperature - self.current_set_point
+        coeff = (min(max(temp_diff, -10), 10)) / 10; # [-1, 1]
+        self.current_airflow = min(max(self.current_airflow + self.homeostasis * coeff, 0.0), 255.0)
+        if cur_time_s >= self.next_airflow_update:
+            self.next_airflow_update = cur_time_s + 2
+            self.pending_commands.append((self.valve_port, int(self.current_airflow)))
 
     def get_state(self):
         return {

@@ -104,6 +104,5 @@ class HardwareManager(object):
         Log.hammoud("HardwareManager::on_command({}, {})".format(port, value))
         for ct_type in self.controller_types.keys():
             (_, controller_devices) = self.controller_types[ct_type]
-            Log.hammoud("HardwareManager::on_command => {} {} controller devices".format(ct_type, len(controller_devices)))
             if len(controller_devices) > 0:
                 controller_devices[list(controller_devices.keys())[0]].set_port_value(port, value)
