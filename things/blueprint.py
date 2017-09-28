@@ -66,7 +66,7 @@ class Blueprint(object):
             try:
                 room[thing_class_name].append(thing_class(thing_json))
             except:
-                Log.error("Failed to load thing {}".format(str(thing_json)))
+                Log.error("Failed to load thing {}".format(str(thing_json)), exception=True)
                 break
 
     # Called periodically by the core to update the Things of this blueprint
@@ -80,6 +80,7 @@ class Blueprint(object):
                     if thing.dirty:
                         thing.dirty = False
                         self.broadcast_thing_state(thing)
+                    thing.update(cur_time_s)
                     if len(thing.pending_commands) > 0:
                         for (port, value) in thing.get_clean_pending_commands():
                             self.core.hw_manager.on_command(port, value)
@@ -93,9 +94,16 @@ class Blueprint(object):
     def get_controller_view(self):
         pass
 
-    # returns  The hardware-friendly view of the blueprint
-    def get_hardware_view(self):
-        pass
+    # returns  The hardware-friendly view of the blueprint (list of things)
+    def get_things(self):
+        ret_things = []
+        for room in self.rooms:
+            for things in room.keys():
+                if things == "name":
+                    continue
+                for thing in room[things]:
+                    ret_things.append(thing)
+        return ret_things
 
     # Called when a Thing updates its state so it broadcasts the new state
     # thing  Thing that wants to broadcast its state
@@ -112,7 +120,7 @@ class Blueprint(object):
                 if things == "name":
                     continue
                 for thing in room[things]:
-                    if port in thing.listening_ports:
+                    if port in thing.input_ports or port in thing.output_ports:
                         thing.on_hardware_data(port, value)
 
     # Called when the controllers send a command for a Thing

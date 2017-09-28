@@ -1,8 +1,14 @@
 from logs import Log
 
 class Thing(object):
-    def __init__(self):
-        self.listening_ports = []               # List of ports that this Thing is listening for changes on
+    def __init__(self, thing_json):
+        # Read Thing attributes
+        for key in thing_json.keys():
+            setattr(self, key, thing_json[key])
+
+        # auto-generated attributes
+        self.input_ports = {}                   # Dictionary of pin -> read_interval where pin is a pin that the Thing wants to listen to and read_interval is an integer for the interval at which the port is read (in ms)
+        self.output_ports = {}                  # Dictionary of pin -> output type (0 for digital, 1 for PWM)
         self.dirty = False                      # If True, then this Thing's state has changed since it was last broadcasted to controllers
         self.pending_commands = []              # List of pending messages to be sent to the hardware
         self.allow_duplicate_commands = False   # If set to False, commands will be truncated in get_clean_pending_commands() if they target the same port
@@ -16,6 +22,11 @@ class Thing(object):
     # Should be implemented to return the state of this Thing that will be sent to controllers (JSON-serializable dictionary)
     def get_state(self):
         return {}
+
+    # perform any Thing-specific logic
+    # cur_time_s  Current time in seconds
+    def update(self, cur_time_s):
+        pass
 
     # Retrieves the pending commands (form controllers)
     # return  A (cleaned) list of pending commands

@@ -6,79 +6,84 @@
         "name": {
             "english": "Curtain 1"
         },
-        "ports": ["d22", "d23"]
+        "up_port": "d22",
+        "down_port": "d23"
     }, {
         "name": {
             "english": "Curtain 2"
         },
-        "ports": ["d24", "d25"]
+        "up_port": "d24",
+        "down_port": "d25"
     }],
     "dimmers": [{
         "name": {
             "english": "Dimmer 1"
         },
-        "ports": ["d4"]
+        "pwm_port": "d4"
     }, {
         "name": {
             "english": "Dimmer 2"
         },
-        "ports": ["d5"]
+        "pwm_port": "d5"
     }],
     "light_switches": [{
         "name": {
             "english": "Light switch 1"
         },
-        "ports": ["d37"]
+        "switch_port": "d37"
     }, {
         "name": {
             "english": "Light switch 2"
         },
-        "ports": ["d36"]
+        "switch_port": "d36"
     }, {
         "name": {
             "english": "Light switch 3"
         },
-        "ports": ["d35"]
+        "switch_port": "d35"
     }, {
         "name": {
             "english": "Light switch 4"
         },
-        "ports": ["d34"]
+        "switch_port": "d34"
     }, {
         "name": {
             "english": "Bathroom light switch 1"
         },
-        "ports": ["d33"]
+        "switch_port": "d33"
     }, {
         "name": {
             "english": "Bathroom light switch 2"
         },
-        "ports": ["d32"]
+        "switch_port": "d32"
     }, {
         "name": {
             "english": "Bathroom light switch 3"
         },
-        "ports": ["d31"]
+        "switch_port": "d31"
     }, {
         "name": {
             "english": "Bathroom light switch 4"
         },
-        "ports": ["d30"]
+        "switch_port": "d30"
     }, {
         "name": {
             "english": "Do not disturb"
         },
-        "ports": ["d29"]
+        "switch_port": "d29"
     }, {
         "name": {
             "english": "Room service"
         },
-        "ports": ["d28"]
+        "switch_port": "d28"
     }],
     "central_acs": [{
         "name": {
             "english": "Air conditioner"
         },
-        "ports": ["d48", "v0"]
+        "temperature_port": "v0",
+        "fan_port": "d48",
+        "valve_port": "d8",
+        "virtual_port_data": [[0, 0]]
     }]
 }]

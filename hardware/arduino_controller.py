@@ -5,16 +5,25 @@ import struct
 
 # 8-byte sequence that represents a sequence sent periodically by the Arduino
 # to sync the communication
+FULL_SYNC_SEQUENCE = bytearray([254, 6, 253, 11, 76, 250, 250, 255])
 SYNC_SEQUENCE = bytearray([254, 6, 252, 11, 76, 250, 250, 255])
 
 class MESSAGE_TYPE:
-    SYNC_SEQUENCE = 254
-    FROMDEVICE_PINSTATE = 0
+    SYNC_SEQUENCE                   = 254
+
+    FROMDEVICE_PINSTATE             = 0
+
+    TODEVICE_SET_PIN_MODE           = 1
+    TODEVICE_SET_VIRTUAL_PIN_MODE   = 2
+    TODEVICE_SET_PIN_OUTPUT         = 3
+    TODEVICE_READ_PIN_INPUT         = 4
+    TODEVICE_REGISTED_PIN_LISTENER  = 5
+    TODEVICE_RESET_BOARD            = 6
 
 class PIN_TYPE:
     UNKNOWN = (-1, "")
-    ANALOG = (0, "a")
-    DIGITAL = (1, "d")
+    DIGITAL = (0, "d")
+    ANALOG  = (1, "a")
     VIRTUAL = (2, "v")
 
     @staticmethod
@@ -25,61 +34,70 @@ class PIN_TYPE:
                 return attr
         return (-1, "")
 
-#
-# Represents the current state of a connected Arduino. The state includes the
-# values on all the input pins of the Arduino
-#
-class ArduinoState(object):
-    # Represents the state of a pin on the Arduino
-    class Pin(object):
-        class MODE:
-            UNKNOWN = 0
-            OUTPUT = 1
-            INPUT = 2
+    @staticmethod
+    def from_str(ch):
+        for attr in dir(PIN_TYPE):
+            attr = getattr(PIN_TYPE, attr)
+            if type(attr) == type(()) and len(attr) == 2 and attr[1] == ch:
+                return attr
+        return (-1, "")
 
-        def __init__(self, mode=MODE.UNKNOWN, value=0):
-            self.mode = mode
-            self.value = value
+class PIN_MODE:
+    INPUT   = 0
+    OUTPUT  = 1
+    PWM     = 2
 
-    def __init__(self, controller):
-        self.analog_pins = []
-        self.digital_pins = []
-        self.controller = controller
+class VIRTUAL_PIN_TYPE:
+    CENTRAL_AC  = 0
+    ISR_LIGHT   = 1
 
-    # Set an analog pin's state
-    # value Value to set the pin to
-    # mode  Mode to set the pin to
-    def set_analog_pin(self, index, value=None, mode=None):
-        num_missing_pins = (index - len(self.analog_pins)) + 1
-        for pin in num_missing_pins:
-            self.analog_pins.append(ArduinoState.Pin())
-        if value:
-            self.analog_pins[index].value = value
-        if mode:
-            self.analog_pins[index].mode = mode
-
-    # Set a digital pin's state
-    # value Value to set the pin to
-    # mode  Mode to set the pin to
-    def set_digital_pin(self, index, value=None, mode=None):
-        num_missing_pins = (index - len(self.digital_pins)) + 1
-        for pin in num_missing_pins:
-            self.digital_pins.append(ArduinoState.Pin())
-        if value:
-            self.digital_pins[index].value = value
-        if mode:
-            self.digital_pins[index].mode = mode
-
-    def on_message(self, message_type, message):
-        Log.hammoud("ArduinoState::on_message({}, {})".format(message_type, message))
+class ArduinoProtocol:
+    @staticmethod
+    def on_message(controller, message_type, message):
+        Log.hammoud("ArduinoProtocol::on_message({}, {} --{} bytes--)".format(message_type, list(message), len(message)))
         if message_type == MESSAGE_TYPE.FROMDEVICE_PINSTATE:
             # expected message: bytearray([port_type, port_number, value])
             if len(message) != 3:
                 return False
             (port_type, port_number, value) = message
             port_type = PIN_TYPE.from_id(port_type)[1]
-            self.controller.hw_manager.on_port_update(self.controller, port_type+str(port_number), value)
+            controller.hw_manager.on_port_update(controller, port_type+str(port_number), value)
+        else:
+            return False
         return True
+
+    @staticmethod
+    def create_set_pin_mode(pin, mode):
+        pin_type = PIN_TYPE.from_str(pin[0])[0]
+        pin_index = int(pin[1:])
+        return struct.pack('BBBBB', 1, 3, pin_type, pin_index, mode)
+
+    @staticmethod
+    def create_set_virtual_pin_mode(pin, data):
+        pin_index = int(pin[1:])
+        return struct.pack('BBBB', 2, len(data)+2, 2, pin_index) + bytearray(data)
+
+    @staticmethod
+    def create_set_pin_output(pin, output):
+        pin_type = PIN_TYPE.from_str(pin[0])[0]
+        pin_index = int(pin[1:])
+        return struct.pack('BBBBB', 3, 3, pin_type, pin_index, output)
+
+    @staticmethod
+    def create_read_pin_input(pin):
+        pin_type = PIN_TYPE.from_str(pin[0])[0]
+        pin_index = int(pin[1:])
+        return struct.pack('BBBBB', 4, 2, pin_type, pin_index)
+
+    @staticmethod
+    def create_register_pin_listener(pin, interval_ms):
+        pin_type = PIN_TYPE.from_str(pin[0])[0]
+        pin_index = int(pin[1:])
+        return struct.pack('<BBBBI', 5, 6, pin_type, pin_index, interval_ms)
+
+    @staticmethod
+    def create_reset_board():
+        return struct.pack('BB', 6, 0)
 
 #
 # An Arduino controller
@@ -88,27 +106,68 @@ class ArduinoController(HardwareController):
     def __init__(self, hw_manager, comport):
         super(ArduinoController, self).__init__(hw_manager, comport, baud=9600)
         self.read_buffer = bytearray([])
-        self.wait_for_sync = True
+        self.half_sync = False
+        self.full_sync = False
         self.sync_send_timer = 0
         self.sync_send_period = 1
-        self.state = ArduinoState(self)
+
+    def initialize_board(self):
+        Log.hammoud("ArduinoController::initialize_board()")
+        self.serial_port.write(ArduinoProtocol.create_reset_board())
+        things = self.hw_manager.core.blueprint.get_things()
+        for thing in things:
+            all_ports = list(thing.input_ports) + list(thing.output_ports)
+            virtual_ports = []
+            for p in all_ports:
+                if "v" in p:
+                    virtual_ports.append(p)
+            virtual_ports = sorted(virtual_ports, key=lambda p: int(p[1:]))
+            if len(virtual_ports) > 0 and (("virtual_port_data" not in dir(thing)) or (len(virtual_ports) != len(thing.virtual_port_data))):
+                Log.error("Thing {} has a virtual port but no virtual_port_data".format(thing.id))
+                continue
+
+            for i in range(0, len(virtual_ports)):
+                self.serial_port.write(ArduinoProtocol.create_set_virtual_pin_mode(virtual_ports[i], thing.virtual_port_data[i]))
+
+            for port in thing.input_ports.keys():
+                if port not in virtual_ports:
+                    self.serial_port.write(ArduinoProtocol.create_set_pin_mode(port, PIN_MODE.INPUT))
+                self.serial_port.write(ArduinoProtocol.create_register_pin_listener(port, thing.input_ports[port]))
+
+            for port in thing.output_ports.keys():
+                if port not in virtual_ports:
+                    self.serial_port.write(ArduinoProtocol.create_set_pin_mode(port, thing.output_ports[port]))
+
+    # Checks or sets the sync state with the controller
+    # set_to   If not None, sets the sync state to to this
+    # returns  The sync state
+    def is_in_sync(self, set_to=None):
+        if set_to != None:
+            self.half_sync = set_to
+            self.full_sync = set_to
+            if set_to == False:
+                self.sync_send_timer = 0
+                self.sync_send_period = 1
+            elif set_to == True:
+                self.sync_send_period = 10
+        return self.full_sync
 
     # Synchronizes the read buffer with the Arduino if its not already in sync.
     # returns True if the buffer is in sync, False otherwise
     def sync_input_buffer(self, cur_time_s):
-        global SYNC_SEQUENCE
+        global SYNC_SEQUENCE, FULL_SYNC_SEQUENCE
+
         if cur_time_s >= self.sync_send_timer:
             self.sync_send_timer = cur_time_s + self.sync_send_period
-            self.serial_port.write(SYNC_SEQUENCE)
-            Log.hammoud("ArduinoController::sync_input_buffer() wrote a sync sequence")
+            self.serial_port.write(FULL_SYNC_SEQUENCE if self.half_sync else SYNC_SEQUENCE)
+            Log.hammoud("ArduinoController::sync_input_buffer() wrote a sync sequence {}".format("full" if self.full_sync else ("half" if self.half_sync else "NO SYNC")))
 
-        if self.wait_for_sync:
-            self.sync_send_period = 1
+        while not self.full_sync and len(self.read_buffer) >= len(SYNC_SEQUENCE):
             found_sync = False
-            for sync_start in range(0, len(self.read_buffer) - len(SYNC_SEQUENCE)):
+            for sync_start in range(0, len(self.read_buffer) - len(SYNC_SEQUENCE) + 1):
                 is_sync_start = True # Whether sync_start is where a sync sequence starts
                 for sync_index in range(len(SYNC_SEQUENCE)):
-                    if self.read_buffer[sync_start+sync_index] != SYNC_SEQUENCE[sync_index]:
+                    if self.read_buffer[sync_start+sync_index] != SYNC_SEQUENCE[sync_index] and self.read_buffer[sync_start+sync_index] != FULL_SYNC_SEQUENCE[sync_index]:
                         is_sync_start = False # Not the right sequence
                         break
                 if is_sync_start:
@@ -116,17 +175,25 @@ class ArduinoController(HardwareController):
                     break
 
             if found_sync:
-                Log.hammoud("ArduinoController::sync_input_buffer() found sync sequence")
+                found_full = (self.read_buffer[sync_start:sync_start+len(SYNC_SEQUENCE)]) == FULL_SYNC_SEQUENCE
                 self.read_buffer = self.read_buffer[sync_start+len(SYNC_SEQUENCE):]
-                self.wait_for_sync = False
-                self.sync_send_period = 10
+                if found_full:
+                    Log.hammoud("ArduinoController::sync_input_buffer() found FULL sequence")
+                    self.is_in_sync(True)
+                    self.sync_send_timer = 0
+                    self.initialize_board()
+                else:
+                    Log.hammoud("ArduinoController::sync_input_buffer() found HALF sequence")
+                    self.half_sync = True
             else:
+                truncate_size = 0
+                for truncate_size in range(0, len(self.read_buffer)):
+                    if self.read_buffer[truncate_size] == SYNC_SEQUENCE[0]:
+                        break;
                 # truncate the beginning of the read buffer
-                if len(self.read_buffer) > len(SYNC_SEQUENCE):
-                    self.read_buffer = self.read_buffer[len(self.read_buffer)-len(SYNC_SEQUENCE):]
-                return False
+                self.read_buffer = self.read_buffer[truncate_size:]
 
-        return True
+        return self.is_in_sync()
 
     # Parse the read buffer's messages and interpret them. If any message
     # corruption is detected, it will set wait_for_sync to True.
@@ -139,7 +206,7 @@ class ArduinoController(HardwareController):
                 self.read_buffer = self.read_buffer[2+msg_len:]
                 if not self.on_message(msg_type, msg):
                     # Failed to understand the message, need to sync again
-                    self.wait_for_sync = True
+                    self.is_in_sync(False)
                     break
             else:
                 break
@@ -150,10 +217,10 @@ class ArduinoController(HardwareController):
     # message      The contents of the message
     # returns      True if the message is valid, False otherwise
     def on_message(self, message_type, message):
-        global SYNC_SEQUENCE
+        global SYNC_SEQUENCE, FULL_SYNC_SEQUENCE
         if message_type == SYNC_SEQUENCE[0]: # This message is just a SYNC sequence
-            return len(message) == 6 and message == SYNC_SEQUENCE[2:] # must be valid
-        return self.state.on_message(message_type, message)
+            return message == FULL_SYNC_SEQUENCE[2:]
+        return ArduinoProtocol.on_message(self, message_type, message)
 
     def update(self, cur_time_s):
         num_bytes = self.serial_port.in_waiting
@@ -167,8 +234,8 @@ class ArduinoController(HardwareController):
         return True
 
     def set_port_value(self, port, value):
-        # @TODO: Implement
-        pass
+        if self.is_in_sync():
+            self.serial_port.write(ArduinoProtocol.create_set_pin_output(port, value))
 
     # To identify an arduino on a COM port, find "arduino" anywhere in the
     # hardware description
@@ -202,7 +269,6 @@ class ArduinoLegacyController(ArduinoController):
     def __init__(self, hw_manager, comport):
         super(ArduinoLegacyController, self).__init__(hw_manager, comport)
         self.read_buffer = bytearray([])
-        self.state = ArduinoState(self)
         self.BEGINNING_BYTE = 254
         self.ENDING_BYTE = 255
 
@@ -255,12 +321,12 @@ class ArduinoLegacyController(ArduinoController):
             if base_idx != len(message):
                 raise 1 # invalid message...
             for i in range(len(ACs)):
-                self.state.on_message(MESSAGE_TYPE.FROMDEVICE_PINSTATE, bytearray([PIN_TYPE.DIGITAL[0], 48+i, ACs[i][0]]))
-                self.state.on_message(MESSAGE_TYPE.FROMDEVICE_PINSTATE, bytearray([PIN_TYPE.VIRTUAL[0], i, ACs[i][2]]))
+                ArduinoProtocol.on_message(self, MESSAGE_TYPE.FROMDEVICE_PINSTATE, bytearray([PIN_TYPE.DIGITAL[0], 48+i, ACs[i][0]]))
+                ArduinoProtocol.on_message(MESSAGE_TYPE.FROMDEVICE_PINSTATE, bytearray([PIN_TYPE.VIRTUAL[0], i, ACs[i][2]]))
             for i in range(len(dimmers)):
-                self.state.on_message(MESSAGE_TYPE.FROMDEVICE_PINSTATE, bytearray([PIN_TYPE.DIGITAL[0], 4+i, dimmers[i]]))
+                ArduinoProtocol.on_message(MESSAGE_TYPE.FROMDEVICE_PINSTATE, bytearray([PIN_TYPE.DIGITAL[0], 4+i, dimmers[i]]))
             for i in range(len(lights)):
-                self.state.on_message(MESSAGE_TYPE.FROMDEVICE_PINSTATE, bytearray([PIN_TYPE.DIGITAL[0], 37-i, lights[i]]))
+                ArduinoProtocol.on_message(MESSAGE_TYPE.FROMDEVICE_PINSTATE, bytearray([PIN_TYPE.DIGITAL[0], 37-i, lights[i]]))
             return True
         except Exception as e:
             return False
