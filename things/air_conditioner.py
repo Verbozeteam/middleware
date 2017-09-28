@@ -44,13 +44,11 @@ class CentralAC(Thing):
         if port == self.temperature_port:
             self.current_temperature = float(value) / 2.0
             self.dirty = True
-        elif port == self.fan_port:
-            self.current_fan_speed = value
-            self.dirty = True
 
     def on_controller_data(self, data):
         if "set_pt" in data:
             self.current_set_point = float(data["set_pt"])
+            self.dirty = True
         elif "fan" in data:
             self.current_fan_speed = data["fan"]
             self.dirty = True

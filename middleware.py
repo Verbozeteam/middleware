@@ -1,10 +1,10 @@
+import config.cmd_args
+
 from hardware import HardwareManager
 from controllers import ControllersManager
 from things import Blueprint
 from logs import Log
 import time
-
-import config.cmd_args
 
 class Core(object):
     def __init__(self):

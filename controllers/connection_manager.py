@@ -44,7 +44,7 @@ class ConnectionManager(object):
                     commands = collected_commands[thing_id]
                     self.controllers_manager.send_thing_commands(thing_id, commands)
                 for command in control_commands:
-                    self.controllers_manager.send_control_command(command)
+                    self.controllers_manager.send_control_command(controller, command)
 
     # Called when this manager needs to free all its resources
     def cleanup(self):

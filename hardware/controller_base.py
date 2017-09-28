@@ -1,5 +1,5 @@
 from logs import Log
-import serial
+import fake_serial
 
 #
 # A hardware controller is an object that represents a piece of hardware
@@ -11,7 +11,7 @@ class HardwareController(object):
         self.hw_manager = hw_manager
         self.serial_number = comport.serial_number
         try:
-            self.serial_port = serial.Serial()
+            self.serial_port = fake_serial.Serial()
             self.serial_port.baudrate = baud
             self.serial_port.port = comport.device
             self.serial_port.open()

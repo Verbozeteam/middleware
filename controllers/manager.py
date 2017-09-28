@@ -1,6 +1,9 @@
 from logs import Log
 from controllers.socket_controller_manager import SocketConnectionManager
 
+class CONTROL_CODES:
+    GET_BLUEPRINT = 0
+
 #
 # Controllers manager is responsible for all interaction with controller
 # devices (tablets, phones, etc...)
@@ -40,5 +43,10 @@ class ControllersManager(object):
 
     # Called when a controller sends a control command
     # command  The control command
-    def send_control_command(self, command):
-        pass
+    def send_control_command(self, controller, command):
+        Log.hammoud("ControllersManager::send_control_command({}, {})".format(str(controller), command))
+        try:
+            if command["code"] == CONTROL_CODES.GET_BLUEPRINT:
+                controller.on_send_data(self.core.blueprint.get_controller_view())
+        except:
+            pass

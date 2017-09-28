@@ -3,7 +3,7 @@ from hardware.arduino_controller import ArduinoController, ArduinoLegacyControll
 from logs import Log
 
 import time
-import serial.tools.list_ports
+import fake_serial
 
 #
 # Hardware manager is responsible for all interaction with hardware
@@ -51,7 +51,7 @@ class HardwareManager(object):
         if cur_time_s >= self.update_timer:
             try:
                 self.update_timer = cur_time_s + HARDWARE_CONFIG.UPDATE_INTERVAL
-                com_ports = dict(map(lambda com_port: (com_port.serial_number, com_port), serial.tools.list_ports.comports()))
+                com_ports = dict(map(lambda com_port: (com_port.serial_number, com_port), fake_serial.comports()))
                 for ct_type in self.controller_types.keys():
                     (controller_class, controller_devices) = self.controller_types[ct_type]
                     ct_serials = controller_class.identify(com_ports.values())

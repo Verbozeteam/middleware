@@ -92,7 +92,7 @@ class Blueprint(object):
 
     # returns  The controller-friendly view of the blueprint
     def get_controller_view(self):
-        pass
+        return self.rooms
 
     # returns  The hardware-friendly view of the blueprint (list of things)
     def get_things(self):
