@@ -60,6 +60,7 @@ class SocketController(Controller):
             self.connection.send(msg)
             return True
         except:
+            Log.warning("SocketController::on_send_data({}) Failed".format(json_data), exception=True)
             return False
 
 #

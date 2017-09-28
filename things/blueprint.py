@@ -92,7 +92,20 @@ class Blueprint(object):
 
     # returns  The controller-friendly view of the blueprint
     def get_controller_view(self):
-        return self.rooms
+        ret = []
+        for room in self.rooms:
+            obj = {}
+            for things in room.keys():
+                if things == "name":
+                    obj["name"] = room[things]
+                else:
+                    obj[things] = []
+                    for thing in room[things]:
+                        thing_json = {"id": thing.id}
+                        thing_json = {**thing_json, **thing.get_state()}
+                        obj[things].append(thing_json)
+            ret.append(obj)
+        return ret
 
     # returns  The hardware-friendly view of the blueprint (list of things)
     def get_things(self):
