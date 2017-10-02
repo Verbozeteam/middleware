@@ -247,6 +247,7 @@ class ArduinoController(HardwareController):
                 a = getattr(p, attr)
                 if type(a) == type("") and "arduino" in a.lower():
                     ret.append(p.serial_number)
+                    break
         return ret
 
 #

@@ -3,8 +3,8 @@ from logs import Log
 import json
 
 class Curtain(Thing):
-    def __init__(self, curtain_json):
-        super(Curtain, self).__init__(curtain_json)
+    def __init__(self, blueprint, curtain_json):
+        super(Curtain, self).__init__(blueprint, curtain_json)
         self.output_ports[self.up_port] = 1 # digital output
         self.output_ports[self.down_port] = 1 # digital output
         self.id = "curtain-" + self.up_port + "-" + self.down_port

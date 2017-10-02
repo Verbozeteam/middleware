@@ -3,8 +3,8 @@ from logs import Log
 import json
 
 class SplitAC(Thing):
-    def __init__(self, ac_json):
-        super(SplitAC, self).__init__(ac_json)
+    def __init__(self, blueprint, ac_json):
+        super(SplitAC, self).__init__(blueprint, ac_json)
         self.id = "split-ac-" + self.pwm_port
 
     # Should return the key in the blueprint that this Thing captures
@@ -22,8 +22,8 @@ class SplitAC(Thing):
         return {}
 
 class CentralAC(Thing):
-    def __init__(self, ac_json):
-        super(CentralAC, self).__init__(ac_json)
+    def __init__(self, blueprint, ac_json):
+        super(CentralAC, self).__init__(blueprint, ac_json)
         self.input_ports[self.temperature_port] = 2000 # read temperature every 2 seconds
         self.output_ports[self.fan_port] = 1 # digital output
         self.output_ports[self.valve_port] = 2 # pwm output
@@ -49,7 +49,7 @@ class CentralAC(Thing):
         if "set_pt" in data:
             self.current_set_point = float(data["set_pt"])
             self.dirty = True
-        elif "fan" in data:
+        if "fan" in data:
             self.current_fan_speed = data["fan"]
             self.dirty = True
             self.pending_commands.append((self.fan_port, self.current_fan_speed))
@@ -66,4 +66,5 @@ class CentralAC(Thing):
         return {
             "temp": self.current_temperature,
             "set_pt": self.current_set_point,
+            "fan": self.current_fan_speed,
         }

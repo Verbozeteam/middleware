@@ -3,8 +3,8 @@ from logs import Log
 import json
 
 class LightSwitch(Thing):
-    def __init__(self, light_json):
-        super(LightSwitch, self).__init__(light_json)
+    def __init__(self, blueprint, light_json):
+        super(LightSwitch, self).__init__(blueprint, light_json)
         self.output_ports[self.switch_port] = 1 # digital output
         self.id = "lightswitch-" + self.switch_port
         self.intensity = 0
@@ -19,9 +19,10 @@ class LightSwitch(Thing):
         self.dirty = True
 
     def on_controller_data(self, data):
-        self.intensity = data["intensity"]
-        self.dirty = True
-        self.pending_commands.append((self.switch_port, self.intensity))
+        if "intensity" in data:
+            self.intensity = data["intensity"]
+            self.dirty = True
+            self.pending_commands.append((self.switch_port, self.intensity))
 
     def get_state(self):
         return {
@@ -29,8 +30,8 @@ class LightSwitch(Thing):
         }
 
 class Dimmer(Thing):
-    def __init__(self, dimmer_json):
-        super(Dimmer, self).__init__(dimmer_json)
+    def __init__(self, blueprint, dimmer_json):
+        super(Dimmer, self).__init__(blueprint, dimmer_json)
         self.output_ports[self.pwm_port] = 2 # pwm output
         self.id = "dimmer-" + self.pwm_port
         self.intensity = 0

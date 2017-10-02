@@ -1,6 +1,7 @@
 from things.light import Dimmer, LightSwitch
 from things.curtain import Curtain
 from things.air_conditioner import SplitAC, CentralAC
+from things.hotel_controls import HotelControls
 from logs import Log
 from config.general_config import GENERAL_CONFIG
 
@@ -17,6 +18,7 @@ class Blueprint(object):
             Curtain,
             SplitAC,
             CentralAC,
+            HotelControls,
         ]))
 
         filename = GENERAL_CONFIG.BLUEPRINT_FILENAME
@@ -64,7 +66,7 @@ class Blueprint(object):
         room[thing_class_name] = []
         for thing_json in thing_jsons:
             try:
-                room[thing_class_name].append(thing_class(thing_json))
+                room[thing_class_name].append(thing_class(self, thing_json))
             except:
                 Log.error("Failed to load thing {}".format(str(thing_json)), exception=True)
                 break
