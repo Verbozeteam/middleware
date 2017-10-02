@@ -12,7 +12,7 @@ import testing_utils
 
 class BaseArduinoTestUtil(object):
     ARDUINO_EMULATOR_ADDRESS = "0.0.0.0:5001"
-    SOCKET_LAG = 0.1 # assume 100ms lag until things reach arduino
+    SOCKET_LAG = 0.05 # assume 50ms lag until things reach arduino
 
     def setup(self):
         #
