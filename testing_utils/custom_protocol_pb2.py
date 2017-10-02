@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='custom_protocol.proto',
   package='shammam',
   syntax='proto3',
-  serialized_pb=_b('\n\x15\x63ustom_protocol.proto\x12\x07shammam\"\"\n\x03Pin\x12\x0c\n\x04type\x18\x01 \x01(\x05\x12\r\n\x05index\x18\x02 \x01(\x05\"\x16\n\x05State\x12\r\n\x05state\x18\x01 \x01(\x05\"9\n\x0bPinAndState\x12\x0c\n\x04type\x18\x01 \x01(\x05\x12\r\n\x05index\x18\x02 \x01(\x05\x12\r\n\x05state\x18\x03 \x01(\x05\"\x07\n\x05\x45mpty\"\x1b\n\x0bTemperature\x12\x0c\n\x04temp\x18\x01 \x01(\x05\x32\xde\x01\n\x07\x41rduino\x12-\n\x0bGetPinState\x12\x0c.shammam.Pin\x1a\x0e.shammam.State\"\x00\x12\x35\n\x0bSetPinState\x12\x14.shammam.PinAndState\x1a\x0e.shammam.State\"\x00\x12-\n\tResetPins\x12\x0e.shammam.Empty\x1a\x0e.shammam.Empty\"\x00\x12>\n\x14SetTemperatureSensor\x12\x14.shammam.Temperature\x1a\x0e.shammam.Empty\"\x00\x62\x06proto3')
+  serialized_pb=_b('\n\x15\x63ustom_protocol.proto\x12\x07shammam\"\"\n\x03Pin\x12\x0c\n\x04type\x18\x01 \x01(\x05\x12\r\n\x05index\x18\x02 \x01(\x05\"\x16\n\x05State\x12\r\n\x05state\x18\x01 \x01(\x05\"9\n\x0bPinAndState\x12\x0c\n\x04type\x18\x01 \x01(\x05\x12\r\n\x05index\x18\x02 \x01(\x05\x12\r\n\x05state\x18\x03 \x01(\x05\"\x07\n\x05\x45mpty\"\x1b\n\x0bTemperature\x12\x0c\n\x04temp\x18\x01 \x01(\x02\x32\xde\x01\n\x07\x41rduino\x12-\n\x0bGetPinState\x12\x0c.shammam.Pin\x1a\x0e.shammam.State\"\x00\x12\x35\n\x0bSetPinState\x12\x14.shammam.PinAndState\x1a\x0e.shammam.State\"\x00\x12-\n\tResetPins\x12\x0e.shammam.Empty\x1a\x0e.shammam.Empty\"\x00\x12>\n\x14SetTemperatureSensor\x12\x14.shammam.Temperature\x1a\x0e.shammam.Empty\"\x00\x62\x06proto3')
 )
 
 
@@ -172,8 +172,8 @@ _TEMPERATURE = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='temp', full_name='shammam.Temperature.temp', index=0,
-      number=1, type=5, cpp_type=1, label=1,
-      has_default_value=False, default_value=0,
+      number=1, type=2, cpp_type=6, label=1,
+      has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),

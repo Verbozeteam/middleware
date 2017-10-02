@@ -88,6 +88,7 @@ class TestHardwareManager(BaseArduinoTestUtil):
             expected = 1 if i < int(self.NUM_DIGITAL_PINS / 2) else 0
             assert(self.arduino_emu.GetPinState(testing_utils.Pin(type=0, index=i)).state == expected)
 
+        self.core.hw_manager.update(1000001)
         self.is_controller_synced()
 
     def test_all_analog_inputs(self):
@@ -119,13 +120,12 @@ class TestHardwareManager(BaseArduinoTestUtil):
         time.sleep(self.SOCKET_LAG)
         self.core.hw_manager.update(1000000)
 
-        print (reading_map)
-
         for i in range(0, self.NUM_ANALOG_PINS):
             assert reading_map["a"+str(i)][0] == reading_map["a"+str(i)][1]
         for i in range(0, self.NUM_DIGITAL_PINS):
             assert reading_map["d"+str(i)][0] == reading_map["d"+str(i)][1]
 
+        self.core.hw_manager.update(1000001)
         self.is_controller_synced()
 
     def test_pwm_outputs(self):
@@ -135,12 +135,38 @@ class TestHardwareManager(BaseArduinoTestUtil):
 
         self.sync_controller()
 
-        # turn all on
+        # set PWM outputs
         for i in range(4, 8):
             self.core.hw_manager.on_command("d"+str(i), i*4)
         time.sleep(self.SOCKET_LAG)
         for i in range(4, 8):
             assert(self.arduino_emu.GetPinState(testing_utils.Pin(type=0, index=i)).state == i * 4)
+
+        self.core.hw_manager.update(1000001)
+        self.is_controller_synced()
+
+    def test_temperature_sensor(self):
+        GENERAL_CONFIG.LOG_VERBOZITY = 7
+        things = [TestHardwareManager.CustomThing(self.core.blueprint, [("v0", 10)], [])]
+        things[0].virtual_port_data = [[0, 0]] # 0: central AC virtual pin, 0: temp index 0
+        self.core.blueprint.get_things = lambda: things
+
+        self.arduino_emu.SetTemperatureSensor(testing_utils.Temperature(temp=25.0))
+
+        self.sync_controller()
+
+        got_reading = {"result": False}
+        def on_hardware_data(port, value):
+            assert port == "v0"
+            assert value == 50 # reading is always twice as actual temperature
+            got_reading["result"] = True
+
+        self.core.blueprint.on_hardware_data = on_hardware_data
+
+        time.sleep(self.SOCKET_LAG)
+        self.core.hw_manager.update(1000000)
+
+        assert got_reading["result"] == True
 
         self.is_controller_synced()
 
