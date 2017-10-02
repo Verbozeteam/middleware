@@ -146,7 +146,6 @@ class TestHardwareManager(BaseArduinoTestUtil):
         self.is_controller_synced()
 
     def test_temperature_sensor(self):
-        GENERAL_CONFIG.LOG_VERBOZITY = 7
         things = [TestHardwareManager.CustomThing(self.core.blueprint, [("v0", 10)], [])]
         things[0].virtual_port_data = [[0, 0]] # 0: central AC virtual pin, 0: temp index 0
         self.core.blueprint.get_things = lambda: things
