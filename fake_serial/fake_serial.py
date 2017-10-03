@@ -5,12 +5,13 @@ class Serial(object):
     def __init__(self):
         self.sock = None
         self.buffered_bytes = bytearray([])
+        self.socket_port = 9911
 
     def open(self):
         if self.sock != None:
             self.close()
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.connect(("localhost", 9911))
+        self.sock.connect(("localhost", self.socket_port))
 
     def close(self):
         try:

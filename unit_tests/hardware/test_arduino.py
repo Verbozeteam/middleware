@@ -40,9 +40,10 @@ class BaseArduinoTestUtil(object):
         self.is_controller_synced()
 
     def is_controller_synced(self):
+        assert len(self.connected_controllers) == 1
         assert self.connected_controllers[0].is_in_sync()
 
-class TestHardwareManager(BaseArduinoTestUtil):
+class TestArduinoController(BaseArduinoTestUtil):
     NUM_DIGITAL_PINS = 53
     NUM_ANALOG_PINS = 16
 
@@ -57,7 +58,7 @@ class TestHardwareManager(BaseArduinoTestUtil):
 
     def test_all_digital_outputs(self):
         # initialize the Things in the blueprint to be all digital outputs
-        digital_things = list(map(lambda i: TestHardwareManager.CustomThing(self.core.blueprint, [], [("d"+str(i), 1)]), range(0, self.NUM_DIGITAL_PINS)))
+        digital_things = list(map(lambda i: TestArduinoController.CustomThing(self.core.blueprint, [], [("d"+str(i), 1)]), range(0, self.NUM_DIGITAL_PINS)))
         self.core.blueprint.get_things = lambda: digital_things
 
         self.sync_controller()
@@ -93,8 +94,8 @@ class TestHardwareManager(BaseArduinoTestUtil):
 
     def test_all_analog_inputs(self):
         # initialize the Things in the blueprint to be all inputs (analog and digital)
-        analog_things = list(map(lambda i: TestHardwareManager.CustomThing(self.core.blueprint, [("a"+str(i), 10)], []), range(0, self.NUM_ANALOG_PINS)))
-        digital_things = list(map(lambda i: TestHardwareManager.CustomThing(self.core.blueprint, [("d"+str(i), 10)], []), range(0, self.NUM_DIGITAL_PINS)))
+        analog_things = list(map(lambda i: TestArduinoController.CustomThing(self.core.blueprint, [("a"+str(i), 10)], []), range(0, self.NUM_ANALOG_PINS)))
+        digital_things = list(map(lambda i: TestArduinoController.CustomThing(self.core.blueprint, [("d"+str(i), 10)], []), range(0, self.NUM_DIGITAL_PINS)))
         self.core.blueprint.get_things = lambda: analog_things + digital_things
 
         for i in range(0, self.NUM_ANALOG_PINS):
@@ -130,7 +131,7 @@ class TestHardwareManager(BaseArduinoTestUtil):
 
     def test_pwm_outputs(self):
         # initialize the Things in the blueprint to be PWM outputs for pins 4-8
-        digital_things = list(map(lambda i: TestHardwareManager.CustomThing(self.core.blueprint, [], [("d"+str(i), 2)]), range(4, 8)))
+        digital_things = list(map(lambda i: TestArduinoController.CustomThing(self.core.blueprint, [], [("d"+str(i), 2)]), range(4, 8)))
         self.core.blueprint.get_things = lambda: digital_things
 
         self.sync_controller()
@@ -146,7 +147,7 @@ class TestHardwareManager(BaseArduinoTestUtil):
         self.is_controller_synced()
 
     def test_temperature_sensor(self):
-        things = [TestHardwareManager.CustomThing(self.core.blueprint, [("v0", 10)], [])]
+        things = [TestArduinoController.CustomThing(self.core.blueprint, [("v0", 10)], [])]
         things[0].virtual_port_data = [[0, 0]] # 0: central AC virtual pin, 0: temp index 0
         self.core.blueprint.get_things = lambda: things
 

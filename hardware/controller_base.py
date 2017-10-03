@@ -7,11 +7,13 @@ import fake_serial
 #
 class HardwareController(object):
     # called when the device is detected by the hardware manager
-    def __init__(self, hw_manager, comport, baud=9600):
+    def __init__(self, hw_manager, comport, baud=9600, fake_serial_port=None):
         self.hw_manager = hw_manager
         self.serial_number = comport.serial_number
         try:
             self.serial_port = fake_serial.Serial()
+            if fake_serial_port:
+                self.serial_port.socket_port = fake_serial_port
             self.serial_port.baudrate = baud
             self.serial_port.port = comport.device
             self.serial_port.open()

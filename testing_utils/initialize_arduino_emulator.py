@@ -3,11 +3,17 @@
 import argparse
 import os, sys
 import re
+from multiprocessing import Pool
 
 parser = argparse.ArgumentParser(description='Ardunio emulator initializer')
 parser.add_argument('-e', '--emulator_dir', required=True, help='<Required> Path to the Arduino emulator source (must contain run_emulator.sh and a custom_protocol.proto file)')
-parser.add_argument('-b', '--board', help='Board name to emulate (default is mega2560)', default="mega2560")
 cmd_args = parser.parse_args()
+
+rpc_port_1 = 5001
+rpc_port_2 = 5002
+
+serial_port_1 = 9911
+serial_port_2 = 9912
 
 proto_path = cmd_args.emulator_dir
 proto_filename = "custom_protocol.proto"
@@ -19,4 +25,8 @@ text = text.replace(m.group(0), m.group(0).replace("import ", "import testing_ut
 with open("custom_protocol_pb2_grpc.py", "w") as F:
     F.write(text)
 
-os.system("cd {} && ./run_emulator.sh {}".format(cmd_args.emulator_dir, cmd_args.board))
+p = Pool(2)
+p.map(os.system, [
+    "cd {} && ./run_emulator.sh mega2560 {} {}".format(cmd_args.emulator_dir, rpc_port_1, serial_port_1),
+    "cd {} && ./run_emulator.sh legacy {} {} 1".format(cmd_args.emulator_dir, rpc_port_2, serial_port_2),
+])

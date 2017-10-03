@@ -103,8 +103,8 @@ class ArduinoProtocol:
 # An Arduino controller
 #
 class ArduinoController(HardwareController):
-    def __init__(self, hw_manager, comport):
-        super(ArduinoController, self).__init__(hw_manager, comport, baud=9600)
+    def __init__(self, hw_manager, comport, fake_serial_port=None):
+        super(ArduinoController, self).__init__(hw_manager, comport, baud=9600, fake_serial_port=fake_serial_port)
         self.read_buffer = bytearray([])
         self.half_sync = False
         self.full_sync = False
@@ -268,10 +268,13 @@ class ArduinoLegacyController(ArduinoController):
     # hotel power: 42 (output 0v/5v)
 
     def __init__(self, hw_manager, comport):
-        super(ArduinoLegacyController, self).__init__(hw_manager, comport)
+        super(ArduinoLegacyController, self).__init__(hw_manager, comport, fake_serial_port=9912)
         self.read_buffer = bytearray([])
         self.BEGINNING_BYTE = 254
         self.ENDING_BYTE = 255
+
+    def is_in_sync(self, set_to=None):
+        return True
 
     # Syncing the controller is handled while reading the buffer
     def sync_input_buffer(self, cur_time_s):
@@ -340,7 +343,7 @@ class ArduinoLegacyController(ArduinoController):
             if port_type == "v" and port == 0: # AC set point
                 self.serial_port.write("a{}:{}\n".format(port, int(value*2)).encode('utf-8'))
             if port >= 22 and port <= 27: # curtain
-                curtain = (port - 22) / 2
+                curtain = int((port - 22) / 2)
                 value = 0 if value == 0 else (1 if port % 2 == 0 else 2)
                 self.serial_port.write("c{}:{}\n".format(curtain, value).encode('utf-8'))
             elif port >= 28 and port <= 37: # switch
