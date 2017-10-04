@@ -7,14 +7,7 @@ from things.air_conditioner import SplitAC, CentralAC
 import time
 import testing_utils
 
-class TestCentralAC(BaseArduinoEmulatorTestUtil):
-    def setup(self):
-        GENERAL_CONFIG.BLUEPRINT_FILENAME = "testing_utils/blueprints/central_ac.json"
-        BaseArduinoEmulatorTestUtil.setup(self)
-
-        self.things = self.core.blueprint.get_things()
-        self.ac = list(filter(lambda t: type(t) is CentralAC, self.things))[0]
-
+class BaseCentralACTester(BaseArduinoEmulatorTestUtil):
     def test_controller_input_fan(self):
         self.sync_board()
 
@@ -85,3 +78,22 @@ class TestCentralAC(BaseArduinoEmulatorTestUtil):
             assert abs(cur_sensor_temp - SP) < 1.0
 
         self.is_board_synced()
+
+
+class TestCentralAC(BaseCentralACTester, BaseArduinoEmulatorTestUtil):
+    def setup(self):
+        GENERAL_CONFIG.BLUEPRINT_FILENAME = "testing_utils/blueprints/central_ac.json"
+        BaseArduinoEmulatorTestUtil.setup(self)
+
+        self.things = self.core.blueprint.get_things()
+        self.ac = list(filter(lambda t: type(t) is CentralAC, self.things))[0]
+
+# Too much of a hassle, and waste of time to test...
+# class TestLegacyCentralAC(BaseCentralACTester, BaseLegacyArduinoEmulatorTestUtil):
+#     def setup(self):
+#         GENERAL_CONFIG.BLUEPRINT_FILENAME = "testing_utils/blueprints/central_ac.json"
+#         BaseLegacyArduinoEmulatorTestUtil.setup(self)
+
+#         self.things = self.core.blueprint.get_things()
+#         self.ac = list(filter(lambda t: type(t) is CentralAC, self.things))[0]
+
