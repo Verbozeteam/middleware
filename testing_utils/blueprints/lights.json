@@ -2,28 +2,6 @@
     "name": {
         "english": "Room 1"
     },
-    "hotel_controls": [{
-        "name": {
-            "english": "Millennium"
-        },
-        "power_port": "d42",
-        "hotel_card": "d44",
-        "do_not_disturb_port": "d29",
-        "room_service_port": "d28"
-    }],
-    "curtains": [{
-        "name": {
-            "english": "Curtain 1"
-        },
-        "up_port": "d22",
-        "down_port": "d23"
-    }, {
-        "name": {
-            "english": "Curtain 2"
-        },
-        "up_port": "d24",
-        "down_port": "d25"
-    }],
     "dimmers": [{
         "name": {
             "english": "Dimmer 1"
@@ -75,14 +53,5 @@
             "english": "Bathroom light switch 4"
         },
         "switch_port": "d30"
-    }],
-    "central_acs": [{
-        "name": {
-            "english": "Air conditioner"
-        },
-        "temperature_port": "v0",
-        "fan_port": "d48",
-        "valve_port": "d8",
-        "virtual_port_data": [[0, 0]]
     }]
 }]

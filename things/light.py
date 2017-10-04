@@ -14,10 +14,6 @@ class LightSwitch(Thing):
     def get_blueprint_tag():
         return "light_switches"
 
-    def on_hardware_data(self, port, value):
-        self.intensity = int(value)
-        self.dirty = True
-
     def on_controller_data(self, data):
         if "intensity" in data:
             self.intensity = data["intensity"]
@@ -41,14 +37,10 @@ class Dimmer(Thing):
     def get_blueprint_tag():
         return "dimmers"
 
-    def on_hardware_data(self, port, value):
-        self.intensity = int(value)
-        self.dirty = True
-
     def on_controller_data(self, data):
         self.intensity = data["intensity"]
         self.dirty = True
-        self.pending_commands.append((self.pwm_port, self.intensity))
+        self.pending_commands.append((self.pwm_port, int(self.intensity * 2.55)))
 
     def get_state(self):
         return {

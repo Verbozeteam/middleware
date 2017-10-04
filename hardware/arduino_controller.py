@@ -349,7 +349,7 @@ class ArduinoLegacyController(ArduinoController):
             elif port >= 28 and port <= 37: # switch
                 self.serial_port.write("t{}:{}\n".format(37 - port, value).encode('utf-8'))
             elif port >= 4 and port <= 7: # dimmer
-                self.serial_port.write("l{}:{}\n".format(port - 4, value).encode('utf-8'))
+                self.serial_port.write("l{}:{}\n".format(port - 4, int(float(value)/2.55)).encode('utf-8'))
             elif port >= 8 and port <= 9: # central AC
                 self.serial_port.write("a{}:{}\n".format(port - 8, value).encode('utf-8'))
             elif port >= 48 and port <= 49:

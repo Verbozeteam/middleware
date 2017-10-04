@@ -1,0 +1,14 @@
+[{
+    "name": {
+        "english": "Room 1"
+    },
+    "central_acs": [{
+        "name": {
+            "english": "Air conditioner"
+        },
+        "temperature_port": "v0",
+        "fan_port": "d48",
+        "valve_port": "d8",
+        "virtual_port_data": [[0, 0]]
+    }]
+}]

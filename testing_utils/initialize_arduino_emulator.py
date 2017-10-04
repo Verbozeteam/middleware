@@ -15,6 +15,9 @@ rpc_port_2 = 5002
 serial_port_1 = 9911
 serial_port_2 = 9912
 
+time_multiplier_1 = 2.0
+time_multiplier_2 = 5.0
+
 proto_path = cmd_args.emulator_dir
 proto_filename = "custom_protocol.proto"
 os.system("python -m grpc_tools.protoc -I{} --python_out=. --grpc_python_out=. {}".format(proto_path, proto_filename))
@@ -27,6 +30,6 @@ with open("custom_protocol_pb2_grpc.py", "w") as F:
 
 p = Pool(2)
 p.map(os.system, [
-    "cd {} && ./run_emulator.sh mega2560 {} {}".format(cmd_args.emulator_dir, rpc_port_1, serial_port_1),
-    "cd {} && ./run_emulator.sh legacy {} {} 1".format(cmd_args.emulator_dir, rpc_port_2, serial_port_2),
+    "cd {} && ./run_emulator.sh mega2560 {} {} {}".format(cmd_args.emulator_dir, rpc_port_1, serial_port_1, time_multiplier_1),
+    "cd {} && ./run_emulator.sh legacy {} {} {} 1".format(cmd_args.emulator_dir, rpc_port_2, serial_port_2, time_multiplier_2),
 ])
