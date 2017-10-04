@@ -1,7 +1,5 @@
 # enable the simulation Arduino mode
-from config.general_config import GENERAL_CONFIG
 from config.hardware_config import HARDWARE_CONFIG
-GENERAL_CONFIG.SIMULATE_ARDUINO = True
 
 from middleware import Core
 
