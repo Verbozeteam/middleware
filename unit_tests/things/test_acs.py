@@ -7,7 +7,7 @@ from things.air_conditioner import SplitAC, CentralAC
 import time
 import testing_utils
 
-class BaseCentralACTester(BaseArduinoEmulatorTestUtil):
+class BaseCentralACTester(object):
     def test_controller_input_fan(self):
         self.sync_board()
 
@@ -78,6 +78,33 @@ class BaseCentralACTester(BaseArduinoEmulatorTestUtil):
             assert abs(cur_sensor_temp - SP) < 1.0
 
         self.is_board_synced()
+
+    def test_wakeup_and_sleep(self):
+        # test without default wakeup/sleep values
+        if hasattr(self.ac, "default_wakeup_temperature"):
+            delattr(self.ac, "default_wakeup_temperature")
+        if hasattr(self.ac, "default_sleep_temperature"):
+            delattr(self.ac, "default_sleep_temperature")
+
+        self.ac.current_set_point = 16.0
+        self.ac.current_fan_speed = 1
+        self.ac.sleep()
+        assert self.ac.current_fan_speed == 0 and abs(self.ac.current_set_point - 25.0) < 0.1
+
+        self.ac.wake_up()
+        assert self.ac.current_fan_speed == 1 and abs(self.ac.current_set_point - 16.0) < 0.1
+
+        # test with default wakeup/sleep values
+        self.ac.default_sleep_temperature = 30.0
+        self.ac.default_wakeup_temperature = 20.0
+
+        self.ac.current_set_point = 500.0
+        self.ac.current_fan_speed = 0
+        self.ac.sleep()
+        assert self.ac.current_fan_speed == 1 and abs(self.ac.current_set_point - self.ac.default_sleep_temperature) < 0.1
+
+        self.ac.wake_up()
+        assert self.ac.current_fan_speed == 1 and abs(self.ac.current_set_point - self.ac.default_wakeup_temperature) < 0.1
 
 
 class TestCentralAC(BaseCentralACTester, BaseArduinoEmulatorTestUtil):

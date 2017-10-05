@@ -56,6 +56,38 @@ class BaseSwitchTester(object):
 
         self.is_board_synced()
 
+    def test_wakeup_and_sleep(self):
+        # test without a default wakeup value
+        for s in self.switches:
+            if hasattr(s, "default_wakeup_value"):
+                delattr(s, "default_wakeup_value")
+
+            s.intensity = 1
+            s.sleep()
+            assert s.intensity == 0
+
+            s.wake_up()
+            assert s.intensity == 1
+
+            s.intensity = 0
+            s.sleep()
+            assert s.intensity == 0
+
+            s.wake_up()
+            assert s.intensity == 0
+
+        # test with default wakeup value
+        for s in self.switches:
+            s.default_wakeup_value = 1
+
+            s.intensity = 0
+            s.sleep()
+            assert s.intensity == 0
+
+            s.wake_up()
+            assert s.intensity == 1
+
+
 class TestSwitches(BaseSwitchTester, BaseArduinoEmulatorTestUtil):
     def setup(self):
         GENERAL_CONFIG.BLUEPRINT_FILENAME = "testing_utils/blueprints/lights.json"
@@ -121,6 +153,37 @@ class BaseDimmerTester(object):
         assert len(broadcasts.keys()) == len(self.dimmers)
 
         self.is_board_synced()
+
+    def test_wakeup_and_sleep(self):
+        # test without a default wakeup value
+        for s in self.dimmers:
+            if hasattr(s, "default_wakeup_value"):
+                delattr(s, "default_wakeup_value")
+
+            s.intensity = 100
+            s.sleep()
+            assert s.intensity == 0
+
+            s.wake_up()
+            assert s.intensity == 100
+
+            s.intensity = 0
+            s.sleep()
+            assert s.intensity == 0
+
+            s.wake_up()
+            assert s.intensity == 0
+
+        # test with default wakeup value
+        for s in self.dimmers:
+            s.default_wakeup_value = 20
+
+            s.intensity = 0
+            s.sleep()
+            assert s.intensity == 0
+
+            s.wake_up()
+            assert s.intensity == 20
 
 class TestDimmers(BaseDimmerTester, BaseArduinoEmulatorTestUtil):
     def setup(self):

@@ -14,11 +14,25 @@ class LightSwitch(Thing):
     def get_blueprint_tag():
         return "light_switches"
 
+    def set_intensity(self, intensity):
+        self.intensity = intensity
+        self.dirty = True
+        self.pending_commands.append((self.switch_port, self.intensity))
+
+    def sleep(self):
+        self.saved_wakeup_value = self.intensity
+        if self.intensity == 1:
+            self.set_intensity(0)
+
+    def wake_up(self):
+        if hasattr(self, "default_wakeup_value"):
+            self.set_intensity(self.default_wakeup_value)
+        elif hasattr(self, "saved_wakeup_value"):
+            self.set_intensity(self.saved_wakeup_value)
+
     def on_controller_data(self, data):
         if "intensity" in data:
-            self.intensity = data["intensity"]
-            self.dirty = True
-            self.pending_commands.append((self.switch_port, self.intensity))
+            self.set_intensity(data["intensity"])
 
     def get_state(self):
         return {
@@ -37,10 +51,25 @@ class Dimmer(Thing):
     def get_blueprint_tag():
         return "dimmers"
 
-    def on_controller_data(self, data):
-        self.intensity = data["intensity"]
+    def set_intensity(self, intensity):
+        self.intensity = intensity
         self.dirty = True
         self.pending_commands.append((self.pwm_port, int(self.intensity * 2.55)))
+
+    def sleep(self):
+        self.saved_wakeup_value = self.intensity
+        if self.intensity > 0:
+            self.set_intensity(0)
+
+    def wake_up(self):
+        if hasattr(self, "default_wakeup_value"):
+            self.set_intensity(self.default_wakeup_value)
+        elif hasattr(self, "saved_wakeup_value"):
+            self.set_intensity(self.saved_wakeup_value)
+
+    def on_controller_data(self, data):
+        if "intensity" in data:
+            self.set_intensity(data["intensity"])
 
     def get_state(self):
         return {

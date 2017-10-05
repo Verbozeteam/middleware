@@ -15,12 +15,13 @@ class Curtain(Thing):
         return "curtains"
 
     def on_controller_data(self, data):
-        if data["curtain"] == 0: # stop curtain
-            self.pending_commands += [(self.up_port, 0), (self.down_port, 0)]
-        elif data["curtain"] == 1: # curtain up
-            self.pending_commands += [(self.up_port, 1), (self.down_port, 0)]
-        elif data["curtain"] == 2: # curtain down
-            self.pending_commands += [(self.down_port, 1), (self.up_port, 0)]
+        if "curtain" in data:
+            if data["curtain"] == 0: # stop curtain
+                self.pending_commands += [(self.up_port, 0), (self.down_port, 0)]
+            elif data["curtain"] == 1: # curtain up
+                self.pending_commands += [(self.up_port, 1), (self.down_port, 0)]
+            elif data["curtain"] == 2: # curtain down
+                self.pending_commands += [(self.down_port, 1), (self.up_port, 0)]
 
     def get_state(self):
         return {}

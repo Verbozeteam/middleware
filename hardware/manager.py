@@ -82,9 +82,10 @@ class HardwareManager(object):
     # Called when this manager needs to free all its resources
     def cleanup(self):
         # detach all devices
-        for ct_Type in self.controller_types.keys():
+        for ct_type in self.controller_types.keys():
             (_, controller_devices) = self.controller_types[ct_type]
-            for device in controller_devices.values():
+            devices = list(controller_devices.values())
+            for device in devices:
                 self.detach_device(ct_type, device)
 
     # Called by a device when it has an updated value on a port

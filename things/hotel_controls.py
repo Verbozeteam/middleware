@@ -14,8 +14,10 @@ class HotelControls(Thing):
         self.do_not_disturb = 0
         self.room_service = 0
         self.power = 1
-        self.power_next_update = 0
         self.card_out_start = -1
+        self.power_next_update = 0
+        if not hasattr(self, "nocard_power_timeout"):
+            self.nocard_power_timeout = 60
 
     # Should return the key in the blueprint that this Thing captures
     @staticmethod
@@ -37,19 +39,26 @@ class HotelControls(Thing):
             self.pending_commands.append((self.room_service_port, self.room_service))
 
     def update(self, cur_time_s):
-        if cur_time_s >= self.power_next_update:
-            self.power_next_update = cur_time_s + 5000
-            if self.card_in == 0:
-                if self.card_out_start == -1:
-                    self.card_out_start = cur_time_s
-                elif cur_time_s - self.card_out_start > self.nocard_power_timeout:
-                    # turn off all Things
-                    # things = self.blueprint.get_things()
-                    # for thing in things:
-                    #     thing.turn_off()
-                    self.pending_commands.append((self.power_port, 0)) # turn off power
-            else:
+        if self.card_in == 0:
+            if self.card_out_start == -1:
+                self.card_out_start = cur_time_s
+            elif cur_time_s - self.card_out_start > self.nocard_power_timeout:
+                self.card_out_start = cur_time_s # prevents spam commands
+                if self.power == 1: # just turned off, make Things sleep
+                    things = self.blueprint.get_things()
+                    for thing in things:
+                        thing.sleep()
+                self.power = 0
+                self.pending_commands.append((self.power_port, 0)) # turn off power
+        else:
+            if cur_time_s >= self.power_next_update:
+                if self.power == 0: # just turned on, wake Things up
+                    things = self.blueprint.get_things()
+                    for thing in things:
+                        thing.wake_up()
+                self.power_next_update = cur_time_s + 5
                 self.card_out_start = -1
+                self.power = 1
                 self.pending_commands.append((self.power_port, 1)) # turn on power
 
     def get_state(self):

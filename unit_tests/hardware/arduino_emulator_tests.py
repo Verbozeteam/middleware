@@ -24,6 +24,10 @@ class BaseArduinoEmulatorTestUtil(object):
         HARDWARE_CONFIG.LEGACY_MODE = False # make sure we are not in legacy mode
         self.core = Core()
 
+    def teardown(self):
+        self.core.hw_manager.cleanup()
+        self.core.blueprint.cleanup()
+
     def sync_board(self):
         self.core.hw_manager.update(1)
         self.connected_boards = list(self.core.hw_manager.controller_types["arduino"][1].values())

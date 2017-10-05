@@ -40,6 +40,33 @@ class CentralAC(Thing):
     def get_blueprint_tag():
         return "central_acs"
 
+    def set_fan_speed(self, speed):
+        self.current_fan_speed = speed
+        self.dirty = True
+        self.pending_commands.append((self.fan_port, self.current_fan_speed))
+
+    def set_set_point(self, set_pt):
+        self.current_set_point = float(set_pt)
+        self.dirty = True
+
+    def sleep(self):
+        self.saved_wakeup_temperature = self.current_set_point
+        self.saved_wakeup_fan = self.current_fan_speed
+        if hasattr(self, "default_sleep_temperature"):
+            self.set_set_point(self.default_sleep_temperature)
+            self.set_fan_speed(1) # fan must be on
+        else:
+            self.set_set_point(25.0)
+            self.set_fan_speed(0) # turn off the fan
+
+    def wake_up(self):
+        if hasattr(self, "default_wakeup_temperature"):
+            self.set_set_point(self.default_wakeup_temperature)
+            self.set_fan_speed(1) # fan must be on
+        elif hasattr(self, "saved_wakeup_temperature"):
+            self.set_set_point(self.saved_wakeup_temperature)
+            self.set_fan_speed(self.saved_wakeup_fan)
+
     def on_hardware_data(self, port, value):
         if port == self.temperature_port:
             self.current_temperature = float(value) / 2.0
@@ -47,12 +74,9 @@ class CentralAC(Thing):
 
     def on_controller_data(self, data):
         if "set_pt" in data:
-            self.current_set_point = float(data["set_pt"])
-            self.dirty = True
+            self.set_set_point(data["set_pt"])
         if "fan" in data:
-            self.current_fan_speed = data["fan"]
-            self.dirty = True
-            self.pending_commands.append((self.fan_port, self.current_fan_speed))
+            self.set_fan_speed(data["fan"])
 
     def update(self, cur_time_s):
         temp_diff = self.current_temperature - self.current_set_point

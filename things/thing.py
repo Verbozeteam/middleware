@@ -24,8 +24,12 @@ class Thing(object):
     def get_state(self):
         return {}
 
-    # Should be implemented to order this Thing to turn off
-    def turn_off(self):
+    # Should be implemented to order this Thing to go to sleep (usually turn off)
+    def sleep(self):
+        pass
+
+    # Should be implemented to order this Thing wake up (usually turn on)
+    def wake_up(self):
         pass
 
     # perform any Thing-specific logic
