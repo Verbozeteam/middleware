@@ -9,7 +9,7 @@ Clone the [arduino](https://github.com/Verbozeteam/arduino) repository. Make sur
 
 ## Launch the Arduino emulator
 `cd testing_utils`
-`./initialize_arduino_emulator.py -e <path_to_arduino_repo>/emulation [--board <board>]`
+`./initialize_arduino_emulator.py -e <path_to_arduino_repo>/emulation`
 
 ## Run the tests
 From the root directory: `python -m pytest`
