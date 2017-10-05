@@ -43,7 +43,7 @@ class ControllersManager(object):
         self.core.blueprint.on_controller_data(thing_id, commands)
 
     # Called when a controller sends a control command
-    # command  The control command
+    # command  The control command (JSON)
     def send_control_command(self, controller, command):
         Log.hammoud("ControllersManager::send_control_command({}, {})".format(str(controller), command))
         try:

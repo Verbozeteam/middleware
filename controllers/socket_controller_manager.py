@@ -46,7 +46,10 @@ class SocketController(Controller):
                 if len(self.buffer) >= 4 + command_len:
                     command = self.buffer[4:4+command_len]
                     self.buffer = self.buffer[4+command_len:]
-                    self.on_command(json.loads(command.decode("utf-8")))
+                    loaded_json = json.loads(command.decode("utf-8"))
+                    if type(loaded_json) is str: # ???? (some decoding shit)
+                        loaded_json = json.loads(loaded_json)
+                    self.on_command(loaded_json)
             return True
         except Exception as e:
             Log.warning("SocketController::on_read_data()", exception=True)
@@ -60,7 +63,7 @@ class SocketController(Controller):
             self.connection.send(msg)
             return True
         except:
-            Log.warning("SocketController::on_send_data({}) Failed".format(json_data), exception=True)
+            Log.warning("SocketController::on_send_data({}) Failed".format(str(json_data)), exception=True)
             return False
 
 #
