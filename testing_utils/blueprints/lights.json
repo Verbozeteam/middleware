@@ -6,12 +6,12 @@
         "name": {
             "english": "Dimmer 1"
         },
-        "pwm_port": "d4"
+        "dimmer_port": "d4"
     }, {
         "name": {
             "english": "Dimmer 2"
         },
-        "pwm_port": "d5"
+        "dimmer_port": "d5"
     }],
     "light_switches": [{
         "name": {

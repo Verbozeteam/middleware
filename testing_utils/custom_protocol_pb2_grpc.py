@@ -34,6 +34,16 @@ class ArduinoStub(object):
         request_serializer=custom__protocol__pb2.Temperature.SerializeToString,
         response_deserializer=custom__protocol__pb2.Empty.FromString,
         )
+    self.GetISRState = channel.unary_unary(
+        '/shammam.Arduino/GetISRState',
+        request_serializer=custom__protocol__pb2.Empty.SerializeToString,
+        response_deserializer=custom__protocol__pb2.ISRState.FromString,
+        )
+    self.GetISRPinState = channel.unary_unary(
+        '/shammam.Arduino/GetISRPinState',
+        request_serializer=custom__protocol__pb2.ISRPin.SerializeToString,
+        response_deserializer=custom__protocol__pb2.ISRPinState.FromString,
+        )
 
 
 class ArduinoServicer(object):
@@ -68,6 +78,20 @@ class ArduinoServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
+  def GetISRState(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def GetISRPinState(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
 
 def add_ArduinoServicer_to_server(servicer, server):
   rpc_method_handlers = {
@@ -90,6 +114,16 @@ def add_ArduinoServicer_to_server(servicer, server):
           servicer.SetTemperatureSensor,
           request_deserializer=custom__protocol__pb2.Temperature.FromString,
           response_serializer=custom__protocol__pb2.Empty.SerializeToString,
+      ),
+      'GetISRState': grpc.unary_unary_rpc_method_handler(
+          servicer.GetISRState,
+          request_deserializer=custom__protocol__pb2.Empty.FromString,
+          response_serializer=custom__protocol__pb2.ISRState.SerializeToString,
+      ),
+      'GetISRPinState': grpc.unary_unary_rpc_method_handler(
+          servicer.GetISRPinState,
+          request_deserializer=custom__protocol__pb2.ISRPin.FromString,
+          response_serializer=custom__protocol__pb2.ISRPinState.SerializeToString,
       ),
   }
   generic_handler = grpc.method_handlers_generic_handler(

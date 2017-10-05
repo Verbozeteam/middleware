@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='custom_protocol.proto',
   package='shammam',
   syntax='proto3',
-  serialized_pb=_b('\n\x15\x63ustom_protocol.proto\x12\x07shammam\"\"\n\x03Pin\x12\x0c\n\x04type\x18\x01 \x01(\x05\x12\r\n\x05index\x18\x02 \x01(\x05\"\x16\n\x05State\x12\r\n\x05state\x18\x01 \x01(\x05\"9\n\x0bPinAndState\x12\x0c\n\x04type\x18\x01 \x01(\x05\x12\r\n\x05index\x18\x02 \x01(\x05\x12\r\n\x05state\x18\x03 \x01(\x05\"\x07\n\x05\x45mpty\"\x1b\n\x0bTemperature\x12\x0c\n\x04temp\x18\x01 \x01(\x02\x32\xde\x01\n\x07\x41rduino\x12-\n\x0bGetPinState\x12\x0c.shammam.Pin\x1a\x0e.shammam.State\"\x00\x12\x35\n\x0bSetPinState\x12\x14.shammam.PinAndState\x1a\x0e.shammam.State\"\x00\x12-\n\tResetPins\x12\x0e.shammam.Empty\x1a\x0e.shammam.Empty\"\x00\x12>\n\x14SetTemperatureSensor\x12\x14.shammam.Temperature\x1a\x0e.shammam.Empty\"\x00\x62\x06proto3')
+  serialized_pb=_b('\n\x15\x63ustom_protocol.proto\x12\x07shammam\"\"\n\x03Pin\x12\x0c\n\x04type\x18\x01 \x01(\x05\x12\r\n\x05index\x18\x02 \x01(\x05\"\x16\n\x05State\x12\r\n\x05state\x18\x01 \x01(\x05\"9\n\x0bPinAndState\x12\x0c\n\x04type\x18\x01 \x01(\x05\x12\r\n\x05index\x18\x02 \x01(\x05\x12\r\n\x05state\x18\x03 \x01(\x05\"\x07\n\x05\x45mpty\"\x1b\n\x0bTemperature\x12\x0c\n\x04temp\x18\x01 \x01(\x02\"\x17\n\x06ISRPin\x12\r\n\x05index\x18\x01 \x01(\x05\"A\n\x08ISRState\x12\x0c\n\x04sync\x18\x01 \x01(\x05\x12\x13\n\x0b\x66ull_period\x18\x02 \x01(\x05\x12\x12\n\nwavelength\x18\x03 \x01(\x05\"*\n\x0bISRPinState\x12\x0c\n\x04port\x18\x01 \x01(\x05\x12\r\n\x05state\x18\x02 \x01(\x05\x32\xcd\x02\n\x07\x41rduino\x12-\n\x0bGetPinState\x12\x0c.shammam.Pin\x1a\x0e.shammam.State\"\x00\x12\x35\n\x0bSetPinState\x12\x14.shammam.PinAndState\x1a\x0e.shammam.State\"\x00\x12-\n\tResetPins\x12\x0e.shammam.Empty\x1a\x0e.shammam.Empty\"\x00\x12>\n\x14SetTemperatureSensor\x12\x14.shammam.Temperature\x1a\x0e.shammam.Empty\"\x00\x12\x32\n\x0bGetISRState\x12\x0e.shammam.Empty\x1a\x11.shammam.ISRState\"\x00\x12\x39\n\x0eGetISRPinState\x12\x0f.shammam.ISRPin\x1a\x14.shammam.ISRPinState\"\x00\x62\x06proto3')
 )
 
 
@@ -193,11 +193,128 @@ _TEMPERATURE = _descriptor.Descriptor(
   serialized_end=189,
 )
 
+
+_ISRPIN = _descriptor.Descriptor(
+  name='ISRPin',
+  full_name='shammam.ISRPin',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='index', full_name='shammam.ISRPin.index', index=0,
+      number=1, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=191,
+  serialized_end=214,
+)
+
+
+_ISRSTATE = _descriptor.Descriptor(
+  name='ISRState',
+  full_name='shammam.ISRState',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='sync', full_name='shammam.ISRState.sync', index=0,
+      number=1, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='full_period', full_name='shammam.ISRState.full_period', index=1,
+      number=2, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='wavelength', full_name='shammam.ISRState.wavelength', index=2,
+      number=3, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=216,
+  serialized_end=281,
+)
+
+
+_ISRPINSTATE = _descriptor.Descriptor(
+  name='ISRPinState',
+  full_name='shammam.ISRPinState',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='port', full_name='shammam.ISRPinState.port', index=0,
+      number=1, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='state', full_name='shammam.ISRPinState.state', index=1,
+      number=2, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=283,
+  serialized_end=325,
+)
+
 DESCRIPTOR.message_types_by_name['Pin'] = _PIN
 DESCRIPTOR.message_types_by_name['State'] = _STATE
 DESCRIPTOR.message_types_by_name['PinAndState'] = _PINANDSTATE
 DESCRIPTOR.message_types_by_name['Empty'] = _EMPTY
 DESCRIPTOR.message_types_by_name['Temperature'] = _TEMPERATURE
+DESCRIPTOR.message_types_by_name['ISRPin'] = _ISRPIN
+DESCRIPTOR.message_types_by_name['ISRState'] = _ISRSTATE
+DESCRIPTOR.message_types_by_name['ISRPinState'] = _ISRPINSTATE
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 Pin = _reflection.GeneratedProtocolMessageType('Pin', (_message.Message,), dict(
@@ -235,6 +352,27 @@ Temperature = _reflection.GeneratedProtocolMessageType('Temperature', (_message.
   ))
 _sym_db.RegisterMessage(Temperature)
 
+ISRPin = _reflection.GeneratedProtocolMessageType('ISRPin', (_message.Message,), dict(
+  DESCRIPTOR = _ISRPIN,
+  __module__ = 'custom_protocol_pb2'
+  # @@protoc_insertion_point(class_scope:shammam.ISRPin)
+  ))
+_sym_db.RegisterMessage(ISRPin)
+
+ISRState = _reflection.GeneratedProtocolMessageType('ISRState', (_message.Message,), dict(
+  DESCRIPTOR = _ISRSTATE,
+  __module__ = 'custom_protocol_pb2'
+  # @@protoc_insertion_point(class_scope:shammam.ISRState)
+  ))
+_sym_db.RegisterMessage(ISRState)
+
+ISRPinState = _reflection.GeneratedProtocolMessageType('ISRPinState', (_message.Message,), dict(
+  DESCRIPTOR = _ISRPINSTATE,
+  __module__ = 'custom_protocol_pb2'
+  # @@protoc_insertion_point(class_scope:shammam.ISRPinState)
+  ))
+_sym_db.RegisterMessage(ISRPinState)
+
 
 
 _ARDUINO = _descriptor.ServiceDescriptor(
@@ -243,8 +381,8 @@ _ARDUINO = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   options=None,
-  serialized_start=192,
-  serialized_end=414,
+  serialized_start=328,
+  serialized_end=661,
   methods=[
   _descriptor.MethodDescriptor(
     name='GetPinState',
@@ -280,6 +418,24 @@ _ARDUINO = _descriptor.ServiceDescriptor(
     containing_service=None,
     input_type=_TEMPERATURE,
     output_type=_EMPTY,
+    options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='GetISRState',
+    full_name='shammam.Arduino.GetISRState',
+    index=4,
+    containing_service=None,
+    input_type=_EMPTY,
+    output_type=_ISRSTATE,
+    options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='GetISRPinState',
+    full_name='shammam.Arduino.GetISRPinState',
+    index=5,
+    containing_service=None,
+    input_type=_ISRPIN,
+    output_type=_ISRPINSTATE,
     options=None,
   ),
 ])
@@ -327,6 +483,16 @@ try:
           request_serializer=Temperature.SerializeToString,
           response_deserializer=Empty.FromString,
           )
+      self.GetISRState = channel.unary_unary(
+          '/shammam.Arduino/GetISRState',
+          request_serializer=Empty.SerializeToString,
+          response_deserializer=ISRState.FromString,
+          )
+      self.GetISRPinState = channel.unary_unary(
+          '/shammam.Arduino/GetISRPinState',
+          request_serializer=ISRPin.SerializeToString,
+          response_deserializer=ISRPinState.FromString,
+          )
 
 
   class ArduinoServicer(object):
@@ -361,6 +527,20 @@ try:
       context.set_details('Method not implemented!')
       raise NotImplementedError('Method not implemented!')
 
+    def GetISRState(self, request, context):
+      # missing associated documentation comment in .proto file
+      pass
+      context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+      context.set_details('Method not implemented!')
+      raise NotImplementedError('Method not implemented!')
+
+    def GetISRPinState(self, request, context):
+      # missing associated documentation comment in .proto file
+      pass
+      context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+      context.set_details('Method not implemented!')
+      raise NotImplementedError('Method not implemented!')
+
 
   def add_ArduinoServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -383,6 +563,16 @@ try:
             servicer.SetTemperatureSensor,
             request_deserializer=Temperature.FromString,
             response_serializer=Empty.SerializeToString,
+        ),
+        'GetISRState': grpc.unary_unary_rpc_method_handler(
+            servicer.GetISRState,
+            request_deserializer=Empty.FromString,
+            response_serializer=ISRState.SerializeToString,
+        ),
+        'GetISRPinState': grpc.unary_unary_rpc_method_handler(
+            servicer.GetISRPinState,
+            request_deserializer=ISRPin.FromString,
+            response_serializer=ISRPinState.SerializeToString,
         ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -411,6 +601,14 @@ try:
       pass
       context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
     def SetTemperatureSensor(self, request, context):
+      # missing associated documentation comment in .proto file
+      pass
+      context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
+    def GetISRState(self, request, context):
+      # missing associated documentation comment in .proto file
+      pass
+      context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
+    def GetISRPinState(self, request, context):
       # missing associated documentation comment in .proto file
       pass
       context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
@@ -444,6 +642,16 @@ try:
       pass
       raise NotImplementedError()
     SetTemperatureSensor.future = None
+    def GetISRState(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
+      # missing associated documentation comment in .proto file
+      pass
+      raise NotImplementedError()
+    GetISRState.future = None
+    def GetISRPinState(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
+      # missing associated documentation comment in .proto file
+      pass
+      raise NotImplementedError()
+    GetISRPinState.future = None
 
 
   def beta_create_Arduino_server(servicer, pool=None, pool_size=None, default_timeout=None, maximum_timeout=None):
@@ -453,18 +661,24 @@ try:
     file not marked beta) for all further purposes. This function was
     generated only to ease transition from grpcio<0.15.0 to grpcio>=0.15.0"""
     request_deserializers = {
+      ('shammam.Arduino', 'GetISRPinState'): ISRPin.FromString,
+      ('shammam.Arduino', 'GetISRState'): Empty.FromString,
       ('shammam.Arduino', 'GetPinState'): Pin.FromString,
       ('shammam.Arduino', 'ResetPins'): Empty.FromString,
       ('shammam.Arduino', 'SetPinState'): PinAndState.FromString,
       ('shammam.Arduino', 'SetTemperatureSensor'): Temperature.FromString,
     }
     response_serializers = {
+      ('shammam.Arduino', 'GetISRPinState'): ISRPinState.SerializeToString,
+      ('shammam.Arduino', 'GetISRState'): ISRState.SerializeToString,
       ('shammam.Arduino', 'GetPinState'): State.SerializeToString,
       ('shammam.Arduino', 'ResetPins'): Empty.SerializeToString,
       ('shammam.Arduino', 'SetPinState'): State.SerializeToString,
       ('shammam.Arduino', 'SetTemperatureSensor'): Empty.SerializeToString,
     }
     method_implementations = {
+      ('shammam.Arduino', 'GetISRPinState'): face_utilities.unary_unary_inline(servicer.GetISRPinState),
+      ('shammam.Arduino', 'GetISRState'): face_utilities.unary_unary_inline(servicer.GetISRState),
       ('shammam.Arduino', 'GetPinState'): face_utilities.unary_unary_inline(servicer.GetPinState),
       ('shammam.Arduino', 'ResetPins'): face_utilities.unary_unary_inline(servicer.ResetPins),
       ('shammam.Arduino', 'SetPinState'): face_utilities.unary_unary_inline(servicer.SetPinState),
@@ -481,18 +695,24 @@ try:
     file not marked beta) for all further purposes. This function was
     generated only to ease transition from grpcio<0.15.0 to grpcio>=0.15.0"""
     request_serializers = {
+      ('shammam.Arduino', 'GetISRPinState'): ISRPin.SerializeToString,
+      ('shammam.Arduino', 'GetISRState'): Empty.SerializeToString,
       ('shammam.Arduino', 'GetPinState'): Pin.SerializeToString,
       ('shammam.Arduino', 'ResetPins'): Empty.SerializeToString,
       ('shammam.Arduino', 'SetPinState'): PinAndState.SerializeToString,
       ('shammam.Arduino', 'SetTemperatureSensor'): Temperature.SerializeToString,
     }
     response_deserializers = {
+      ('shammam.Arduino', 'GetISRPinState'): ISRPinState.FromString,
+      ('shammam.Arduino', 'GetISRState'): ISRState.FromString,
       ('shammam.Arduino', 'GetPinState'): State.FromString,
       ('shammam.Arduino', 'ResetPins'): Empty.FromString,
       ('shammam.Arduino', 'SetPinState'): State.FromString,
       ('shammam.Arduino', 'SetTemperatureSensor'): Empty.FromString,
     }
     cardinalities = {
+      'GetISRPinState': cardinality.Cardinality.UNARY_UNARY,
+      'GetISRState': cardinality.Cardinality.UNARY_UNARY,
       'GetPinState': cardinality.Cardinality.UNARY_UNARY,
       'ResetPins': cardinality.Cardinality.UNARY_UNARY,
       'SetPinState': cardinality.Cardinality.UNARY_UNARY,

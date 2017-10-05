@@ -121,7 +121,7 @@ class BaseDimmerTester(object):
         self.core.blueprint.update(1)
         time.sleep(self.SOCKET_LAG)
         for s in range(0, len(self.dimmers)):
-            assert abs(self.arduino_emu.GetPinState(testing_utils.Pin(type=0, index=int(self.dimmers[s].pwm_port[1:]))).state - ((20 + s*2) * 2.55)) <= 4.0
+            assert abs(self.arduino_emu.GetPinState(testing_utils.Pin(type=0, index=int(self.dimmers[s].dimmer_port[1:]))).state - ((20 + s*2) * 2.55)) <= 4.0
             assert self.dimmers[s].get_state()["intensity"] == 20 + s*2
 
         self.is_board_synced()
@@ -132,7 +132,7 @@ class BaseDimmerTester(object):
         self.core.blueprint.update(1)
         time.sleep(self.SOCKET_LAG)
         for s in self.dimmers:
-            assert self.arduino_emu.GetPinState(testing_utils.Pin(type=0, index=int(s.pwm_port[1:]))).state == 0
+            assert self.arduino_emu.GetPinState(testing_utils.Pin(type=0, index=int(s.dimmer_port[1:]))).state == 0
             assert s.get_state()["intensity"] == 0
 
         self.is_board_synced()

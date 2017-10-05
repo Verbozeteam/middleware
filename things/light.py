@@ -42,8 +42,9 @@ class LightSwitch(Thing):
 class Dimmer(Thing):
     def __init__(self, blueprint, dimmer_json):
         super(Dimmer, self).__init__(blueprint, dimmer_json)
-        self.output_ports[self.pwm_port] = 2 # pwm output
-        self.id = "dimmer-" + self.pwm_port
+        self.output_ports[self.dimmer_port] = 2 # pwm output
+        self.is_isr_dimmer = "v" in self.dimmer_port # if dimmer_port is a virtual port then this is an ISR light
+        self.id = "dimmer-" + self.dimmer_port
         self.intensity = 0
 
     # Should return the key in the blueprint that this Thing captures
@@ -54,7 +55,10 @@ class Dimmer(Thing):
     def set_intensity(self, intensity):
         self.intensity = intensity
         self.dirty = True
-        self.pending_commands.append((self.pwm_port, int(self.intensity * 2.55)))
+        if self.is_isr_dimmer:
+            self.pending_commands.append((self.dimmer_port, int((self.intensity / 100.0) * (self.virtual_port_data[0][1]-1))))
+        else:
+            self.pending_commands.append((self.dimmer_port, int(self.intensity * 2.55)))
 
     def sleep(self):
         self.saved_wakeup_value = self.intensity

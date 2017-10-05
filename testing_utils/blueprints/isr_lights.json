@@ -1,0 +1,18 @@
+[{
+    "name": {
+        "english": "Room 1"
+    },
+    "dimmers": [{
+        "name": {
+            "english": "S1"
+        },
+        "dimmer_port": "v0",
+        "virtual_port_data": [[1, 50, 3, 40]]
+    }, {
+        "name": {
+            "english": "S2"
+        },
+        "dimmer_port": "v1",
+        "virtual_port_data": [[1, 50, 3, 41]]
+    }]
+}]
