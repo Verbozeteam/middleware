@@ -105,8 +105,8 @@ class Blueprint(object):
                 else:
                     obj[things] = []
                     for thing in room[things]:
-                        thing_json = {"id": thing.id}
-                        thing_json = {**thing_json, **thing.get_state()}
+                        thing_json = thing.get_state()
+                        thing_json["id"] = thing.id
                         obj[things].append(thing_json)
             rooms.append(obj)
         return {

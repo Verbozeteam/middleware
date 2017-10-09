@@ -53,6 +53,9 @@ class SocketController(Controller):
                     self.on_command(loaded_json)
                 elif self.buffer[:4] == bytearray([ord('S'), ord('\n'), ord('S'), ord('\n')]): # this is a legacy controller!
                     SocketLegacyController.downgrade_controller(self)
+                elif self.buffer[3] != 0: # 4th byte not zero means its a HUGE buffer, i call BS
+                    Log.warning("SocketController::on_read_data() detected very huge load (likely a compatibility issue)")
+                    return False
             return True
         except Exception as e:
             Log.warning("SocketController::on_read_data()", exception=True)
