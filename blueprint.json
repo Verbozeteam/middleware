@@ -84,5 +84,14 @@
         "fan_port": "d48",
         "valve_port": "d8",
         "virtual_port_data": [[0, 0]]
+    }],
+    "kitchen_controls": [{
+        "menu": [{
+            "name": "Shawerma"
+        }, {
+            "name": "Machboos"
+        }, {
+            "name": "Falafel"
+        }]
     }]
 }]

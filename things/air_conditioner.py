@@ -24,7 +24,7 @@ class SplitAC(Thing):
 class CentralAC(Thing):
     def __init__(self, blueprint, ac_json):
         super(CentralAC, self).__init__(blueprint, ac_json)
-        self.input_ports[self.temperature_port] = 2000 # read temperature every 2 seconds
+        self.input_ports[self.temperature_port] = 3000 # read temperature every 3 seconds
         self.output_ports[self.fan_port] = 1 # digital output
         self.output_ports[self.valve_port] = 2 # pwm output
         self.id = "central-ac-" + self.temperature_port + "-" + self.fan_port

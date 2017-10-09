@@ -3,6 +3,7 @@ from controllers.socket_controller_manager import SocketConnectionManager
 
 class CONTROL_CODES:
     GET_BLUEPRINT = 0
+    GET_THING_STATE = 1
 
 #
 # Controllers manager is responsible for all interaction with controller
@@ -49,5 +50,11 @@ class ControllersManager(object):
         try:
             if command["code"] == CONTROL_CODES.GET_BLUEPRINT:
                 controller.on_send_data(self.core.blueprint.get_controller_view())
-        except:
+            elif command["code"] == CONTROL_CODES.GET_THING_STATE:
+                all_things = self.core.blueprint.get_things()
+                if "thing-id" in command:
+                    all_things = list(filter(lambda t: t.id == command["thing-id"], all_things))
+                for T in all_things:
+                    controller.on_thing_state(T.id, T.get_state())
+        except Exception as e:
             pass

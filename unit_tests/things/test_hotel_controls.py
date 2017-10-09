@@ -22,6 +22,7 @@ class TestHotelControls(BaseArduinoEmulatorTestUtil):
         time.sleep(self.SOCKET_LAG)
         self.core.hw_manager.update(1)
         self.core.blueprint.update(1)
+        time.sleep(self.SOCKET_LAG)
 
     def test_controls(self):
         # test DND and room service

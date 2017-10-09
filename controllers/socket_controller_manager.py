@@ -12,6 +12,7 @@ import struct
 import json
 import re
 import netifaces
+import types
 from select import select
 
 #
@@ -50,6 +51,8 @@ class SocketController(Controller):
                     if type(loaded_json) is str: # ???? (some decoding shit)
                         loaded_json = json.loads(loaded_json)
                     self.on_command(loaded_json)
+                elif self.buffer[:4] == bytearray([ord('S'), ord('\n'), ord('S'), ord('\n')]): # this is a legacy controller!
+                    SocketLegacyController.downgrade_controller(self)
             return True
         except Exception as e:
             Log.warning("SocketController::on_read_data()", exception=True)
@@ -74,6 +77,15 @@ class SocketLegacyController(SocketController):
     def __init__(self, connection_manager, conn, addr):
         super(SocketLegacyController, self).__init__(connection_manager, conn, addr)
 
+    # Makes a SocketController behave like a legacy controller
+    # controller  A SocketController
+    @staticmethod
+    def downgrade_controller(controller):
+        Log.debug("SocketLegacyController::downgrade_controller({})".format(str(controller)))
+        # Override those 2 methods (and make them bound to controller)
+        controller.on_read_data = types.MethodType(SocketLegacyController.on_read_data, controller)
+        controller.on_send_data = types.MethodType(SocketLegacyController.on_send_data, controller)
+
     # Called when the socket has pending bytes to read
     def on_read_data(self):
         read = self.connection.recv(1024)
@@ -97,32 +109,43 @@ class SocketLegacyController(SocketController):
                                 (t, index, value) = m.groups()
                                 index = int(index)
                                 value = int(value)
+                                all_things = self.manager.controllers_manager.core.blueprint.get_things()
                                 command_json = {}
                                 if t == 'c':
-                                    command_json = {
-                                        "thing": "curtain-d" + str(22+index*2) + "-d" + str(23+index*2),
-                                        "curtain": value
-                                    }
+                                    curtains = list(sorted(filter(lambda t: t.get_blueprint_tag() == Curtain.get_blueprint_tag(), all_things), key=lambda t: t.id))
+                                    if index <= len(curtains):
+                                        command_json = {
+                                            "thing": curtains[index].id,
+                                            "curtain": value
+                                        }
                                 elif t == 't':
-                                    command_json = {
-                                        "thing": "lightswitch-d" + str(37-index),
-                                        "intensity": value
-                                    }
+                                    switches = list(reversed(sorted(filter(lambda t: t.get_blueprint_tag() == LightSwitch.get_blueprint_tag(), all_things), key=lambda t: t.id)))
+                                    if index <= len(switches):
+                                        command_json = {
+                                            "thing": switches[index].id,
+                                            "intensity": value
+                                        }
                                 elif t == 'l':
-                                    command_json = {
-                                        "thing": "dimmer-d" + str(4+index),
-                                        "intensity": value
-                                    }
+                                    dimmers = list(sorted(filter(lambda t: t.get_blueprint_tag() == Dimmer.get_blueprint_tag(), all_things), key=lambda t: t.id))
+                                    if index <= len(dimmers):
+                                        command_json = {
+                                            "thing": dimmers[index].id,
+                                            "intensity": value
+                                        }
                                 elif t == 'a':
-                                    command_json = {
-                                        "thing": "central-ac-d" + str(48+index) + "-v" + str(index),
-                                        "set_pt": float(value) / 2
-                                    }
+                                    acs = list(sorted(filter(lambda t: t.get_blueprint_tag() == CentralAC.get_blueprint_tag(), all_things), key=lambda t: t.id))
+                                    if index <= len(acs):
+                                        command_json = {
+                                            "thing": acs[index].id,
+                                            "set_pt": float(value) / 2
+                                        }
                                 elif t == 'f':
-                                    command_json = {
-                                        "thing": "central-ac-d" + str(48+index) + "-v" + str(index),
-                                        "fan": value
-                                    }
+                                    acs = list(sorted(filter(lambda t: t.get_blueprint_tag() == CentralAC.get_blueprint_tag(), all_things), key=lambda t: t.id))
+                                    if index <= len(acs):
+                                        command_json = {
+                                            "thing": acs[index].id,
+                                            "fan": value
+                                        }
                                 if command_json != {}:
                                     self.on_command(command_json)
                 except:
@@ -152,14 +175,14 @@ class SocketLegacyController(SocketController):
             msg = bytearray([254])
             msg += bytearray([len(acs)])
             for ac in acs:
-                msg += bytearray([ac.current_fan_speed, int(ac.current_set_point*2), ac.current_temperature])
+                msg += bytearray([int(ac.current_fan_speed), int(ac.current_set_point*2), int(ac.current_temperature)])
             msg += bytearray([len(dimmers)] + list(map(lambda t: t.intensity, dimmers)))
             msg += bytearray([len(switches)] + list(map(lambda t: t.intensity, switches)))
             msg += bytearray([len(curtains), 255])
             self.connection.send(msg)
             return True
         except Exception as e:
-            Log.warning("FAILED SocketLegacyController::on_send_data({})".format(json_data))
+            Log.warning("FAILED SocketLegacyController::on_send_data({})".format(json_data), exception=True)
             return False
 
 #

@@ -2,6 +2,7 @@ from things.light import Dimmer, LightSwitch
 from things.curtain import Curtain
 from things.air_conditioner import SplitAC, CentralAC
 from things.hotel_controls import HotelControls
+from things.kitchen_controls import KitchenControls
 from logs import Log
 from config.general_config import GENERAL_CONFIG
 
@@ -19,6 +20,7 @@ class Blueprint(object):
             SplitAC,
             CentralAC,
             HotelControls,
+            KitchenControls,
         ]))
 
         filename = GENERAL_CONFIG.BLUEPRINT_FILENAME
@@ -94,7 +96,7 @@ class Blueprint(object):
 
     # returns  The controller-friendly view of the blueprint
     def get_controller_view(self):
-        ret = []
+        rooms = []
         for room in self.rooms:
             obj = {}
             for things in room.keys():
@@ -106,8 +108,10 @@ class Blueprint(object):
                         thing_json = {"id": thing.id}
                         thing_json = {**thing_json, **thing.get_state()}
                         obj[things].append(thing_json)
-            ret.append(obj)
-        return ret
+            rooms.append(obj)
+        return {
+            "rooms": rooms,
+        }
 
     # returns  The hardware-friendly view of the blueprint (list of things)
     def get_things(self):
