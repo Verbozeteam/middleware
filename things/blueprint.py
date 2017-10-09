@@ -84,7 +84,10 @@ class Blueprint(object):
                     if thing.dirty:
                         thing.dirty = False
                         self.broadcast_thing_state(thing)
-                    thing.update(cur_time_s)
+                    try:
+                        thing.update(cur_time_s)
+                    except:
+                        Log.error("Blueprint::update() Thing failed to update: {}".format(str(thing)), exception=True)
                     if len(thing.pending_commands) > 0:
                         for (port, value) in thing.get_clean_pending_commands():
                             self.core.hw_manager.on_command(port, value)

@@ -72,7 +72,7 @@ class KitchenControls(Thing):
 
     def update(self, cur_time_s):
         for o in self.orders:
-            if reduce(lambda oi1, oi2: oi1["status"] != -1 and oi2["status"] != -1, o["items"]) and o["timeout"] < 0:
+            if reduce(lambda x, y: x and y, map(lambda oi: oi["status"] != -1, o["items"])) and o["timeout"] < 0:
                 o["timeout"] = cur_time_s + 10 # 60 seconds timeout
 
         L = len(self.orders)
