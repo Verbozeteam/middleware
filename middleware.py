@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import config.cmd_args
 
 from hardware import HardwareManager
