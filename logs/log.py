@@ -24,6 +24,14 @@ class Log(object):
         if "exception" in kwargs: del kwargs["exception"]
         if log_level <= GENERAL_CONFIG.LOG_VERBOZITY:
             if print_dump: traceback.print_exc()
+            if GENERAL_CONFIG.LOG_REGEX != None: # regex filter
+                found = False
+                for a in args:
+                    if GENERAL_CONFIG.LOG_REGEX.match(a) != None:
+                        found = True
+                        break
+                if not found:
+                    return
             print(*args, **kwargs)
 
     @staticmethod
