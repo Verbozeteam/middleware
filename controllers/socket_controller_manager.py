@@ -35,6 +35,15 @@ class SocketController(Controller):
             self.connection.close()
         except: pass
 
+    # Makes a SocketLegacyController behave like a non-legacy controller
+    # controller  A SocketLegacyController
+    @staticmethod
+    def upgrade_controller(legacy_controller):
+        Log.debug("SocketLegacyController::downgrade_controller({})".format(str(legacy_controller)))
+        # Override those 2 methods (and make them bound to legacy_controller)
+        legacy_controller.on_read_data = types.MethodType(SocketController.on_read_data, legacy_controller)
+        legacy_controller.on_send_data = types.MethodType(SocketController.on_send_data, legacy_controller)
+
     # Called when the socket has pending bytes to read
     def on_read_data(self):
         read = self.connection.recv(1024)
@@ -53,6 +62,7 @@ class SocketController(Controller):
                     self.on_command(loaded_json)
                 elif self.buffer[:4] == bytearray([ord('S'), ord('\n'), ord('S'), ord('\n')]): # this is a legacy controller!
                     SocketLegacyController.downgrade_controller(self)
+                    return True
                 elif self.buffer[3] != 0: # 4th byte not zero means its a HUGE buffer, i call BS
                     Log.warning("SocketController::on_read_data() detected very huge load (likely a compatibility issue)")
                     return False
@@ -96,6 +106,11 @@ class SocketLegacyController(SocketController):
             return False
         try:
             self.buffer += read
+
+            if ord("{") in self.buffer: # this character is NEVER sent on the legacy protocol, this must be a new controller!
+                SocketController.upgrade_controller(self)
+                return True
+
             while True:
                 try:
                     newline_idx = self.buffer.index(bytes([ord("\n")]))

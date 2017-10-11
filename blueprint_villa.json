@@ -1,0 +1,88 @@
+[{
+    "name": {
+        "english": "Room 1"
+    },
+    "curtains": [{
+        "name": {
+            "english": "Curtain 1"
+        },
+        "up_port": "d22",
+        "down_port": "d23"
+    }, {
+        "name": {
+            "english": "Curtain 2"
+        },
+        "up_port": "d24",
+        "down_port": "d25"
+    }],
+    "dimmers": [{
+        "name": {
+            "english": "Dimmer 1"
+        },
+        "dimmer_port": "d4"
+    }, {
+        "name": {
+            "english": "Dimmer 2"
+        },
+        "dimmer_port": "d5"
+    }],
+    "light_switches": [{
+        "name": {
+            "english": "Light switch 1"
+        },
+        "switch_port": "d37"
+    }, {
+        "name": {
+            "english": "Light switch 2"
+        },
+        "switch_port": "d36"
+    }, {
+        "name": {
+            "english": "Light switch 3"
+        },
+        "switch_port": "d35"
+    }, {
+        "name": {
+            "english": "Light switch 4"
+        },
+        "switch_port": "d34"
+    }, {
+        "name": {
+            "english": "Bathroom light switch 1"
+        },
+        "switch_port": "d33"
+    }, {
+        "name": {
+            "english": "Bathroom light switch 2"
+        },
+        "switch_port": "d32"
+    }, {
+        "name": {
+            "english": "Bathroom light switch 3"
+        },
+        "switch_port": "d31"
+    }, {
+        "name": {
+            "english": "Bathroom light switch 4"
+        },
+        "switch_port": "d30"
+    }],
+    "central_acs": [{
+        "name": {
+            "english": "Air conditioner"
+        },
+        "temperature_port": "v0",
+        "fan_port": "d48",
+        "valve_port": "d8",
+        "virtual_port_data": [[0, 0]]
+    }],
+    "kitchen_controls": [{
+        "menu": [{
+            "name": "Shawerma"
+        }, {
+            "name": "Machboos"
+        }, {
+            "name": "Falafel"
+        }]
+    }]
+}]
