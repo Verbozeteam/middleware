@@ -85,6 +85,8 @@ class TestHotelControls(BaseArduinoEmulatorTestUtil):
         self.core.blueprint.update(30000000) # assume a long time passed
         self.core.blueprint.update(40000000) # assume a long time passed
 
+        time.sleep(self.SOCKET_LAG)
+
         # Now power should go out
         assert self.hotel_controls.sleep.call_count == 1
         assert self.hotel_controls.wake_up.call_count == 0
@@ -103,6 +105,8 @@ class TestHotelControls(BaseArduinoEmulatorTestUtil):
         self.core.blueprint.update(60000000) # assume a long time passed
         self.core.blueprint.update(70000000) # assume a long time passed
         self.core.blueprint.update(80000000) # assume a long time passed
+
+        time.sleep(self.SOCKET_LAG)
 
         # Now power should go out
         assert self.hotel_controls.sleep.call_count == 0
