@@ -1,57 +1,77 @@
 [{
     "name": {
-        "english": "Room 1"
+        "en": "Testing room"
     },
-    "dimmers": [{
-        "name": {
-            "english": "Dimmer 1"
-        },
-        "dimmer_port": "d4"
-    }, {
-        "name": {
-            "english": "Dimmer 2"
-        },
-        "dimmer_port": "d5"
+    "grid": [{
+        "ratio": 1,
+        "panels": [{
+            "ratio": 1,
+            "name": {
+                "en": "Test section"
+            },
+            "things": [{
+                "category": "dimmers",
+                "name": {
+                    "english": "Dimmer 1"
+                },
+                "dimmer_port": "d4"
+            }, {
+                "category": "dimmers",
+                "name": {
+                    "english": "Dimmer 2"
+                },
+                "dimmer_port": "d5"
+            }, {
+                "category": "light_switches",
+                "name": {
+                    "english": "Light switch 1"
+                },
+                "switch_port": "d37"
+            }, {
+                "category": "light_switches",
+                "name": {
+                    "english": "Light switch 2"
+                },
+                "switch_port": "d36"
+            }, {
+                "category": "light_switches",
+                "name": {
+                    "english": "Light switch 3"
+                },
+                "switch_port": "d35"
+            }, {
+                "category": "light_switches",
+                "name": {
+                    "english": "Light switch 4"
+                },
+                "switch_port": "d34"
+            }, {
+                "category": "light_switches",
+                "name": {
+                    "english": "Bathroom light switch 1"
+                },
+                "switch_port": "d33"
+            }, {
+                "category": "light_switches",
+                "name": {
+                    "english": "Bathroom light switch 2"
+                },
+                "switch_port": "d32"
+            }, {
+                "category": "light_switches",
+                "name": {
+                    "english": "Bathroom light switch 3"
+                },
+                "switch_port": "d31"
+            }, {
+                "category": "light_switches",
+                "name": {
+                    "english": "Bathroom light switch 4"
+                },
+                "switch_port": "d30"
+            }]
+        }]
     }],
-    "light_switches": [{
-        "name": {
-            "english": "Light switch 1"
-        },
-        "switch_port": "d37"
-    }, {
-        "name": {
-            "english": "Light switch 2"
-        },
-        "switch_port": "d36"
-    }, {
-        "name": {
-            "english": "Light switch 3"
-        },
-        "switch_port": "d35"
-    }, {
-        "name": {
-            "english": "Light switch 4"
-        },
-        "switch_port": "d34"
-    }, {
-        "name": {
-            "english": "Bathroom light switch 1"
-        },
-        "switch_port": "d33"
-    }, {
-        "name": {
-            "english": "Bathroom light switch 2"
-        },
-        "switch_port": "d32"
-    }, {
-        "name": {
-            "english": "Bathroom light switch 3"
-        },
-        "switch_port": "d31"
-    }, {
-        "name": {
-            "english": "Bathroom light switch 4"
-        },
-        "switch_port": "d30"
-    }]
+    "detail": {},
+    "layout": {}
 }]

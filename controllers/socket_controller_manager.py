@@ -39,7 +39,7 @@ class SocketController(Controller):
     # controller  A SocketLegacyController
     @staticmethod
     def upgrade_controller(legacy_controller):
-        Log.debug("SocketLegacyController::downgrade_controller({})".format(str(legacy_controller)))
+        Log.debug("SocketController::upgrade_controller({})".format(str(legacy_controller)))
         # Override those 2 methods (and make them bound to legacy_controller)
         legacy_controller.on_read_data = types.MethodType(SocketController.on_read_data, legacy_controller)
         legacy_controller.on_send_data = types.MethodType(SocketController.on_send_data, legacy_controller)

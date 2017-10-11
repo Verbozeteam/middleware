@@ -8,6 +8,24 @@ from config.general_config import GENERAL_CONFIG
 
 import json
 
+class Room(object):
+    def __init__(self, blueprint, room_json):
+        self.things = {} # Thing id -> Thing dictionary
+        # expected keys: "name", "grid", "detail" and "layout"
+        self.config = {}
+        self.config["name"] = room_json["name"]
+        self.config["detail"] = room_json["detail"]
+        self.config["layout"] = room_json["layout"]
+        self.config["grid"] = room_json["grid"]
+        for column in self.config["grid"]:
+            for panel in column["panels"]:
+                things = []
+                for thing_json in panel["things"]:
+                    t = blueprint.load_thing(thing_json)
+                    things.append(t)
+                    self.things[t.id] = t
+                panel["things"] = list(map(lambda t: t.id, things)) # panel["things"] becomes just a list of IDs
+
 class Blueprint(object):
     def __init__(self, core):
         self.core = core
@@ -31,100 +49,64 @@ class Blueprint(object):
             return
         try:
             J = json.load(F)
+            F.close()
         except Exception as e:
             Log.fatal("Invalid blueprint: {}".format(str(e)))
             return
 
-        self.rooms = []
-        for R in J:
-            self.load_room(R)
-
-    # Load a room from a JSON config and append it to self.rooms
-    # room_json  JSON of the room config
-    def load_room(self, room_json):
-        try:
-            room = {"name": room_json["name"]}
-            del room_json["name"]
-        except Exception as e:
-            Log.error("Invalid room name in {}".format(str(room_json)))
-            return
-
-        for k in room_json.keys():
-            self.load_thing(room, room_json[k], k)
-
-        self.rooms.append(room)
+        self.rooms = [Room(self, R) for R in J]
 
     # Load a thing from a JSON config and append to to the given room
-    # room              Room to append the loaded Thing to
-    # thing_json        JSON of the Thing config
-    # thing_class_name  Class name of the Thing being loaded
-    def load_thing(self, room, thing_jsons, thing_class_name):
+    # thing_json  JSON of the Thing config
+    # returns     Newly loaded Thing
+    def load_thing(self, thing_json):
         try:
-            thing_class = self.things_templates[thing_class_name]
+            thing_category = thing_json["category"]
+            thing_class = self.things_templates[thing_category]
         except:
-            Log.error("Invalid thing type {}".format(thing_class_name))
+            Log.error("Invalid thing category {}".format(thing_category))
             return
 
-        room[thing_class_name] = []
-        for thing_json in thing_jsons:
-            try:
-                room[thing_class_name].append(thing_class(self, thing_json))
-            except:
-                Log.error("Failed to load thing {}".format(str(thing_json)), exception=True)
-                break
+        try:
+            return thing_class(self, thing_json)
+        except:
+            Log.fatal("Failed to load thing {}".format(str(thing_json)), exception=True)
+            return None
 
     # Called periodically by the core to update the Things of this blueprint
     # cur_time_s  current time in seconds
     def update(self, cur_time_s):
         for room in self.rooms:
-            for things in room.keys():
-                if things == "name":
-                    continue
-                for thing in room[things]:
-                    if thing.dirty:
-                        thing.dirty = False
-                        self.broadcast_thing_state(thing)
-                    try:
-                        thing.update(cur_time_s)
-                    except:
-                        Log.error("Blueprint::update() Thing failed to update: {}".format(str(thing)), exception=True)
-                    if len(thing.pending_commands) > 0:
-                        for (port, value) in thing.get_clean_pending_commands():
-                            self.core.hw_manager.on_command(port, value)
-                        thing.pending_commands = []
+            for thing in room.things.values():
+                if thing.dirty:
+                    thing.dirty = False
+                    self.broadcast_thing_state(thing)
+                try:
+                    thing.update(cur_time_s)
+                except:
+                    Log.error("Blueprint::update() Thing failed to update: {}".format(str(thing)), exception=True)
+                if len(thing.pending_commands) > 0:
+                    for (port, value) in thing.get_clean_pending_commands():
+                        self.core.hw_manager.on_command(port, value)
+                    thing.pending_commands = []
 
     # Called when this manager needs to free all its resources
     def cleanup(self):
         pass
 
-    # returns  The controller-friendly view of the blueprint
+    # returns  The config view of the blueprint for the controller
     def get_controller_view(self):
-        rooms = []
+        view = { "config": list(map(lambda r: r.config, self.rooms)) }
         for room in self.rooms:
-            obj = {}
-            for things in room.keys():
-                if things == "name":
-                    obj["name"] = room[things]
-                else:
-                    obj[things] = []
-                    for thing in room[things]:
-                        thing_json = thing.get_state()
-                        thing_json["id"] = thing.id
-                        obj[things].append(thing_json)
-            rooms.append(obj)
-        return {
-            "rooms": rooms,
-        }
+            for thing in room.things.keys():
+                view[thing] = room.things[thing].get_state()
+        return view
 
     # returns  The hardware-friendly view of the blueprint (list of things)
     def get_things(self):
         ret_things = []
         for room in self.rooms:
-            for things in room.keys():
-                if things == "name":
-                    continue
-                for thing in room[things]:
-                    ret_things.append(thing)
+            ret_things += list(room.things.values())
         return ret_things
 
     # Called when a Thing updates its state so it broadcasts the new state
@@ -138,12 +120,9 @@ class Blueprint(object):
     # value  New value on the given port
     def on_hardware_data(self, port, value):
         for room in self.rooms:
-            for things in room.keys():
-                if things == "name":
-                    continue
-                for thing in room[things]:
-                    if port in thing.input_ports or port in thing.output_ports:
-                        thing.on_hardware_data(port, value)
+            for thing in room.things.values():
+                if port in thing.input_ports or port in thing.output_ports:
+                    thing.on_hardware_data(port, value)
 
     # Called when the controllers send a command for a Thing
     # thing_id  id of the Thing that the controller is trying to talk to
@@ -151,10 +130,7 @@ class Blueprint(object):
     def on_controller_data(self, thing_id, data):
         Log.hammoud("Blueprint::on_controller_data({}, {})".format(thing_id, data))
         for room in self.rooms:
-            for things in room.keys():
-                if things == "name":
-                    continue
-                for thing in room[things]:
-                    if thing_id == thing.id:
-                        for D in data:
-                            thing.on_controller_data(D)
+            for thing in room.things.values():
+                if thing_id == thing.id:
+                    for D in data:
+                        thing.on_controller_data(D)

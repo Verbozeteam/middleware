@@ -1,18 +1,31 @@
 [{
     "name": {
-        "english": "Room 1"
+        "en": "Testing room"
     },
-    "curtains": [{
-        "name": {
-            "english": "Curtain 1"
-        },
-        "up_port": "d22",
-        "down_port": "d23"
-    }, {
-        "name": {
-            "english": "Curtain 2"
-        },
-        "up_port": "d24",
-        "down_port": "d25"
-    }]
+    "grid": [{
+        "ratio": 1,
+        "panels": [{
+            "ratio": 1,
+            "name": {
+                "en": "Test section"
+            },
+            "things": [{
+                "category": "curtains",
+                "name": {
+                    "english": "Curtain 1"
+                },
+                "up_port": "d22",
+                "down_port": "d23"
+            }, {
+                "category": "curtains",
+                "name": {
+                    "english": "Curtain 2"
+                },
+                "up_port": "d24",
+                "down_port": "d25"
+            }]
+        }]
+    }],
+    "detail": {},
+    "layout": {}
 }]

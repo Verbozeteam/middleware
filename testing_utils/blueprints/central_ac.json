@@ -1,14 +1,26 @@
 [{
     "name": {
-        "english": "Room 1"
+        "en": "Testing room"
     },
-    "central_acs": [{
-        "name": {
-            "english": "Air conditioner"
-        },
-        "temperature_port": "v0",
-        "fan_port": "d48",
-        "valve_port": "d8",
-        "virtual_port_data": [[0, 0]]
-    }]
+    "grid": [{
+        "ratio": 1,
+        "panels": [{
+            "ratio": 1,
+            "name": {
+                "en": "Test section"
+            },
+            "things": [{
+                "category": "central_acs",
+                "name": {
+                    "english": "Air conditioner"
+                },
+                "temperature_port": "v0",
+                "fan_port": "d48",
+                "valve_port": "d8",
+                "virtual_port_data": [[0, 0]]
+            }]
+        }]
+    }],
+    "detail": {},
+    "layout": {}
 }]
