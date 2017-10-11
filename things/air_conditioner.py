@@ -30,7 +30,7 @@ class CentralAC(Thing):
         self.id = "central-ac-" + self.temperature_port + "-" + self.fan_port
         self.current_set_point = 25
         self.current_temperature = 25
-        self.current_fan_speed = 0
+        self.current_fan_speed = 1
         self.homeostasis = 0.49
         self.current_airflow = 0
         self.next_airflow_update = 0
@@ -66,6 +66,10 @@ class CentralAC(Thing):
         elif hasattr(self, "saved_wakeup_temperature"):
             self.set_set_point(self.saved_wakeup_temperature)
             self.set_fan_speed(self.saved_wakeup_fan)
+
+    def on_new_hardware(self):
+        self.set_fan_speed(self.current_fan_speed)
+        self.set_set_point(self.current_set_point)
 
     def on_hardware_data(self, port, value):
         if port == self.temperature_port:

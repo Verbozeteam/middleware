@@ -138,6 +138,8 @@ class ArduinoController(HardwareController):
                 if port not in virtual_ports:
                     self.serial_port.write(ArduinoProtocol.create_set_pin_mode(port, thing.output_ports[port]))
 
+            thing.on_new_hardware() # make it issue commands for the controller to set it
+
     # Checks or sets the sync state with the controller
     # set_to   If not None, sets the sync state to to this
     # returns  The sync state

@@ -30,6 +30,9 @@ class LightSwitch(Thing):
         elif hasattr(self, "saved_wakeup_value"):
             self.set_intensity(self.saved_wakeup_value)
 
+    def on_new_hardware(self):
+        self.set_intensity(self.intensity)
+
     def on_controller_data(self, data):
         if "intensity" in data:
             self.set_intensity(data["intensity"])
@@ -70,6 +73,9 @@ class Dimmer(Thing):
             self.set_intensity(self.default_wakeup_value)
         elif hasattr(self, "saved_wakeup_value"):
             self.set_intensity(self.saved_wakeup_value)
+
+    def on_new_hardware(self):
+        self.set_intensity(self.intensity)
 
     def on_controller_data(self, data):
         if "intensity" in data:

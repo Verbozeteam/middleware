@@ -37,6 +37,11 @@ class Thing(object):
     def update(self, cur_time_s):
         pass
 
+    # Should be implemented to make this thing add all pending commands necessary
+    # for a newly connected hardware to have the same state as this Thing
+    def on_new_hardware(self):
+        pass
+
     # Retrieves the pending commands (form controllers)
     # return  A (cleaned) list of pending commands
     def get_clean_pending_commands(self):

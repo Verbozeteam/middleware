@@ -38,6 +38,10 @@ class HotelControls(Thing):
             self.dirty = True
             self.pending_commands.append((self.room_service_port, self.room_service))
 
+    def on_new_hardware(self):
+            self.pending_commands.append((self.do_not_disturb_port, self.do_not_disturb))
+            self.pending_commands.append((self.room_service_port, self.room_service))
+
     def update(self, cur_time_s):
         if self.card_in == 0:
             if self.card_out_start == -1:

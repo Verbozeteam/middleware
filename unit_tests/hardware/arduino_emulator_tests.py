@@ -37,6 +37,7 @@ class BaseArduinoEmulatorTestUtil(object):
             self.core.hw_manager.update(fake_time)
             fake_time += 1
             assert fake_time < 30000 # virtual 30 seconds
+        self.core.blueprint.update(1) # flushes commands that Things issue upon connecting to a board
         self.is_board_synced()
 
     def is_board_synced(self):
@@ -64,6 +65,7 @@ class BaseLegacyArduinoEmulatorTestUtil(object):
     def sync_board(self):
         self.core.hw_manager.update(1)
         self.connected_controllers = list(self.core.hw_manager.controller_types["arduino"][1].values())
+        self.core.blueprint.update(1) # flushes commands that Things issue upon connecting to a board
         self.is_board_synced()
 
     def is_board_synced(self):

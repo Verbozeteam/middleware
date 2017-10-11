@@ -95,7 +95,9 @@ class HardwareManager(object):
     def on_port_update(self, device, port, value):
         # @TODO: map local port to global port
         # Forward the update to the core
-        self.core.blueprint.on_hardware_data(port, value)
+        try:
+            self.core.blueprint.on_hardware_data(port, value)
+        except: pass
 
     # Called by the blueprint when hardware is being commanded
     # port   Port being commanded
