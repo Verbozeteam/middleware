@@ -21,10 +21,17 @@ class Room(object):
             for panel in column["panels"]:
                 things = []
                 for thing_json in panel["things"]:
-                    t = blueprint.load_thing(thing_json)
-                    things.append(t)
-                    self.things[t.id] = t
-                panel["things"] = list(map(lambda t: t.id, things)) # panel["things"] becomes just a list of IDs
+                    if len(thing_json) == 0: # empty space - don't load a Thing
+                        thing_json = {"category": "empty"}
+                    else:
+                        t = blueprint.load_thing(thing_json)
+                        things.append(t)
+                        self.things[t.id] = t
+                        thing_json = {
+                            "category": thing_json["category"],
+                            "id": t.id,
+                            "name": thing_json["name"],
+                        }
 
 class Blueprint(object):
     def __init__(self, core):

@@ -67,17 +67,12 @@
                 },
                 "switch_port": "d32"
             }, {
+            }, {
                 "category": "light_switches",
                 "name": {
                     "en": "Bathroom light switch 3"
                 },
                 "switch_port": "d31"
-            }, {
-                "category": "light_switches",
-                "name": {
-                    "en": "Bathroom light switch 4"
-                },
-                "switch_port": "d30"
             }]
         }]
     }, {
