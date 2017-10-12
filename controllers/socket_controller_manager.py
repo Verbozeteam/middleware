@@ -130,35 +130,35 @@ class SocketLegacyController(SocketController):
                                 all_things = self.manager.controllers_manager.core.blueprint.get_things()
                                 command_json = {}
                                 if t == 'c':
-                                    curtains = list(sorted(filter(lambda t: t.get_blueprint_tag() == Curtain.get_blueprint_tag(), all_things), key=lambda t: t.id))
+                                    curtains = list(sorted(filter(lambda t: type(t) is Curtain, all_things), key=lambda t: t.id))
                                     if index <= len(curtains):
                                         command_json = {
                                             "thing": curtains[index].id,
                                             "curtain": value
                                         }
                                 elif t == 't':
-                                    switches = list(reversed(sorted(filter(lambda t: t.get_blueprint_tag() == LightSwitch.get_blueprint_tag(), all_things), key=lambda t: t.id)))
+                                    switches = list(reversed(sorted(filter(lambda t: type(t) is LightSwitch, all_things), key=lambda t: t.id)))
                                     if index <= len(switches):
                                         command_json = {
                                             "thing": switches[index].id,
                                             "intensity": value
                                         }
                                 elif t == 'l':
-                                    dimmers = list(sorted(filter(lambda t: t.get_blueprint_tag() == Dimmer.get_blueprint_tag(), all_things), key=lambda t: t.id))
+                                    dimmers = list(sorted(filter(lambda t: type(t) is Dimmer, all_things), key=lambda t: t.id))
                                     if index <= len(dimmers):
                                         command_json = {
                                             "thing": dimmers[index].id,
                                             "intensity": value
                                         }
                                 elif t == 'a':
-                                    acs = list(sorted(filter(lambda t: t.get_blueprint_tag() == CentralAC.get_blueprint_tag(), all_things), key=lambda t: t.id))
+                                    acs = list(sorted(filter(lambda t: type(t) is CentralAC, all_things), key=lambda t: t.id))
                                     if index <= len(acs):
                                         command_json = {
                                             "thing": acs[index].id,
                                             "set_pt": float(value) / 2
                                         }
                                 elif t == 'f':
-                                    acs = list(sorted(filter(lambda t: t.get_blueprint_tag() == CentralAC.get_blueprint_tag(), all_things), key=lambda t: t.id))
+                                    acs = list(sorted(filter(lambda t: type(t) is CentralAC, all_things), key=lambda t: t.id))
                                     if index <= len(acs):
                                         command_json = {
                                             "thing": acs[index].id,
@@ -181,11 +181,10 @@ class SocketLegacyController(SocketController):
             dimmers = []
             switches = []
             curtains = []
-            for room in self.manager.controllers_manager.core.blueprint.rooms:
-                acs += room.get(CentralAC.get_blueprint_tag(), [])
-                dimmers += room.get(Dimmer.get_blueprint_tag(), [])
-                switches += room.get(LightSwitch.get_blueprint_tag(), [])
-                curtains += room.get(Curtain.get_blueprint_tag(), [])
+            acs += list(filter(lambda t: type(t) is CentralAC, self.manager.controllers_manager.core.blueprint.get_things()))
+            dimmers += list(filter(lambda t: type(t) is Dimmer, self.manager.controllers_manager.core.blueprint.get_things()))
+            switches += list(filter(lambda t: type(t) is LightSwitch, self.manager.controllers_manager.core.blueprint.get_things()))
+            curtains += list(filter(lambda t: type(t) is Curtain, self.manager.controllers_manager.core.blueprint.get_things()))
             acs = sorted(acs, key=lambda t: t.id)
             dimmers = sorted(dimmers, key=lambda t: t.id)
             switches = sorted(switches, key=lambda t: t.id, reverse=True)

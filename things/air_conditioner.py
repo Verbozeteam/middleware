@@ -24,7 +24,7 @@ class SplitAC(Thing):
 class CentralAC(Thing):
     def __init__(self, blueprint, ac_json):
         super(CentralAC, self).__init__(blueprint, ac_json)
-        self.input_ports[self.temperature_port] = 3000 # read temperature every 3 seconds
+        self.input_ports[self.temperature_port] = 5000 # read temperature every 5 seconds
         self.output_ports[self.fan_port] = 1 # digital output
         self.output_ports[self.valve_port] = 2 # pwm output
         self.id = "central-ac-" + self.temperature_port + "-" + self.fan_port
@@ -87,7 +87,7 @@ class CentralAC(Thing):
         coeff = (min(max(temp_diff, -10), 10)) / 10; # [-1, 1]
         self.current_airflow = min(max(self.current_airflow + self.homeostasis * coeff, 0.0), 255.0)
         if cur_time_s >= self.next_airflow_update:
-            self.next_airflow_update = cur_time_s + 2
+            self.next_airflow_update = cur_time_s + 5
             self.pending_commands.append((self.valve_port, int(self.current_airflow)))
 
     def get_state(self):

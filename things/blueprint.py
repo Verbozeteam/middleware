@@ -20,17 +20,17 @@ class Room(object):
         for column in self.config["grid"]:
             for panel in column["panels"]:
                 things = []
-                for thing_json in panel["things"]:
-                    if len(thing_json) == 0: # empty space - don't load a Thing
-                        thing_json = {"category": "empty"}
+                for i in range(len(panel["things"])):
+                    if len(panel["things"][i]) == 0: # empty space - don't load a Thing
+                        panel["things"][i] = {"category": "empty"}
                     else:
-                        t = blueprint.load_thing(thing_json)
+                        t = blueprint.load_thing(panel["things"][i])
                         things.append(t)
                         self.things[t.id] = t
-                        thing_json = {
-                            "category": thing_json["category"],
+                        panel["things"][i] = {
+                            "category": panel["things"][i]["category"],
                             "id": t.id,
-                            "name": thing_json["name"],
+                            "name": panel["things"][i]["name"],
                         }
 
 class Blueprint(object):
@@ -103,7 +103,7 @@ class Blueprint(object):
 
     # returns  The config view of the blueprint for the controller
     def get_controller_view(self):
-        view = { "config": list(map(lambda r: r.config, self.rooms)) }
+        view = { "config": { "rooms": list(map(lambda r: r.config, self.rooms)) } }
         for room in self.rooms:
             for thing in room.things.keys():
                 view[thing] = room.things[thing].get_state()

@@ -85,7 +85,7 @@ class FakeController(object):
 
 
 class TestSingleController(object):
-    def setup_class(self):
+    def setup(self):
         # initialize the core
         GENERAL_CONFIG.BLUEPRINT_FILENAME = "testing_utils/blueprints/lights.json"
         self.core = Core()
@@ -94,11 +94,6 @@ class TestSingleController(object):
         # allow the controllers manager to actually hosts the server socket
         self.core.ctrl_manager.update(1)
 
-    def teardown_class(self):
-        self.core.ctrl_manager.cleanup()
-
-    # make a fake controller on setup
-    def setup(self):
         # connect the fake controller (in a separate thread)
         self.controller = FakeController(self.core.ctrl_manager.socket_connection_manager)
         self.controller.connect()
@@ -106,6 +101,7 @@ class TestSingleController(object):
     # disconnect the fake controller on teardown
     def teardown(self):
         self.controller.disconnect()
+        self.core.ctrl_manager.cleanup()
 
     def test_controller_commands(self):
         # this management command should make make the controller receive the blueprint view
@@ -132,7 +128,8 @@ class TestSingleController(object):
 class TestMultipleControllers(object):
     NUM_CONTROLLERS = 4
 
-    def setup_class(self):
+    # make fake controllers on setup
+    def setup(self):
         # initialize the core
         GENERAL_CONFIG.BLUEPRINT_FILENAME = "testing_utils/blueprints/lights.json"
         self.core = Core()
@@ -141,11 +138,6 @@ class TestMultipleControllers(object):
         # allow the controllers manager to actually hosts the server socket
         self.core.ctrl_manager.update(1)
 
-    def teardown_class(self):
-        self.core.ctrl_manager.cleanup()
-
-    # make fake controllers on setup
-    def setup(self):
         self.controllers = []
         for i in range(self.NUM_CONTROLLERS):
             self.controllers.append(FakeController(self.core.ctrl_manager.socket_connection_manager))
@@ -155,6 +147,8 @@ class TestMultipleControllers(object):
     def teardown(self):
         for C in self.controllers:
             C.disconnect()
+
+        self.core.ctrl_manager.cleanup()
 
     def test_controller_commands(self):
         # make the first controller send a management command and ONLY IT should get the blueprint view
