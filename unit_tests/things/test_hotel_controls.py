@@ -17,12 +17,15 @@ class TestHotelControls(BaseArduinoEmulatorTestUtil):
         self.things = self.core.blueprint.get_things()
         self.hotel_controls = self.things[0]
 
+        self.time_counter = 10000
+
     def set_card(self, state=1):
         self.arduino_emu.SetPinState(testing_utils.PinAndState(type=0, index=int(self.hotel_controls.hotel_card[1:]), state=state))
         time.sleep(self.SOCKET_LAG)
-        self.core.hw_manager.update(1)
-        self.core.blueprint.update(1)
+        self.core.hw_manager.update(self.time_counter)
+        self.core.blueprint.update(self.time_counter)
         time.sleep(self.SOCKET_LAG)
+        self.time_counter += 10000
 
     def test_controls(self):
         # test DND and room service

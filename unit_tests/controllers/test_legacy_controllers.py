@@ -166,23 +166,89 @@ class TestSingleLegacyController(object):
             assert abs(data["acs"][i]["set_pt"] / 2 - 20) < 0.1
             assert abs(data["acs"][i]["temp"] - 16) < 0.1
 
-# def TestUpgradeDowngrade(object):
-#     def setup(self):
-#         # initialize the core
-#         self.core = Core()
+class TestUpgradeDowngrade(object):
+    # disconnect the fake controller on teardown
+    def teardown(self):
+        if hasattr(self, "controller") and self.controller != None:
+            self.controller.disconnect()
+        self.core.ctrl_manager.cleanup()
 
-#         # allow the controllers manager to actually hosts the server socket
-#         self.core.ctrl_manager.update(1)
+    def connect_controller(self, connection_legacy, controller_legacy):
+        CONTROLLERS_CONFIG.LEGACY_MODE = connection_legacy
 
-#         # connect the fake controller (in a separate thread)
-#         self.controller = FakeLegacyController(self.core.ctrl_manager.socket_connection_manager)
-#         self.controller.connect()
+        # initialize the core
+        GENERAL_CONFIG.BLUEPRINT_FILENAME = "testing_utils/blueprints/villa.json"
+        self.core = Core()
 
-#     # disconnect the fake controller on teardown
-#     def teardown(self):
-#         self.controller.disconnect()
-#         self.core.ctrl_manager.cleanup()
+        self.dimmer = list(sorted(filter(lambda t: type(t) is Dimmer, self.core.blueprint.get_things()), key=lambda t: t.id))[0]
 
-#     def test_downgrade(self):
-#         CONTROLLERS_CONFIG.LEGACY_MODE = False # make sure controllers dont connect in legacy mode
+        # allow the controllers manager to actually hosts the server socket
+        self.core.ctrl_manager.update(1)
+
+        # connect the fake controller (in a separate thread)
+        if controller_legacy:
+            self.controller = FakeLegacyController(self.core.ctrl_manager.socket_connection_manager)
+        else:
+            self.controller = FakeController(self.core.ctrl_manager.socket_connection_manager)
+        self.controller.connect()
+
+    def test_downgrade_simple(self):
+        self.connect_controller(connection_legacy=False, controller_legacy=True)
+
+        self.dimmer.on_controller_data = Mock()
+
+        # pretend to be a legacy controller...
+        self.controller.send_line("S\n")
+        self.controller.send_line("S\n")
+        self.controller.send_line("l0:50\n")
+
+        time.sleep(0.2)
+
+        self.core.ctrl_manager.update(1)
+
+        self.dimmer.on_controller_data.assert_called_once_with({"intensity": 50})
+
+    def test_downgrade_complex(self):
+        self.connect_controller(connection_legacy=False, controller_legacy=True)
+
+        self.dimmer.on_controller_data = Mock()
+
+        # pretend to be a legacy controller...
+        self.controller.send_line("l0:50\n")
+
+        time.sleep(0.2)
+
+        self.core.ctrl_manager.update(1)
+
+        self.dimmer.on_controller_data.assert_called_once_with({"intensity": 50})
+
+    def test_upgrade_simple(self):
+        self.connect_controller(connection_legacy=True, controller_legacy=False)
+
+        self.dimmer.on_controller_data = Mock()
+
+        # pretend to be a new controller...
+        self.controller.send_json({})
+        self.controller.send_json({})
+        self.controller.send_json({"thing": self.dimmer.id, "intensity": 50})
+
+        time.sleep(0.2)
+
+        self.core.ctrl_manager.update(1)
+
+        self.dimmer.on_controller_data.assert_called_once_with({"intensity": 50})
+
+    def test_upgrade_complex(self):
+        self.connect_controller(connection_legacy=True, controller_legacy=False)
+
+        self.dimmer.on_controller_data = Mock()
+
+        # pretend to be a new controller...
+        self.controller.send_json({"thing": self.dimmer.id, "intensity": 50})
+
+        time.sleep(0.2)
+
+        self.core.ctrl_manager.update(1)
+
+        self.dimmer.on_controller_data.assert_called_once_with({"intensity": 50})
 

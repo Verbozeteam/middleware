@@ -2,6 +2,7 @@
 from unit_tests.hardware.arduino_emulator_tests import BaseArduinoEmulatorTestUtil
 
 from config.hardware_config import HARDWARE_CONFIG
+from config.general_config import GENERAL_CONFIG
 
 from things.thing import Thing
 
@@ -15,6 +16,7 @@ class TestArduinoController(BaseArduinoEmulatorTestUtil):
     class CustomThing(Thing):
         def __init__(self, blueprint, in_pins, out_pins):
             super(self.__class__, self).__init__(blueprint, {})
+            self.id = str(in_pins) + "-" + str(out_pins)
             self.input_ports = dict(in_pins)
             self.output_ports = dict(out_pins)
 

@@ -29,6 +29,7 @@ class BaseArduinoEmulatorTestUtil(object):
         self.core.blueprint.cleanup()
 
     def sync_board(self):
+        self.core.blueprint.update(1) # flush commands
         self.core.hw_manager.update(1)
         self.connected_boards = list(self.core.hw_manager.controller_types["arduino"][1].values())
         assert len(self.connected_boards) == 1

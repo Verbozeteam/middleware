@@ -15,7 +15,7 @@ class LightSwitch(Thing):
         return "light_switches"
 
     def set_intensity(self, intensity):
-        self.intensity = intensity
+        self.intensity = int(min(max(intensity, 0), 1))
         self.dirty = True
         self.pending_commands.append((self.switch_port, self.intensity))
 
@@ -56,10 +56,10 @@ class Dimmer(Thing):
         return "dimmers"
 
     def set_intensity(self, intensity):
-        self.intensity = intensity
+        self.intensity = int(min(max(intensity, 0), 100))
         self.dirty = True
         if self.is_isr_dimmer:
-            self.pending_commands.append((self.dimmer_port, int((self.intensity / 100.0) * (self.virtual_port_data[0][1]-1))))
+            self.pending_commands.append((self.dimmer_port, int((float(self.intensity) / 100.0) * (self.virtual_port_data[0][1]-1))))
         else:
             self.pending_commands.append((self.dimmer_port, int(self.intensity * 2.55)))
 

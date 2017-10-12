@@ -37,21 +37,28 @@ class SocketController(Controller):
 
     # Makes a SocketLegacyController behave like a non-legacy controller
     # controller  A SocketLegacyController
+    # returns     True if downgrade successful, False otherwise
     @staticmethod
     def upgrade_controller(legacy_controller):
+        if type(legacy_controller) is SocketController:
+            Log.warning("SocketController::upgrade_controller({}) controller hopeless".format(str(legacy_controller)))
+            return False
         Log.debug("SocketController::upgrade_controller({})".format(str(legacy_controller)))
         # Override those 2 methods (and make them bound to legacy_controller)
         legacy_controller.on_read_data = types.MethodType(SocketController.on_read_data, legacy_controller)
         legacy_controller.on_send_data = types.MethodType(SocketController.on_send_data, legacy_controller)
+        return True
 
     # Called when the socket has pending bytes to read
-    def on_read_data(self):
-        read = self.connection.recv(1024)
-        if not read:
-            return False
+    def on_read_data(self, skip_recv=False):
+        read = bytearray([])
+        if not skip_recv:
+            read = self.connection.recv(1024)
+            if not read:
+                return False
         try:
             self.buffer += read
-            if len(self.buffer) >= 4:
+            while len(self.buffer) >= 4:
                 command_len = struct.unpack('<I', self.buffer[:4])[0]
                 if len(self.buffer) >= 4 + command_len:
                     command = self.buffer[4:4+command_len]
@@ -60,12 +67,12 @@ class SocketController(Controller):
                     if type(loaded_json) is str: # ???? (some decoding shit)
                         loaded_json = json.loads(loaded_json)
                     self.on_command(loaded_json)
-                elif self.buffer[:4] == bytearray([ord('S'), ord('\n'), ord('S'), ord('\n')]): # this is a legacy controller!
-                    SocketLegacyController.downgrade_controller(self)
-                    return True
                 elif self.buffer[3] != 0: # 4th byte not zero means its a HUGE buffer, i call BS
-                    Log.warning("SocketController::on_read_data() detected very huge load (likely a compatibility issue)")
-                    return False
+                    if not SocketLegacyController.downgrade_controller(self):
+                        return False
+                    return self.on_read_data(skip_recv=True)
+                else:
+                    break
             return True
         except Exception as e:
             Log.warning("SocketController::on_read_data()", exception=True)
@@ -92,24 +99,32 @@ class SocketLegacyController(SocketController):
 
     # Makes a SocketController behave like a legacy controller
     # controller  A SocketController
+    # returns     True if downgrade successful, False otherwise
     @staticmethod
     def downgrade_controller(controller):
+        if type(controller) is SocketLegacyController:
+            Log.warning("SocketLegacyController::downgrade_controller({}) controller hopeless".format(str(controller)))
+            return False
         Log.debug("SocketLegacyController::downgrade_controller({})".format(str(controller)))
         # Override those 2 methods (and make them bound to controller)
         controller.on_read_data = types.MethodType(SocketLegacyController.on_read_data, controller)
         controller.on_send_data = types.MethodType(SocketLegacyController.on_send_data, controller)
+        return True
 
     # Called when the socket has pending bytes to read
-    def on_read_data(self):
-        read = self.connection.recv(1024)
-        if not read:
-            return False
+    def on_read_data(self, skip_recv=False):
+        read = bytearray([])
+        if not skip_recv:
+            read = self.connection.recv(1024)
+            if not read:
+                return False
         try:
             self.buffer += read
 
             if ord("{") in self.buffer: # this character is NEVER sent on the legacy protocol, this must be a new controller!
-                SocketController.upgrade_controller(self)
-                return True
+                if not SocketController.upgrade_controller(self):
+                    return False
+                return self.on_read_data(skip_recv=True)
 
             while True:
                 try:

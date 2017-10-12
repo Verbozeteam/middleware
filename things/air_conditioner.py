@@ -41,12 +41,12 @@ class CentralAC(Thing):
         return "central_acs"
 
     def set_fan_speed(self, speed):
-        self.current_fan_speed = speed
+        self.current_fan_speed = int(min(max(speed, 0), 2))
         self.dirty = True
         self.pending_commands.append((self.fan_port, self.current_fan_speed))
 
     def set_set_point(self, set_pt):
-        self.current_set_point = float(set_pt)
+        self.current_set_point = float(min(max(set_pt, 0.0), 50.0))
         self.dirty = True
 
     def sleep(self):
