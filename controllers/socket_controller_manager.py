@@ -297,7 +297,7 @@ class SocketConnectionManager(ConnectionManager):
             try:
                 ip = netifaces.ifaddresses(i)[netifaces.AF_INET][0]['addr']
                 sip = ip.split('.')
-                if (int(sip[0]) > 160 and int(sip[0]) < 250 and int(sip[1]) != 254) or (int(sip[0]) == 10 and int(sip[1]) == 10):
+                if (int(sip[0]) > 1 and int(sip[0]) < 253 and int(sip[1]) != 254) and (i in CONTROLLERS_CONFIG.SOCKET_HOSTING_INTERCACES):
                     ifaces.append((i, ip))
             except: pass
         return ifaces
