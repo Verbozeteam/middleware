@@ -107,6 +107,7 @@ class Blueprint(object):
         for room in self.rooms:
             for thing in room.things.keys():
                 view[thing] = room.things[thing].get_state()
+                view[thing]["category"] = room.things[thing].__class__.get_blueprint_tag()
         return view
 
     # returns  The hardware-friendly view of the blueprint (list of things)

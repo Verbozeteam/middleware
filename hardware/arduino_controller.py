@@ -110,6 +110,7 @@ class ArduinoController(HardwareController):
         self.full_sync = False
         self.sync_send_timer = 0
         self.sync_send_period = 1
+        self.receive_timeout = -1
 
     def initialize_board(self):
         Log.hammoud("ArduinoController::initialize_board()")
@@ -229,6 +230,10 @@ class ArduinoController(HardwareController):
         if num_bytes > 0:
             b = self.serial_port.read(num_bytes)
             self.read_buffer += b
+            self.receive_timeout = cur_time_s + self.sync_send_period + 2
+
+        if self.receive_timeout > 0 and cur_time_s > self.receive_timeout:
+            return False # haven't received anything in a long time!
 
         if self.sync_input_buffer(cur_time_s):
             return self.process_read_buffer()
