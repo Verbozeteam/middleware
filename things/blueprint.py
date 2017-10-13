@@ -50,7 +50,7 @@ class Blueprint(object):
 
         filename = GENERAL_CONFIG.BLUEPRINT_FILENAME
         try:
-            F = open(filename, "r")
+            F = open(filename, "r", encoding="utf-8")
         except:
             Log.fatal("Cannot find blueprint file {}".format(filename))
             return
