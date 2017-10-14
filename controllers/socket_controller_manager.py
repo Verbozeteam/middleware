@@ -224,6 +224,7 @@ class SocketConnectionManager(ConnectionManager):
     def __init__(self, controllers_manager):
         super(SocketConnectionManager, self).__init__(controllers_manager)
         self.server_socks = {} # dictionary of iface name -> socket on that iface
+        self.hosting_ips = {} # dictionary of iface name -> hosting IP (in case it changes)
         self.reconnect_timer = 0
         self.controller_class = SocketController
         if CONTROLLERS_CONFIG.LEGACY_MODE:
@@ -236,15 +237,18 @@ class SocketConnectionManager(ConnectionManager):
             self.reconnect_timer = cur_time_s + CONTROLLERS_CONFIG.SOCKET_SERVER_RECONNECT_TIMEOUT
             available_interfaces = SocketConnectionManager.discover_interfaces()
             for iface in list(self.server_socks.keys()):
-                if iface not in list(map(lambda iface: iface[0], available_interfaces)):
+                matching_interfaces = list(filter(lambda i: i[0] == iface, available_interfaces))
+                if len(matching_interfaces) == 0 or matching_interfaces[0][1] != self.hosting_ips[iface]: # either interface no longer available or IP has changed
                     try: self.server_socks[iface].close()
                     except: pass
                     del self.server_socks[iface]
+                    del self.hosting_ips[iface]
             for (iface, ip) in available_interfaces:
                 if iface not in self.server_socks:
                     s = SocketConnectionManager.create_server_socket(ip)
                     if s:
                         self.server_socks[iface] = s
+                        self.hosting_ips[iface] = ip
                         Log.info("Listening on {}:{}".format(ip, CONTROLLERS_CONFIG.SOCKET_SERVER_BIND_PORT))
 
         # perform a nonblocking select on server sockets and all connections
