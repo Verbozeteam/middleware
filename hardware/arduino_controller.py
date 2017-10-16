@@ -230,7 +230,7 @@ class ArduinoController(HardwareController):
         if num_bytes > 0:
             b = self.serial_port.read(num_bytes)
             self.read_buffer += b
-            self.receive_timeout = cur_time_s + self.sync_send_period + 2
+            self.receive_timeout = cur_time_s + 13
 
         if self.receive_timeout > 0 and cur_time_s > self.receive_timeout:
             return False # haven't received anything in a long time!
