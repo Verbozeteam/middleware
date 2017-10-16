@@ -1,5 +1,5 @@
 from logs import Log
-from controllers.socket_controller_manager import SocketConnectionManager
+from controllers.tcp_socket_controllers import TCPSocketConnectionManager
 
 class CONTROL_CODES:
     GET_BLUEPRINT = 0
@@ -12,9 +12,9 @@ class CONTROL_CODES:
 class ControllersManager(object):
     def __init__(self, core):
         self.core = core
-        self.socket_connection_manager = SocketConnectionManager(self)
+        self.tcp_socket_connection_manager = TCPSocketConnectionManager(self)
         self.connection_managers = [
-            self.socket_connection_manager,
+            self.tcp_socket_connection_manager,
         ]
 
     # called to periodically update this manager
