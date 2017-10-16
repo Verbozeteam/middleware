@@ -126,7 +126,6 @@ class TestSingleLegacyController(object):
                 assert C == {"fan": 1 - i % 2} or abs(C["set_pt"] - 30) < 0.1
 
     def test_hardware_data_to_controller(self):
-        GENERAL_CONFIG.LOG_VERBOZITY = 7
         self.controller.send_line("S\n")
         self.controller.send_line("S\n")
         self.controller.send_line("S\n")

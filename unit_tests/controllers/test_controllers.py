@@ -88,6 +88,7 @@ class TestSingleController(object):
     def setup(self):
         # initialize the core
         GENERAL_CONFIG.BLUEPRINT_FILENAME = "testing_utils/blueprints/lights.json"
+        CONTROLLERS_CONFIG.LEGACY_MODE = False
         self.core = Core()
         self.light = list(filter(lambda t: type(t) is LightSwitch, self.core.blueprint.get_things()))[0]
 
@@ -132,6 +133,7 @@ class TestMultipleControllers(object):
     def setup(self):
         # initialize the core
         GENERAL_CONFIG.BLUEPRINT_FILENAME = "testing_utils/blueprints/lights.json"
+        CONTROLLERS_CONFIG.LEGACY_MODE = False
         self.core = Core()
         self.light = list(filter(lambda t: type(t) is LightSwitch, self.core.blueprint.get_things()))[0]
 
