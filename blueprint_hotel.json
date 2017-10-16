@@ -18,12 +18,6 @@
                 },
                 "dimmer_port": "d4"
             }, {
-                "category": "dimmers",
-                "name": {
-                    "en": "Dimmer 2"
-                },
-                "dimmer_port": "d5"
-            }, {
                 "category": "light_switches",
                 "name": {
                     "en": "Light switch 1"
@@ -35,6 +29,18 @@
                     "en": "Light switch 2"
                 },
                 "switch_port": "d36"
+            }]
+        }, {
+            "ratio": 5,
+            "name": {
+                "en": "Bathroom Lights"
+            },
+            "things": [{
+                "category": "dimmers",
+                "name": {
+                    "en": "Bathroom dimmer"
+                },
+                "dimmer_port": "d5"
             }, {
                 "category": "light_switches",
                 "name": {
@@ -48,32 +54,11 @@
                 },
                 "switch_port": "d34"
             }]
-        }, {
-            "ratio": 3,
-            "name": {
-                "en": "Curtains",
-                "ar": ""
-            },
-            "things": [{
-                "category": "curtains",
-                "name": {
-                    "english": "Curtain 1"
-                },
-                "up_port": "d22",
-                "down_port": "d23"
-            }, {
-                "category": "curtains",
-                "name": {
-                    "english": "Curtain 2"
-                },
-                "up_port": "d24",
-                "down_port": "d25"
-            }]
         }]
     }, {
-        "ratio": 1,
+        "ratio": 2,
         "panels": [{
-            "ratio": 1,
+            "ratio": 5,
             "name": {
                 "en": "Air Conditioning",
                 "ar": "التكييف"
@@ -88,25 +73,6 @@
                 "fan_port": "d48",
                 "valve_port": "d8",
                 "virtual_port_data": [[0, 0]]
-            }]
-        }, {
-            "ratio": 1,
-            "name": {
-                "en": "Kitchen",
-                "ar": ""
-            },
-            "things": [{
-                "category": "kitchen_controls",
-                "name": {
-                    "en": "Kitchen"
-                },
-                "menu": [{
-                    "name": "Shawerma"
-                }, {
-                    "name": "Machboos"
-                }, {
-                    "name": "Falafel"
-                }]
             }]
         }]
     }],
