@@ -1,26 +1,21 @@
-from controllers.connection_manager import ConnectionManager
 from controllers.controller import Controller
 from logs import Log
-from config.controllers_config import CONTROLLERS_CONFIG
 
 from things.air_conditioner import CentralAC
 from things.light import LightSwitch, Dimmer
 from things.curtain import Curtain
 
-import socket
 import struct
 import json
-import re
-import netifaces
 import types
-from select import select
+import re
 
 #
 # A controller connected on the SocketConnectionManager
 #
-class SocketController(Controller):
+class TCPSocketController(Controller):
     def __init__(self, connection_manager, conn, addr):
-        super(SocketController, self).__init__(connection_manager)
+        super(TCPSocketController, self).__init__(connection_manager)
         self.connection = conn
         self.address = addr
         self.buffer = bytearray([])
@@ -30,23 +25,23 @@ class SocketController(Controller):
 
     # Called before the controller gets disconnected
     def disconnect(self):
-        super(SocketController, self).disconnect()
+        super(TCPSocketController, self).disconnect()
         try:
             self.connection.close()
         except: pass
 
-    # Makes a SocketLegacyController behave like a non-legacy controller
-    # controller  A SocketLegacyController
+    # Makes a TCPSocketLegacyController behave like a non-legacy controller
+    # controller  A TCPSocketLegacyController
     # returns     True if downgrade successful, False otherwise
     @staticmethod
     def upgrade_controller(legacy_controller):
-        if type(legacy_controller) is SocketController:
-            Log.warning("SocketController::upgrade_controller({}) controller hopeless".format(str(legacy_controller)))
+        if type(legacy_controller) is TCPSocketController:
+            Log.warning("TCPSocketController::upgrade_controller({}) controller hopeless".format(str(legacy_controller)))
             return False
-        Log.debug("SocketController::upgrade_controller({})".format(str(legacy_controller)))
+        Log.debug("TCPSocketController::upgrade_controller({})".format(str(legacy_controller)))
         # Override those 2 methods (and make them bound to legacy_controller)
-        legacy_controller.on_read_data = types.MethodType(SocketController.on_read_data, legacy_controller)
-        legacy_controller.on_send_data = types.MethodType(SocketController.on_send_data, legacy_controller)
+        legacy_controller.on_read_data = types.MethodType(TCPSocketController.on_read_data, legacy_controller)
+        legacy_controller.on_send_data = types.MethodType(TCPSocketController.on_send_data, legacy_controller)
         return True
 
     # Called when the socket has pending bytes to read
@@ -68,14 +63,14 @@ class SocketController(Controller):
                         loaded_json = json.loads(loaded_json)
                     self.on_command(loaded_json)
                 elif self.buffer[3] != 0: # 4th byte not zero means its a HUGE buffer, i call BS
-                    if not SocketLegacyController.downgrade_controller(self):
+                    if not TCPSocketLegacyController.downgrade_controller(self):
                         return False
                     return self.on_read_data(skip_recv=True)
                 else:
                     break
             return True
         except Exception as e:
-            Log.warning("SocketController::on_read_data()", exception=True)
+            Log.warning("TCPSocketController::on_read_data()", exception=True)
             return False
 
     # Called when data needs to be sent to the remote controller on the socket
@@ -86,29 +81,30 @@ class SocketController(Controller):
             self.connection.send(msg)
             return True
         except:
-            Log.warning("SocketController::on_send_data({}) Failed".format(str(json_data)), exception=True)
+            Log.warning("TCPSocketController::on_send_data({}) Failed".format(str(json_data)), exception=True)
             return False
+
 
 #
 # A controller connected on the SocketConnectionManager using the legacy
 # protocol (commands as newlines)
 #
-class SocketLegacyController(SocketController):
+class TCPSocketLegacyController(TCPSocketController):
     def __init__(self, connection_manager, conn, addr):
-        super(SocketLegacyController, self).__init__(connection_manager, conn, addr)
+        super(TCPSocketLegacyController, self).__init__(connection_manager, conn, addr)
 
-    # Makes a SocketController behave like a legacy controller
-    # controller  A SocketController
+    # Makes a TCPSocketController behave like a legacy controller
+    # controller  A TCPSocketController
     # returns     True if downgrade successful, False otherwise
     @staticmethod
     def downgrade_controller(controller):
-        if type(controller) is SocketLegacyController:
-            Log.warning("SocketLegacyController::downgrade_controller({}) controller hopeless".format(str(controller)))
+        if type(controller) is TCPSocketLegacyController:
+            Log.warning("TCPSocketLegacyController::downgrade_controller({}) controller hopeless".format(str(controller)))
             return False
-        Log.debug("SocketLegacyController::downgrade_controller({})".format(str(controller)))
+        Log.debug("TCPSocketLegacyController::downgrade_controller({})".format(str(controller)))
         # Override those 2 methods (and make them bound to controller)
-        controller.on_read_data = types.MethodType(SocketLegacyController.on_read_data, controller)
-        controller.on_send_data = types.MethodType(SocketLegacyController.on_send_data, controller)
+        controller.on_read_data = types.MethodType(TCPSocketLegacyController.on_read_data, controller)
+        controller.on_send_data = types.MethodType(TCPSocketLegacyController.on_send_data, controller)
         return True
 
     # Called when the socket has pending bytes to read
@@ -122,7 +118,7 @@ class SocketLegacyController(SocketController):
             self.buffer += read
 
             if ord("{") in self.buffer: # this character is NEVER sent on the legacy protocol, this must be a new controller!
-                if not SocketController.upgrade_controller(self):
+                if not TCPSocketController.upgrade_controller(self):
                     return False
                 return self.on_read_data(skip_recv=True)
 
@@ -214,114 +210,5 @@ class SocketLegacyController(SocketController):
             self.connection.send(msg)
             return True
         except Exception as e:
-            Log.warning("FAILED SocketLegacyController::on_send_data({})".format(json_data), exception=True)
+            Log.warning("FAILED TCPSocketLegacyController::on_send_data({})".format(json_data), exception=True)
             return False
-
-#
-# A socketIO-based connection manager for controllers
-#
-class SocketConnectionManager(ConnectionManager):
-    def __init__(self, controllers_manager):
-        super(SocketConnectionManager, self).__init__(controllers_manager)
-        self.server_socks = {} # dictionary of iface name -> socket on that iface
-        self.hosting_ips = {} # dictionary of iface name -> hosting IP (in case it changes)
-        self.reconnect_timer = 0
-        self.controller_class = SocketController
-        if CONTROLLERS_CONFIG.LEGACY_MODE:
-            self.controller_class = SocketLegacyController
-
-    # non-blocking listening to new connections and connected controllers
-    def update(self, cur_time_s):
-        # Check if some interfaces disconnected or new interfaces connected
-        if cur_time_s >= self.reconnect_timer:
-            self.reconnect_timer = cur_time_s + CONTROLLERS_CONFIG.SOCKET_SERVER_RECONNECT_TIMEOUT
-            available_interfaces = SocketConnectionManager.discover_interfaces()
-            for iface in list(self.server_socks.keys()):
-                matching_interfaces = list(filter(lambda i: i[0] == iface, available_interfaces))
-                if len(matching_interfaces) == 0 or matching_interfaces[0][1] != self.hosting_ips[iface]: # either interface no longer available or IP has changed
-                    try: self.server_socks[iface].close()
-                    except: pass
-                    del self.server_socks[iface]
-                    del self.hosting_ips[iface]
-            for (iface, ip) in available_interfaces:
-                if iface not in self.server_socks:
-                    s = SocketConnectionManager.create_server_socket(ip)
-                    if s:
-                        self.server_socks[iface] = s
-                        self.hosting_ips[iface] = ip
-                        Log.info("Listening on {}:{}".format(ip, CONTROLLERS_CONFIG.SOCKET_SERVER_BIND_PORT))
-
-        # perform a nonblocking select on server sockets and all connections
-        controllers_descriptors = list(map(lambda c: c.connection, self.connected_controllers))
-        server_descriptors = list(self.server_socks.values())
-        try:
-            (ready_descriptors, _, _) = select(server_descriptors + controllers_descriptors, [], [], 0)
-            for desc in ready_descriptors:
-                if desc in server_descriptors:
-                    for iface in self.server_socks.keys():
-                        if self.server_socks[iface] == desc:
-                            try:
-                                conn, addr = desc.accept()
-                                self.register_controller(self.controller_class(self, conn, addr))
-                            except:
-                                Log.error("Failed to accept a connection", exception=True)
-                                try: desc.close()
-                                except: pass
-                                del self.server_socks[iface]
-                            break
-                else:
-                    for controller in self.connected_controllers:
-                        if controller.connection == desc:
-                            try:
-                                if not controller.on_read_data():
-                                    self.disconnect_controller(controller)
-                            except Exception as e:
-                                Log.warning("", exception=True)
-                                self.disconnect_controller(controller)
-        except Exception as e:
-            Log.error("Unexpected error", exception=True)
-            self.cleanup()
-
-        super(SocketConnectionManager, self).update(cur_time_s)
-
-    # Called when this manager needs to free all its resources
-    def cleanup(self):
-        super(SocketConnectionManager, self).cleanup()
-        for iface in self.server_socks:
-            try: self.server_socks[iface].close()
-            except: pass
-        self.server_socks = {}
-
-    # Discovers network interfaces active on this machine
-    # returns  A list of tuples (interface_name, ip address)
-    @staticmethod
-    def discover_interfaces():
-        ifaces = []
-        for i in netifaces.interfaces():
-            try:
-                ip = netifaces.ifaddresses(i)[netifaces.AF_INET][0]['addr']
-                sip = ip.split('.')
-                if i in CONTROLLERS_CONFIG.SOCKET_HOSTING_INTERCACES:
-                    ifaces.append((i, ip))
-            except: pass
-        return ifaces
-
-    # Creates and binds a server socket on a given ip
-    # ip  IP to bind the server socket to
-    # returns  The create server socket
-    @staticmethod
-    def create_server_socket(ip):
-        s = None
-        try:
-            addr = (ip, CONTROLLERS_CONFIG.SOCKET_SERVER_BIND_PORT)
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            s.bind(addr)
-            s.listen(CONTROLLERS_CONFIG.SOCKET_SERVER_MAX_CONNECTIONS)
-        except Exception as e:
-            Log.error(str(e), exception=True)
-            try:
-                s.close()
-            except: pass
-            s = None
-        return s

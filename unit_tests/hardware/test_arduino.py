@@ -87,13 +87,15 @@ class TestArduinoController(BaseArduinoEmulatorTestUtil):
 
         time.sleep(self.SOCKET_LAG)
         self.core.hw_manager.update(1000000)
+        time.sleep(self.SOCKET_LAG)
+        self.core.hw_manager.update(2000000)
 
         for i in range(0, self.NUM_ANALOG_PINS):
             assert reading_map["a"+str(i)][0] == reading_map["a"+str(i)][1]
         for i in range(0, self.NUM_DIGITAL_PINS):
             assert reading_map["d"+str(i)][0] == reading_map["d"+str(i)][1]
 
-        self.core.hw_manager.update(1000001)
+        self.core.hw_manager.update(3000000)
         self.is_board_synced()
 
     def test_pwm_outputs(self):

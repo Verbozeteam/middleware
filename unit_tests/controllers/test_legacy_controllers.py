@@ -76,7 +76,7 @@ class TestSingleLegacyController(object):
         self.core.ctrl_manager.update(1)
 
         # connect the fake controller (in a separate thread)
-        self.controller = FakeLegacyController(self.core.ctrl_manager.socket_connection_manager)
+        self.controller = FakeLegacyController(self.core.ctrl_manager.tcp_socket_connection_manager)
         self.controller.connect()
 
     # disconnect the fake controller on teardown
@@ -187,9 +187,9 @@ class TestUpgradeDowngrade(object):
 
         # connect the fake controller (in a separate thread)
         if controller_legacy:
-            self.controller = FakeLegacyController(self.core.ctrl_manager.socket_connection_manager)
+            self.controller = FakeLegacyController(self.core.ctrl_manager.tcp_socket_connection_manager)
         else:
-            self.controller = FakeController(self.core.ctrl_manager.socket_connection_manager)
+            self.controller = FakeController(self.core.ctrl_manager.tcp_socket_connection_manager)
         self.controller.connect()
 
     def test_downgrade_simple(self):

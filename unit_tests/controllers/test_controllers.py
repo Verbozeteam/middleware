@@ -17,10 +17,10 @@ import netifaces
 from multiprocessing.pool import ThreadPool
 
 class FakeController(object):
-    def __init__(self, socket_connection_manager):
+    def __init__(self, tcp_socket_connection_manager):
         self.socket = None
         self.buffer = bytearray([])
-        self.manager = socket_connection_manager
+        self.manager = tcp_socket_connection_manager
 
     def connect(self):
         # find hosting IP
@@ -95,7 +95,7 @@ class TestSingleController(object):
         self.core.ctrl_manager.update(1)
 
         # connect the fake controller (in a separate thread)
-        self.controller = FakeController(self.core.ctrl_manager.socket_connection_manager)
+        self.controller = FakeController(self.core.ctrl_manager.tcp_socket_connection_manager)
         self.controller.connect()
 
     # disconnect the fake controller on teardown
@@ -140,7 +140,7 @@ class TestMultipleControllers(object):
 
         self.controllers = []
         for i in range(self.NUM_CONTROLLERS):
-            self.controllers.append(FakeController(self.core.ctrl_manager.socket_connection_manager))
+            self.controllers.append(FakeController(self.core.ctrl_manager.tcp_socket_connection_manager))
             self.controllers[-1].connect()
 
     # disconnect the fake controller on teardown
