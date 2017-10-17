@@ -29,6 +29,18 @@
                     "en": "Light switch 2"
                 },
                 "switch_port": "d36"
+            }, {
+                "category": "light_switches",
+                "name": {
+                    "en": "Light switch 3"
+                },
+                "switch_port": "d35"
+            }, {
+                "category": "light_switches",
+                "name": {
+                    "en": "Light switch 4"
+                },
+                "switch_port": "d34"
             }]
         }, {
             "ratio": 5,
@@ -44,15 +56,27 @@
             }, {
                 "category": "light_switches",
                 "name": {
-                    "en": "Light switch 3"
+                    "en": "Light switch 5"
                 },
-                "switch_port": "d35"
+                "switch_port": "d33"
             }, {
                 "category": "light_switches",
                 "name": {
-                    "en": "Light switch 4"
+                    "en": "Light switch 6"
                 },
-                "switch_port": "d34"
+                "switch_port": "d32"
+            }, {
+                "category": "light_switches",
+                "name": {
+                    "en": "Light switch 7"
+                },
+                "switch_port": "d31"
+            }, {
+                "category": "light_switches",
+                "name": {
+                    "en": "Light switch 8"
+                },
+                "switch_port": "d30"
             }]
         }]
     }, {
@@ -66,13 +90,28 @@
             "things": [{
                 "category": "central_acs",
                 "name": {
-                    "en": "Air conditioning",
+                    "en": "Air Conditioning",
                     "ar": "التكييف"
                 },
                 "temperature_port": "v0",
                 "fan_port": "d48",
                 "valve_port": "d8",
                 "virtual_port_data": [[0, 0]]
+            }]
+        }, {
+            "ratio": 5,
+            "name": {
+                "en": "Hotel Controls",
+            },
+            "things": [{
+                "category": "hotel_controls",
+                "name": {
+                    "en": "Hotel Controls",
+                },
+                "power_port": "d42",
+                "hotel_card": "d44",
+                "do_not_disturb_port": "d29",
+                "room_service_port": "d28"
             }]
         }]
     }],
