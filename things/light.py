@@ -59,7 +59,7 @@ class Dimmer(Thing):
         self.intensity = int(min(max(intensity, 0), 100))
         self.dirty = True
         if self.is_isr_dimmer:
-            self.pending_commands.append((self.dimmer_port, int((float(self.intensity) / 100.0) * (self.virtual_port_data[0][1]-1))))
+            self.pending_commands.append((self.dimmer_port, min(max(int((1.0 - float(self.intensity) / 100.0) * 100), 2), 100)))
         else:
             self.pending_commands.append((self.dimmer_port, int(self.intensity * 2.55)))
 
