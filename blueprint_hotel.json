@@ -16,31 +16,32 @@
                 "name": {
                     "en": "Dimmer 1"
                 },
-                "dimmer_port": "d4"
+                "dimmer_port": "v0",
+                "virtual_port_data": [[1, 50, 31, 32]]
             }, {
                 "category": "light_switches",
                 "name": {
                     "en": "Light switch 1"
                 },
-                "switch_port": "d37"
+                "switch_port": "d41"
             }, {
                 "category": "light_switches",
                 "name": {
                     "en": "Light switch 2"
                 },
-                "switch_port": "d36"
+                "switch_port": "d40"
             }, {
                 "category": "light_switches",
                 "name": {
                     "en": "Light switch 3"
                 },
-                "switch_port": "d35"
+                "switch_port": "d39"
             }, {
                 "category": "light_switches",
                 "name": {
                     "en": "Light switch 4"
                 },
-                "switch_port": "d34"
+                "switch_port": "d22"
             }]
         }, {
             "ratio": 5,
@@ -52,31 +53,32 @@
                 "name": {
                     "en": "Bathroom dimmer"
                 },
-                "dimmer_port": "d5"
+                "dimmer_port": "v0",
+                "virtual_port_data": [[1, 50, 31, 33]]
             }, {
                 "category": "light_switches",
                 "name": {
                     "en": "Light switch 5"
                 },
-                "switch_port": "d33"
+                "switch_port": "d42"
             }, {
                 "category": "light_switches",
                 "name": {
                     "en": "Light switch 6"
                 },
-                "switch_port": "d32"
+                "switch_port": "d23"
             }, {
                 "category": "light_switches",
                 "name": {
                     "en": "Light switch 7"
                 },
-                "switch_port": "d31"
+                "switch_port": "d24"
             }, {
                 "category": "light_switches",
                 "name": {
                     "en": "Light switch 8"
                 },
-                "switch_port": "d30"
+                "switch_port": "d25"
             }]
         }]
     }, {
@@ -94,24 +96,24 @@
                     "ar": "التكييف"
                 },
                 "temperature_port": "v0",
-                "fan_port": "d48",
-                "valve_port": "d8",
+                "fan_port": "d38",
+                "digital_valve_port": "37",
                 "virtual_port_data": [[0, 0]]
             }]
         }, {
             "ratio": 5,
             "name": {
-                "en": "Hotel Controls",
+                "en": "Hotel Controls"
             },
             "things": [{
                 "category": "hotel_controls",
                 "name": {
-                    "en": "Hotel Controls",
+                    "en": "Hotel Controls"
                 },
                 "power_port": "d42",
-                "hotel_card": "d44",
-                "do_not_disturb_port": "d29",
-                "room_service_port": "d28"
+                "hotel_card": "d41",
+                "do_not_disturb_port": "d44",
+                "room_service_port": "d43"
             }]
         }]
     }],
