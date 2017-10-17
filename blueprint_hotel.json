@@ -23,21 +23,21 @@
                 "name": {
                     "en": "Light switch 1"
                 },
-                "switch_port": "d41",
+                "switch_port": "d40",
                 "id": "lightswitch-8"
             }, {
                 "category": "light_switches",
                 "name": {
                     "en": "Light switch 2"
                 },
-                "switch_port": "d40",
+                "switch_port": "d35",
                 "id": "lightswitch-7"
             }, {
                 "category": "light_switches",
                 "name": {
                     "en": "Light switch 3"
                 },
-                "switch_port": "d39",
+                "switch_port": "d34",
                 "id": "lightswitch-6"
             }, {
                 "category": "light_switches",
@@ -64,14 +64,14 @@
                 "name": {
                     "en": "Light switch 5"
                 },
-                "switch_port": "d42",
+                "switch_port": "d39",
                 "id": "lightswitch-4"
             }, {
                 "category": "light_switches",
                 "name": {
                     "en": "Light switch 6"
                 },
-                "switch_port": "d23",
+                "switch_port": "d38",
                 "id": "lightswitch-3"
             }, {
                 "category": "light_switches",
@@ -104,8 +104,8 @@
                     "ar": "التكييف"
                 },
                 "temperature_port": "v0",
-                "fan_port": "d38",
-                "digital_valve_port": "d37",
+                "fan_port": "d42",
+                "digital_valve_port": "d43",
                 "virtual_port_data": [[0, 0]]
             }]
         }, {
@@ -119,9 +119,9 @@
                     "en": "Hotel Controls"
                 },
                 "power_port": "d45",
-                "hotel_card": "d46",
-                "do_not_disturb_port": "d44",
-                "room_service_port": "d43"
+                "hotel_card": "d41",
+                "do_not_disturb_port": "d37",
+                "room_service_port": "d36"
             }]
         }]
     }],
