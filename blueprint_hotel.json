@@ -41,7 +41,7 @@
                 "name": {
                     "en": "Light switch 4"
                 },
-                "switch_port": "d22"
+                "switch_port": "d48"
             }]
         }, {
             "ratio": 5,
@@ -66,19 +66,19 @@
                 "name": {
                     "en": "Light switch 6"
                 },
-                "switch_port": "d23"
+                "switch_port": "d49"
             }, {
                 "category": "light_switches",
                 "name": {
                     "en": "Light switch 7"
                 },
-                "switch_port": "d24"
+                "switch_port": "d50"
             }, {
                 "category": "light_switches",
                 "name": {
                     "en": "Light switch 8"
                 },
-                "switch_port": "d25"
+                "switch_port": "d51"
             }]
         }]
     }, {
