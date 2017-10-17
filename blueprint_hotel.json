@@ -23,25 +23,29 @@
                 "name": {
                     "en": "Light switch 1"
                 },
-                "switch_port": "d41"
+                "switch_port": "d41",
+                "id": "lightswitch-8"
             }, {
                 "category": "light_switches",
                 "name": {
                     "en": "Light switch 2"
                 },
-                "switch_port": "d40"
+                "switch_port": "d40",
+                "id": "lightswitch-7"
             }, {
                 "category": "light_switches",
                 "name": {
                     "en": "Light switch 3"
                 },
-                "switch_port": "d39"
+                "switch_port": "d39",
+                "id": "lightswitch-6"
             }, {
                 "category": "light_switches",
                 "name": {
                     "en": "Light switch 4"
                 },
-                "switch_port": "d48"
+                "switch_port": "d48",
+                "id": "lightswitch-5"
             }]
         }, {
             "ratio": 5,
@@ -53,32 +57,36 @@
                 "name": {
                     "en": "Bathroom dimmer"
                 },
-                "dimmer_port": "v0",
+                "dimmer_port": "v1",
                 "virtual_port_data": [[1, 50, 31, 33]]
             }, {
                 "category": "light_switches",
                 "name": {
                     "en": "Light switch 5"
                 },
-                "switch_port": "d42"
+                "switch_port": "d42",
+                "id": "lightswitch-4"
             }, {
                 "category": "light_switches",
                 "name": {
                     "en": "Light switch 6"
                 },
-                "switch_port": "d49"
+                "switch_port": "d23",
+                "id": "lightswitch-3"
             }, {
                 "category": "light_switches",
                 "name": {
                     "en": "Light switch 7"
                 },
-                "switch_port": "d50"
+                "switch_port": "d22",
+                "id": "lightswitch-2"
             }, {
                 "category": "light_switches",
                 "name": {
                     "en": "Light switch 8"
                 },
-                "switch_port": "d51"
+                "switch_port": "d21",
+                "id": "lightswitch-1"
             }]
         }]
     }, {
