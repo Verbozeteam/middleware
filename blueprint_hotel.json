@@ -118,8 +118,8 @@
                 "name": {
                     "en": "Hotel Controls"
                 },
-                "power_port": "d42",
-                "hotel_card": "d41",
+                "power_port": "d45",
+                "hotel_card": "d46",
                 "do_not_disturb_port": "d44",
                 "room_service_port": "d43"
             }]

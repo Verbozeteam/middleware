@@ -6,7 +6,7 @@ class LightSwitch(Thing):
     def __init__(self, blueprint, light_json):
         super(LightSwitch, self).__init__(blueprint, light_json)
         self.output_ports[self.switch_port] = 1 # digital output
-        self.id light_json.get("id", "lightswitch-" + self.switch_port)
+        self.id = light_json.get("id", "lightswitch-" + self.switch_port)
         self.intensity = 0
 
     # Should return the key in the blueprint that this Thing captures
