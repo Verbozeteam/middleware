@@ -4,7 +4,7 @@ from logs import Log
 from things.air_conditioner import CentralAC
 from things.light import LightSwitch, Dimmer
 from things.curtain import Curtain
-from thing.hotel_controls import HotelControls
+from things.hotel_controls import HotelControls
 
 import struct
 import json
