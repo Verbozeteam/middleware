@@ -4,6 +4,7 @@ from logs import Log
 from things.air_conditioner import CentralAC
 from things.light import LightSwitch, Dimmer
 from things.curtain import Curtain
+from thing.hotel_controls import HotelControls
 
 import struct
 import json
@@ -133,7 +134,7 @@ class TCPSocketLegacyController(TCPSocketController):
                             self.connection.send(bytearray([0]))
                         else:
                             Log.hammoud("SocketLegacyController::on_read_data({})".format(command))
-                            m = re.search("^(?P<type>[atlfc])(?P<index>[0-9]+):(?P<value>[0-9]+)\n$", command)
+                            m = re.search("^(?P<type>[atlfcs])(?P<index>[0-9]+):(?P<value>[0-9]+)\n$", command)
                             if m:
                                 (t, index, value) = m.groups()
                                 index = int(index)
@@ -175,6 +176,14 @@ class TCPSocketLegacyController(TCPSocketController):
                                             "thing": acs[index].id,
                                             "fan": value
                                         }
+                                elif t == 's':
+                                    hotel_controls = list(sorted(filter(lambda t: type(t) is HotelControls, all_things), key=lambda t: t.id))
+                                    if len(hotel_controls) > 0:
+                                        hotel_controls = hotel_controls[0]
+                                        if index >= 0 and index <= 1:
+                                            command_json = {"thing": hotel_controls.id}
+                                            if index == 0: command_json["do_not_disturb"] = value
+                                            else: command_json["room_service"] = value
                                 if command_json != {}:
                                     self.on_command(command_json)
                 except:
@@ -192,20 +201,30 @@ class TCPSocketLegacyController(TCPSocketController):
             dimmers = []
             switches = []
             curtains = []
-            acs += list(filter(lambda t: type(t) is CentralAC, self.manager.controllers_manager.core.blueprint.get_things()))
-            dimmers += list(filter(lambda t: type(t) is Dimmer, self.manager.controllers_manager.core.blueprint.get_things()))
-            switches += list(filter(lambda t: type(t) is LightSwitch, self.manager.controllers_manager.core.blueprint.get_things()))
-            curtains += list(filter(lambda t: type(t) is Curtain, self.manager.controllers_manager.core.blueprint.get_things()))
+            hotel_cards = []
+
+            all_things = self.manager.controllers_manager.core.blueprint.get_things()
+
+            acs += list(filter(lambda t: type(t) is CentralAC, all_things))
+            dimmers += list(filter(lambda t: type(t) is Dimmer, all_things))
+            switches += list(filter(lambda t: type(t) is LightSwitch, all_things))
+            curtains += list(filter(lambda t: type(t) is Curtain, all_things))
+
             acs = sorted(acs, key=lambda t: t.id)
             dimmers = sorted(dimmers, key=lambda t: t.id)
             switches = sorted(switches, key=lambda t: t.id, reverse=True)
             curtains = sorted(curtains, key=lambda t: t.id)
+
+            hotel_controls = list(filter(lambda t: type(t) is HotelControls, all_things))
+            if len(hotel_controls) > 0:
+                hotel_cards += [hotel_controls[0].do_not_disturb, hotel_controls[0].room_service]
+
             msg = bytearray([254])
             msg += bytearray([len(acs)])
             for ac in acs:
                 msg += bytearray([int(ac.current_fan_speed), int(ac.current_set_point*2), int(ac.current_temperature)])
             msg += bytearray([len(dimmers)] + list(map(lambda t: t.intensity, dimmers)))
-            msg += bytearray([len(switches)] + list(map(lambda t: t.intensity, switches)))
+            msg += bytearray([len(switches) + len(hotel_cards)] + list(map(lambda t: t.intensity, switches)) + hotel_cards)
             msg += bytearray([len(curtains), 255])
             self.connection.send(msg)
             return True
