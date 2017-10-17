@@ -63,7 +63,7 @@ class Dimmer(Thing):
             if light_power > 85 and light_power < 97:
                 light_power = 85
             elif light_power >= 97:
-                light_power = 100
+                light_power = 105 # so that zero-crossing has no way of nakba
             self.pending_commands.append((self.dimmer_port, light_power))
         else:
             self.pending_commands.append((self.dimmer_port, int(self.intensity * 2.55)))
