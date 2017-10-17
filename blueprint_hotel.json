@@ -17,7 +17,7 @@
                     "en": "Dimmer 1"
                 },
                 "dimmer_port": "v1",
-                "virtual_port_data": [[1, 50, 1, 32]]
+                "virtual_port_data": [[1, 50, 1, 4]]
             }, {
                 "category": "light_switches",
                 "name": {
@@ -58,7 +58,7 @@
                     "en": "Bathroom dimmer"
                 },
                 "dimmer_port": "v2",
-                "virtual_port_data": [[1, 50, 1, 33]]
+                "virtual_port_data": [[1, 50, 1, 5]]
             }, {
                 "category": "light_switches",
                 "name": {
