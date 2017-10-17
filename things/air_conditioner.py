@@ -26,14 +26,18 @@ class CentralAC(Thing):
         super(CentralAC, self).__init__(blueprint, ac_json)
         self.input_ports[self.temperature_port] = 5000 # read temperature every 5 seconds
         self.output_ports[self.fan_port] = 1 # digital output
-        self.output_ports[self.valve_port] = 2 # pwm output
+        if hasattr(self, "valve_port"):
+            self.output_ports[self.valve_port] = 2 # pwm output
+        else:
+            self.output_ports[self.digital_valve_port] = 1 # digital OPEN/CLOSE valve
         self.id = "central-ac-" + self.temperature_port + "-" + self.fan_port
         self.current_set_point = 25
         self.current_temperature = 25
         self.current_fan_speed = 1
         self.homeostasis = 0.49
         self.current_airflow = 0
-        self.next_airflow_update = 0
+        self.next_valve_update = 0
+        self.is_temp_rising = False
 
     # Should return the key in the blueprint that this Thing captures
     @staticmethod
@@ -83,12 +87,27 @@ class CentralAC(Thing):
             self.set_fan_speed(data["fan"])
 
     def update(self, cur_time_s):
-        temp_diff = self.current_temperature - self.current_set_point
-        coeff = (min(max(temp_diff, -10), 10)) / 10; # [-1, 1]
-        self.current_airflow = min(max(self.current_airflow + self.homeostasis * coeff, 0.0), 255.0)
-        if cur_time_s >= self.next_airflow_update:
-            self.next_airflow_update = cur_time_s + 5
-            self.pending_commands.append((self.valve_port, int(self.current_airflow)))
+        if cur_time_s >= self.next_valve_update:
+            self.next_valve_update = cur_time_s + 5
+
+            if hasattr(self, "valve_port"):
+                temp_diff = self.current_temperature - self.current_set_point
+                coeff = (min(max(temp_diff, -10), 10)) / 10; # [-1, 1]
+                self.current_airflow = min(max(self.current_airflow + self.homeostasis * coeff, 0.0), 255.0)
+                self.pending_commands.append((self.valve_port, int(self.current_airflow)))
+            elif hasattr(self, "digital_valve_port"):
+                if self.is_temp_rising:
+                    if self.current_temperature > self.current_set_point + self.homeostasis:
+                        self.pending_commands.append((self.digital_valve_port, 1))
+                        self.is_temp_rising = False
+                    else:
+                        self.pending_commands.append((self.digital_valve_port, 0))
+                if not self.is_temp_rising:
+                    if self.current_temperature < self.current_set_point - self.homeostasis:
+                        self.pending_commands.append((self.digital_valve_port, 0))
+                        self.is_temp_rising = True
+                    else:
+                        self.pending_commands.append((self.digital_valve_port, 1))
 
     def get_state(self):
         return {
