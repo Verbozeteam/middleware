@@ -43,9 +43,10 @@ class PIN_TYPE:
         return (-1, "")
 
 class PIN_MODE:
-    INPUT   = 0
-    OUTPUT  = 1
-    PWM     = 2
+    INPUT        = 0
+    OUTPUT       = 1
+    PWM          = 2
+    INPUT_PULLUP = 3
 
 class VIRTUAL_PIN_TYPE:
     CENTRAL_AC  = 0
@@ -131,9 +132,11 @@ class ArduinoController(HardwareController):
                 self.serial_port.write(ArduinoProtocol.create_set_virtual_pin_mode(virtual_ports[i], thing.virtual_port_data[i]))
 
             for port in thing.input_ports.keys():
+                pin_mode = PIN_MODE.INPUT if thing.input_ports[port] >= 0 else PIN_MODE.INPUT_PULLUP
+                pin_read_freq = abs(thing.input_ports[port])
                 if port not in virtual_ports:
-                    self.serial_port.write(ArduinoProtocol.create_set_pin_mode(port, PIN_MODE.INPUT))
-                self.serial_port.write(ArduinoProtocol.create_register_pin_listener(port, thing.input_ports[port]))
+                    self.serial_port.write(ArduinoProtocol.create_set_pin_mode(port, pin_mode))
+                self.serial_port.write(ArduinoProtocol.create_register_pin_listener(port, pin_read_freq))
 
             for port in thing.output_ports.keys():
                 if port not in virtual_ports:
