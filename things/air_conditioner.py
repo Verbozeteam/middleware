@@ -34,7 +34,7 @@ class CentralAC(Thing):
         self.current_set_point = 25
         self.current_temperature = 25
         self.current_fan_speed = 1
-        self.homeostasis = 0.49
+        self.homeostasis = 0.24 # can be actually double that in the worst case (because of temperature rounding)
         self.current_airflow = 0
         self.next_valve_update = 0
         self.is_temp_rising = False
@@ -77,7 +77,7 @@ class CentralAC(Thing):
 
     def on_hardware_data(self, port, value):
         if port == self.temperature_port:
-            self.current_temperature = float(value) / 2.0
+            self.current_temperature = float(value) / 4.0
             self.dirty = True
 
     def on_controller_data(self, data):
