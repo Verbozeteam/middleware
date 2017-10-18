@@ -117,7 +117,7 @@
                 "fan_port": "d42",
                 "digital_valve_port": "d43",
                 "virtual_port_data": [[0, 0]],
-                "default_sleep_temperature": 24.0
+                "default_sleep_temperature": 25.0
             }]
         }, {
             "ratio": 5,
