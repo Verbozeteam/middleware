@@ -6,7 +6,7 @@ class LightSwitch(Thing):
     def __init__(self, blueprint, light_json):
         super(LightSwitch, self).__init__(blueprint, light_json)
         self.output_ports[self.switch_port] = 1 # digital output
-        self.id = "lightswitch-" + self.switch_port
+        self.id = light_json.get("id", "lightswitch-" + self.switch_port)
         self.intensity = 0
 
     # Should return the key in the blueprint that this Thing captures
@@ -59,7 +59,12 @@ class Dimmer(Thing):
         self.intensity = int(min(max(intensity, 0), 100))
         self.dirty = True
         if self.is_isr_dimmer:
-            self.pending_commands.append((self.dimmer_port, int((float(self.intensity) / 100.0) * (self.virtual_port_data[0][1]-1))))
+            light_power = min(max(int((1.0 - float(self.intensity) / 100.0) * 100), 2), 100) # between 2 (max) and 100 (0)
+            if light_power > 85 and light_power < 97:
+                light_power = 85
+            elif light_power >= 97:
+                light_power = 105 # so that zero-crossing has no way of nakba
+            self.pending_commands.append((self.dimmer_port, light_power))
         else:
             self.pending_commands.append((self.dimmer_port, int(self.intensity * 2.55)))
 

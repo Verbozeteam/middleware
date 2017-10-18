@@ -51,7 +51,7 @@ class Thing(object):
 
         commands = []
         added_ports = []
-        for command in self.pending_commands:
+        for command in reversed(self.pending_commands):
             if command[0] not in added_ports:
                 added_ports.append(command[0])
                 commands = [command] + commands
