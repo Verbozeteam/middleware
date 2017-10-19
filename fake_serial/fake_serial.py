@@ -32,6 +32,9 @@ class Serial(object):
         self.buffered_bytes = self.buffered_bytes[num_bytes:]
         return ret
 
+    def fileno(self):
+        return self.sock.fileno()
+
     def __getattribute__(self, name):
         if name == "in_waiting":
             (ready_socks, _, _) = select.select([self.sock], [], [], 0)

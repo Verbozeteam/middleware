@@ -1,4 +1,4 @@
-from controllers.controller import Controller
+from controllers.controller_base import Controller
 from logs import Log
 
 from things.air_conditioner import CentralAC
@@ -11,42 +11,55 @@ import json
 import types
 import re
 
+# Makes a TCPSocketLegacyController behave like a non-legacy controller
+# controller  A TCPSocketLegacyController
+# returns     True if downgrade successful, False otherwise
+def upgrade_controller(legacy_controller):
+    if type(legacy_controller) is TCPSocketController:
+        Log.warning("upgrade_controller({}) controller hopeless".format(str(legacy_controller)))
+        return False
+    Log.debug("upgrade_controller({})".format(str(legacy_controller)))
+    # Override those 2 methods (and make them bound to legacy_controller)
+    legacy_controller.on_read_ready = types.MethodType(TCPSocketController.on_read_ready, legacy_controller)
+    legacy_controller.on_send_data = types.MethodType(TCPSocketController.on_send_data, legacy_controller)
+    return True
+
+# Makes a TCPSocketController behave like a legacy controller
+# controller  A TCPSocketController
+# returns     True if downgrade successful, False otherwise
+def downgrade_controller(controller):
+    if type(controller) is TCPSocketLegacyController:
+        Log.warning("downgrade_controller({}) controller hopeless".format(str(controller)))
+        return False
+    Log.debug("downgrade_controller({})".format(str(controller)))
+    # Override those 2 methods (and make them bound to controller)
+    controller.on_read_ready = types.MethodType(TCPSocketLegacyController.on_read_ready, controller)
+    controller.on_send_data = types.MethodType(TCPSocketLegacyController.on_send_data, controller)
+    return True
+
 #
 # A controller connected on the SocketConnectionManager
 #
 class TCPSocketController(Controller):
-    def __init__(self, connection_manager, conn, addr):
-        super(TCPSocketController, self).__init__(connection_manager)
+    def __init__(self, controllers_manager, conn, addr):
+        super(TCPSocketController, self).__init__(controllers_manager)
         self.connection = conn
         self.address = addr
         self.buffer = bytearray([])
+        self.initialize_selectible_fd(conn)
 
     def __str__(self):
         return str(self.address)
 
     # Called before the controller gets disconnected
-    def disconnect(self):
-        super(TCPSocketController, self).disconnect()
+    def destroy_selectible(self):
         try:
             self.connection.close()
         except: pass
-
-    # Makes a TCPSocketLegacyController behave like a non-legacy controller
-    # controller  A TCPSocketLegacyController
-    # returns     True if downgrade successful, False otherwise
-    @staticmethod
-    def upgrade_controller(legacy_controller):
-        if type(legacy_controller) is TCPSocketController:
-            Log.warning("TCPSocketController::upgrade_controller({}) controller hopeless".format(str(legacy_controller)))
-            return False
-        Log.debug("TCPSocketController::upgrade_controller({})".format(str(legacy_controller)))
-        # Override those 2 methods (and make them bound to legacy_controller)
-        legacy_controller.on_read_data = types.MethodType(TCPSocketController.on_read_data, legacy_controller)
-        legacy_controller.on_send_data = types.MethodType(TCPSocketController.on_send_data, legacy_controller)
-        return True
+        super(TCPSocketController, self).destroy_selectible()
 
     # Called when the socket has pending bytes to read
-    def on_read_data(self, skip_recv=False):
+    def on_read_ready(self, cur_time_s, skip_recv=False):
         read = bytearray([])
         if not skip_recv:
             read = self.connection.recv(1024)
@@ -64,14 +77,14 @@ class TCPSocketController(Controller):
                         loaded_json = json.loads(loaded_json)
                     self.on_command(loaded_json)
                 elif self.buffer[3] != 0: # 4th byte not zero means its a HUGE buffer, i call BS
-                    if not TCPSocketLegacyController.downgrade_controller(self):
+                    if not downgrade_controller(self):
                         return False
-                    return self.on_read_data(skip_recv=True)
+                    return self.on_read_ready(cur_time_s, skip_recv=True)
                 else:
                     break
             return True
         except Exception as e:
-            Log.warning("TCPSocketController::on_read_data()", exception=True)
+            Log.warning("TCPSocketController::on_read_ready()", exception=True)
             return False
 
     # Called when data needs to be sent to the remote controller on the socket
@@ -79,37 +92,22 @@ class TCPSocketController(Controller):
         try:
             json_data = json.dumps(json_data)
             msg = struct.pack('<I', len(json_data)) + bytearray(json_data.encode("utf-8"))
-            self.connection.send(msg)
+            self.write_to_fd(msg)
             return True
         except:
             Log.warning("TCPSocketController::on_send_data({}) Failed".format(str(json_data)), exception=True)
             return False
-
 
 #
 # A controller connected on the SocketConnectionManager using the legacy
 # protocol (commands as newlines)
 #
 class TCPSocketLegacyController(TCPSocketController):
-    def __init__(self, connection_manager, conn, addr):
-        super(TCPSocketLegacyController, self).__init__(connection_manager, conn, addr)
-
-    # Makes a TCPSocketController behave like a legacy controller
-    # controller  A TCPSocketController
-    # returns     True if downgrade successful, False otherwise
-    @staticmethod
-    def downgrade_controller(controller):
-        if type(controller) is TCPSocketLegacyController:
-            Log.warning("TCPSocketLegacyController::downgrade_controller({}) controller hopeless".format(str(controller)))
-            return False
-        Log.debug("TCPSocketLegacyController::downgrade_controller({})".format(str(controller)))
-        # Override those 2 methods (and make them bound to controller)
-        controller.on_read_data = types.MethodType(TCPSocketLegacyController.on_read_data, controller)
-        controller.on_send_data = types.MethodType(TCPSocketLegacyController.on_send_data, controller)
-        return True
+    def __init__(self, controllers_manager, conn, addr):
+        super(TCPSocketLegacyController, self).__init__(controllers_manager, conn, addr)
 
     # Called when the socket has pending bytes to read
-    def on_read_data(self, skip_recv=False):
+    def on_read_ready(self, cur_time_s, skip_recv=False):
         read = bytearray([])
         if not skip_recv:
             read = self.connection.recv(1024)
@@ -119,9 +117,9 @@ class TCPSocketLegacyController(TCPSocketController):
             self.buffer += read
 
             if ord("{") in self.buffer: # this character is NEVER sent on the legacy protocol, this must be a new controller!
-                if not TCPSocketController.upgrade_controller(self):
+                if not upgrade_controller(self):
                     return False
-                return self.on_read_data(skip_recv=True)
+                return self.on_read_ready(cur_time_s, skip_recv=True)
 
             while True:
                 try:
@@ -131,9 +129,9 @@ class TCPSocketLegacyController(TCPSocketController):
                         self.buffer = self.buffer[newline_idx+1:]
                         if command == "S\n":
                             # Heartbeat support: just reply with garbage byte
-                            self.connection.send(bytearray([0]))
+                            self.write_to_fd(bytearray([0]))
                         else:
-                            Log.hammoud("SocketLegacyController::on_read_data({})".format(command))
+                            Log.hammoud("SocketLegacyController::on_read_ready({})".format(command))
                             m = re.search("^(?P<type>[atlfcs])(?P<index>[0-9]+):(?P<value>[0-9]+)\n$", command)
                             if m:
                                 (t, index, value) = m.groups()
@@ -226,7 +224,7 @@ class TCPSocketLegacyController(TCPSocketController):
             msg += bytearray([len(dimmers)] + list(map(lambda t: t.intensity, dimmers)))
             msg += bytearray([len(switches) + len(hotel_cards)] + list(map(lambda t: t.intensity, switches)) + hotel_cards)
             msg += bytearray([len(curtains), 255])
-            self.connection.send(msg)
+            self.write_to_fd(msg)
             return True
         except Exception as e:
             Log.warning("FAILED TCPSocketLegacyController::on_send_data({})".format(json_data), exception=True)

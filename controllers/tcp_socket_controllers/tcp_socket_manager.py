@@ -1,11 +1,62 @@
 from controllers.connection_manager import ConnectionManager
+from core.select_service import Selectible
 from controllers.tcp_socket_controllers.tcp_socket_controller import TCPSocketController, TCPSocketLegacyController
 from logs import Log
 from config.controllers_config import CONTROLLERS_CONFIG
 
 import socket
 import netifaces
-from select import select
+
+class TCPHostedSocket(Selectible):
+    def __init__(self, controllers_manager, interface, ip):
+        self.controllers_manager = controllers_manager
+        self.interface = interface
+        self.ip = ip
+        self.sock = TCPHostedSocket.create_server_socket(self.ip)
+        if self.sock == None:
+            raise 1
+        self.initialize_selectible_fd(self.sock)
+
+        self.controller_class = TCPSocketController
+        if CONTROLLERS_CONFIG.LEGACY_MODE:
+            self.controller_class = TCPSocketLegacyController
+
+        Log.info("Listening on {}:{}".format(ip, CONTROLLERS_CONFIG.SOCKET_SERVER_BIND_PORT))
+
+    def destroy_selectible(self):
+        try:
+            self.sock.close()
+        except: pass
+        super(TCPHostedSocket, self).destroy_selectible()
+
+    def on_read_ready(self, cur_time_s):
+        try:
+            conn, addr = self.sock.accept()
+            self.controller_class(self, conn, addr) # registers itself
+        except:
+            Log.error("Failed to accept a connection", exception=True)
+            return False
+        return True
+
+    # Creates and binds a server socket on a given ip
+    # ip  IP to bind the server socket to
+    # returns  The create server socket
+    @staticmethod
+    def create_server_socket(ip):
+        s = None
+        try:
+            addr = (ip, CONTROLLERS_CONFIG.SOCKET_SERVER_BIND_PORT)
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            s.bind(addr)
+            s.listen(CONTROLLERS_CONFIG.SOCKET_SERVER_MAX_CONNECTIONS)
+        except Exception as e:
+            Log.error(str(e), exception=True)
+            try:
+                s.close()
+            except: pass
+            s = None
+        return s
 
 #
 # A socket-based connection manager for controllers
@@ -13,12 +64,8 @@ from select import select
 class TCPSocketConnectionManager(ConnectionManager):
     def __init__(self, controllers_manager):
         super(TCPSocketConnectionManager, self).__init__(controllers_manager)
-        self.server_socks = {} # dictionary of iface name -> socket on that iface
-        self.hosting_ips = {} # dictionary of iface name -> hosting IP (in case it changes)
+        self.server_socks = {} # dictionary of iface name -> TCPHostedSocket on that iface
         self.reconnect_timer = 0
-        self.controller_class = TCPSocketController
-        if CONTROLLERS_CONFIG.LEGACY_MODE:
-            self.controller_class = TCPSocketLegacyController
 
     # Remove interfaces no longer on the system (or their IPs changed) and add newly discovered ones
     # cur_time_s. Current time in seconds
@@ -29,62 +76,19 @@ class TCPSocketConnectionManager(ConnectionManager):
             available_interfaces = TCPSocketConnectionManager.discover_interfaces()
             for iface in list(self.server_socks.keys()):
                 matching_interfaces = list(filter(lambda i: i[0] == iface, available_interfaces))
-                if len(matching_interfaces) == 0 or matching_interfaces[0][1] != self.hosting_ips[iface]: # either interface no longer available or IP has changed
-                    try: self.server_socks[iface].close()
-                    except: pass
+                if len(matching_interfaces) == 0 or matching_interfaces[0][1] != self.server_socks[iface].ip: # either interface no longer available or IP has changed
+                    self.server_socks[iface].destroy_selectible()
                     del self.server_socks[iface]
-                    del self.hosting_ips[iface]
             for (iface, ip) in available_interfaces:
                 if iface not in self.server_socks:
-                    s = TCPSocketConnectionManager.create_server_socket(ip)
-                    if s:
-                        self.server_socks[iface] = s
-                        self.hosting_ips[iface] = ip
-                        Log.info("Listening on {}:{}".format(ip, CONTROLLERS_CONFIG.SOCKET_SERVER_BIND_PORT))
-
-    # Performs a select on the connected sockets and performas the read operations
-    # cur_time_s. Current time in seconds
-    def read_sockets(self, cur_time_s):
-        # perform a nonblocking select on server sockets and all connections
-        controllers_descriptors = list(map(lambda c: c.connection, self.connected_controllers))
-        server_descriptors = list(self.server_socks.values())
-        try:
-            (ready_descriptors, _, _) = select(server_descriptors + controllers_descriptors, [], [], 0)
-            for desc in ready_descriptors:
-                if desc in server_descriptors:
-                    # a new client connected
-                    for iface in self.server_socks.keys():
-                        if self.server_socks[iface] == desc:
-                            try:
-                                conn, addr = desc.accept()
-                                self.register_controller(self.controller_class(self, conn, addr))
-                            except:
-                                Log.error("Failed to accept a connection", exception=True)
-                                try: desc.close()
-                                except: pass
-                                del self.server_socks[iface]
-                            break
-                else:
-                    # a controller has data to read
-                    for controller in self.connected_controllers:
-                        if controller.connection == desc:
-                            try:
-                                if not controller.on_read_data():
-                                    self.disconnect_controller(controller)
-                            except Exception as e:
-                                Log.warning("", exception=True)
-                                self.disconnect_controller(controller)
-        except Exception as e:
-            Log.error("Unexpected error", exception=True)
-            self.cleanup()
+                    try:
+                        self.server_socks[iface] = TCPHostedSocket(self, iface, ip)
+                    except: pass
 
     # non-blocking listening to new connections and connected controllers
     def update(self, cur_time_s):
         # fix the hosting interfaces
         self.update_hosting_interfaces(cur_time_s)
-
-        # read controllers sockets and accept any new connections
-        self.read_sockets(cur_time_s)
 
         super(TCPSocketConnectionManager, self).update(cur_time_s)
 
@@ -109,23 +113,3 @@ class TCPSocketConnectionManager(ConnectionManager):
                     ifaces.append((i, ip))
             except: pass
         return ifaces
-
-    # Creates and binds a server socket on a given ip
-    # ip  IP to bind the server socket to
-    # returns  The create server socket
-    @staticmethod
-    def create_server_socket(ip):
-        s = None
-        try:
-            addr = (ip, CONTROLLERS_CONFIG.SOCKET_SERVER_BIND_PORT)
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            s.bind(addr)
-            s.listen(CONTROLLERS_CONFIG.SOCKET_SERVER_MAX_CONNECTIONS)
-        except Exception as e:
-            Log.error(str(e), exception=True)
-            try:
-                s.close()
-            except: pass
-            s = None
-        return s

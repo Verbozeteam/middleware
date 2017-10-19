@@ -1,6 +1,7 @@
 from config.general_config import GENERAL_CONFIG
 from logs import Log
 
+import sys
 import select
 
 #
@@ -12,6 +13,7 @@ class Selectible(object):
 	def initialize_selectible_fd(self, fd):
 		self.pending_write_to_fd = bytearray([])
 		self.fd = fd
+		self.write_function = "write" if "write" in dir(fd) else "send" # some have .write, some have .send
 		SelectService.register_selectible(self)
 
 	def destroy_selectible(self):
@@ -20,12 +22,13 @@ class Selectible(object):
 	def write_to_fd(self, data):
 		self.pending_write_to_fd += data
 
-	def on_read_ready(self):
+	def on_read_ready(self, cur_time_s):
 		pass
 
-	def on_write_ready(self):
+	def on_write_ready(self, cur_time_s):
 		try:
-			self.fd.write(self.pending_write_to_fd)
+			# call the write function
+			getattr(self.fd, self.write_function)(self.pending_write_to_fd)
 			self.pending_write_to_fd = bytearray([])
 		except:
 			Log.debug("Selectible::on_write_ready() failed.", exception=True)
@@ -53,23 +56,35 @@ class SelectService(object):
 	# Performs a select with a timeout to wait for selectibles to be ready for reading or writing
 	# cur_time_s  Current time in seconds
 	@staticmethod
-	def perform_select(cur_time_s):
+	def perform_select(cur_time_s, select_reads=True, select_writes=True):
 		all_selectibles = SelectService.selectibles.values()
-		readable_descriptors = dict(map(lambda s: (str(s.fd), s), all_selectibles))
-		writable_descriptors = dict(map(lambda s: (str(s.fd), s), filter(lambda s: len(s.pending_write_to_fd) > 0, all_selectibles)))
 
-		read_descriptors = list(map(lambda rd: rd.fd, readable_descriptors.values()))
-		write_descriptors = list(map(lambda wd: wd.fd, writable_descriptors.values()))
+		read_descriptors = []
+		write_descriptors = []
+
+		if select_reads:
+			readable_descriptors = dict(map(lambda s: (str(s.fd), s), all_selectibles))
+			read_descriptors = list(map(lambda rd: rd.fd, readable_descriptors.values()))
+
+		if select_writes:
+			writable_descriptors = dict(map(lambda s: (str(s.fd), s), filter(lambda s: len(s.pending_write_to_fd) > 0, all_selectibles)))
+			write_descriptors = list(map(lambda wd: wd.fd, writable_descriptors.values()))
+
+		if len(read_descriptors) + len(write_descriptors) == 0:
+			return # nothing to select
+
 		try:
 			(ready_read_descriptors, ready_write_descriptors, _) = select.select(read_descriptors, write_descriptors, [], GENERAL_CONFIG.SELECT_TIMEOUT)
 			for D in ready_write_descriptors:
 				try:
-					writable_descriptors[str(D)].on_write_ready()
+					writable_descriptors[str(D)].on_write_ready(cur_time_s)
 				except: pass
 			for D in ready_read_descriptors:
 				try:
-					readable_descriptors[str(D)].on_read_ready()
+					readable_descriptors[str(D)].on_read_ready(cur_time_s)
 				except: pass
+		except KeyboardInterrupt:
+			raise
 		except:
 			Log.debug("Select failed.", exception=True)
 

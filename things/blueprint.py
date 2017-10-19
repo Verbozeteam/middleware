@@ -80,22 +80,22 @@ class Blueprint(object):
             Log.fatal("Failed to load thing {}".format(str(thing_json)), exception=True)
             return None
 
-    # Called periodically by the core to update the Things of this blueprint
-    # cur_time_s  current time in seconds
-    def update(self, cur_time_s):
-        for room in self.rooms:
-            for thing in room.things.values():
-                if thing.dirty:
-                    thing.dirty = False
-                    self.broadcast_thing_state(thing)
-                try:
-                    thing.update(cur_time_s)
-                except:
-                    Log.error("Blueprint::update() Thing failed to update: {}".format(str(thing)), exception=True)
-                if len(thing.pending_commands) > 0:
-                    for (port, value) in thing.get_clean_pending_commands():
-                        self.core.hw_manager.on_command(port, value)
-                    thing.pending_commands = []
+    # # Called periodically by the core to update the Things of this blueprint
+    # # cur_time_s  current time in seconds
+    # def update(self, cur_time_s):
+    #     for room in self.rooms:
+    #         for thing in room.things.values():
+    #             if thing.dirty:
+    #                 thing.dirty = False
+    #                 self.broadcast_thing_state(thing)
+    #             try:
+    #                 thing.update(cur_time_s)
+    #             except:
+    #                 Log.error("Blueprint::update() Thing failed to update: {}".format(str(thing)), exception=True)
+    #             if len(thing.pending_commands) > 0:
+    #                 for (port, value) in thing.get_clean_pending_commands():
+    #                     self.core.hw_manager.on_command(port, value)
+    #                 thing.pending_commands = []
 
     # Called when this manager needs to free all its resources
     def cleanup(self):
@@ -117,28 +117,28 @@ class Blueprint(object):
             ret_things += list(room.things.values())
         return ret_things
 
-    # Called when a Thing updates its state so it broadcasts the new state
-    # thing  Thing that wants to broadcast its state
-    def broadcast_thing_state(self, thing):
-        self.core.ctrl_manager.broadcast_thing_state(thing.id, thing.get_state())
+    # # Called when a Thing updates its state so it broadcasts the new state
+    # # thing  Thing that wants to broadcast its state
+    # def broadcast_thing_state(self, thing):
+    #     self.core.ctrl_manager.broadcast_thing_state(thing.id, thing.get_state())
 
-    # Called when the hardware has an updated value on a port. This function
-    # should dispatch the update to the interested Things
-    # port   Port on which the update happened
-    # value  New value on the given port
-    def on_hardware_data(self, port, value):
-        for room in self.rooms:
-            for thing in room.things.values():
-                if port in thing.input_ports or port in thing.output_ports:
-                    thing.on_hardware_data(port, value)
+    # # Called when the hardware has an updated value on a port. This function
+    # # should dispatch the update to the interested Things
+    # # port   Port on which the update happened
+    # # value  New value on the given port
+    # def on_hardware_data(self, port, value):
+    #     for room in self.rooms:
+    #         for thing in room.things.values():
+    #             if port in thing.input_ports or port in thing.output_ports:
+    #                 thing.on_hardware_data(port, value)
 
-    # Called when the controllers send a command for a Thing
-    # thing_id  id of the Thing that the controller is trying to talk to
-    # data      data that the controller is sending to the Thing
-    def on_controller_data(self, thing_id, data):
-        Log.hammoud("Blueprint::on_controller_data({}, {})".format(thing_id, data))
-        for room in self.rooms:
-            for thing in room.things.values():
-                if thing_id == thing.id:
-                    for D in data:
-                        thing.on_controller_data(D)
+    # # Called when the controllers send a command for a Thing
+    # # thing_id  id of the Thing that the controller is trying to talk to
+    # # data      data that the controller is sending to the Thing
+    # def on_controller_data(self, thing_id, data):
+    #     Log.hammoud("Blueprint::on_controller_data({}, {})".format(thing_id, data))
+    #     for room in self.rooms:
+    #         for thing in room.things.values():
+    #             if thing_id == thing.id:
+    #                 for D in data:
+    #                     thing.on_controller_data(D)

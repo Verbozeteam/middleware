@@ -105,13 +105,13 @@ class ArduinoProtocol:
 #
 class ArduinoController(HardwareController):
     def __init__(self, hw_manager, comport, fake_serial_port=None):
-        super(ArduinoController, self).__init__(hw_manager, comport, baud=9600, fake_serial_port=fake_serial_port)
         self.read_buffer = bytearray([])
         self.half_sync = False
         self.full_sync = False
         self.sync_send_timer = 0
         self.sync_send_period = 1
         self.receive_timeout = -1
+        super(ArduinoController, self).__init__(hw_manager, comport, baud=9600, fake_serial_port=fake_serial_port)
 
     def initialize_board(self):
         Log.hammoud("ArduinoController::initialize_board()")
@@ -241,10 +241,15 @@ class ArduinoController(HardwareController):
         if self.is_in_sync():
             self.write_to_fd(ArduinoProtocol.create_set_pin_output(port, value))
 
-    def on_read_ready(self):
-        b = self.serial_port.read(1024)
-        self.read_buffer += b
-        self.receive_timeout = cur_time_s + 13
+    def on_read_ready(self, cur_time_s):
+        try:
+            b = self.serial_port.read(self.serial_port.in_waiting)
+            self.read_buffer += b
+            self.receive_timeout = cur_time_s + 13
+        except:
+            Log.error("ArduinoController::on_read_ready() failed", exception=True)
+            return False
+        return True
 
     # To identify an arduino on a COM port, find "arduino" anywhere in the
     # hardware description
