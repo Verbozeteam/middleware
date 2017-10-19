@@ -4,3 +4,5 @@ class GENERAL_CONFIG:
     BLUEPRINT_FILENAME = "blueprint.json"
     LOG_VERBOZITY = 3
     LOG_REGEX = None
+
+    SELECT_TIMEOUT = 1 # 1 second

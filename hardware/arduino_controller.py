@@ -115,7 +115,7 @@ class ArduinoController(HardwareController):
 
     def initialize_board(self):
         Log.hammoud("ArduinoController::initialize_board()")
-        self.serial_port.write(ArduinoProtocol.create_reset_board())
+        self.write_to_fd(ArduinoProtocol.create_reset_board())
         things = self.hw_manager.core.blueprint.get_things()
         for thing in things:
             all_ports = list(thing.input_ports) + list(thing.output_ports)
@@ -129,18 +129,18 @@ class ArduinoController(HardwareController):
                 continue
 
             for i in range(0, len(virtual_ports)):
-                self.serial_port.write(ArduinoProtocol.create_set_virtual_pin_mode(virtual_ports[i], thing.virtual_port_data[i]))
+                self.write_to_fd(ArduinoProtocol.create_set_virtual_pin_mode(virtual_ports[i], thing.virtual_port_data[i]))
 
             for port in thing.input_ports.keys():
                 pin_mode = PIN_MODE.INPUT if thing.input_ports[port] >= 0 else PIN_MODE.INPUT_PULLUP
                 pin_read_freq = abs(thing.input_ports[port])
                 if port not in virtual_ports:
-                    self.serial_port.write(ArduinoProtocol.create_set_pin_mode(port, pin_mode))
-                self.serial_port.write(ArduinoProtocol.create_register_pin_listener(port, pin_read_freq))
+                    self.write_to_fd(ArduinoProtocol.create_set_pin_mode(port, pin_mode))
+                self.write_to_fd(ArduinoProtocol.create_register_pin_listener(port, pin_read_freq))
 
             for port in thing.output_ports.keys():
                 if port not in virtual_ports:
-                    self.serial_port.write(ArduinoProtocol.create_set_pin_mode(port, thing.output_ports[port]))
+                    self.write_to_fd(ArduinoProtocol.create_set_pin_mode(port, thing.output_ports[port]))
 
             thing.on_new_hardware() # make it issue commands for the controller to set it
 
@@ -165,7 +165,7 @@ class ArduinoController(HardwareController):
 
         if cur_time_s >= self.sync_send_timer:
             self.sync_send_timer = cur_time_s + self.sync_send_period
-            self.serial_port.write(FULL_SYNC_SEQUENCE if self.half_sync else SYNC_SEQUENCE)
+            self.write_to_fd(FULL_SYNC_SEQUENCE if self.half_sync else SYNC_SEQUENCE)
             Log.hammoud("ArduinoController::sync_input_buffer() wrote a sync sequence {}".format("full" if self.full_sync else ("half" if self.half_sync else "NO SYNC")))
 
         while not self.full_sync and len(self.read_buffer) >= len(SYNC_SEQUENCE):
@@ -229,12 +229,6 @@ class ArduinoController(HardwareController):
         return ArduinoProtocol.on_message(self, message_type, message)
 
     def update(self, cur_time_s):
-        num_bytes = self.serial_port.in_waiting
-        if num_bytes > 0:
-            b = self.serial_port.read(num_bytes)
-            self.read_buffer += b
-            self.receive_timeout = cur_time_s + 13
-
         if self.receive_timeout > 0 and cur_time_s > self.receive_timeout:
             return False # haven't received anything in a long time!
 
@@ -245,7 +239,12 @@ class ArduinoController(HardwareController):
 
     def set_port_value(self, port, value):
         if self.is_in_sync():
-            self.serial_port.write(ArduinoProtocol.create_set_pin_output(port, value))
+            self.write_to_fd(ArduinoProtocol.create_set_pin_output(port, value))
+
+    def on_read_ready(self):
+        b = self.serial_port.read(1024)
+        self.read_buffer += b
+        self.receive_timeout = cur_time_s + 13
 
     # To identify an arduino on a COM port, find "arduino" anywhere in the
     # hardware description
@@ -351,19 +350,19 @@ class ArduinoLegacyController(ArduinoController):
             port = int(port[1:])
             Log.hammoud("ArduinoLegacyController::set_port_value({}, {})".format(port, value))
             if port_type == "v" and port == 0: # AC set point
-                self.serial_port.write("a{}:{}\n".format(port, int(value*2)).encode('utf-8'))
+                self.write_to_fd("a{}:{}\n".format(port, int(value*2)).encode('utf-8'))
             if port >= 22 and port <= 27: # curtain
                 curtain = int((port - 22) / 2)
                 value = 0 if value == 0 else (1 if port % 2 == 0 else 2)
-                self.serial_port.write("c{}:{}\n".format(curtain, value).encode('utf-8'))
+                self.write_to_fd("c{}:{}\n".format(curtain, value).encode('utf-8'))
             elif port >= 28 and port <= 37: # switch
-                self.serial_port.write("t{}:{}\n".format(37 - port, value).encode('utf-8'))
+                self.write_to_fd("t{}:{}\n".format(37 - port, value).encode('utf-8'))
             elif port >= 4 and port <= 7: # dimmer
-                self.serial_port.write("l{}:{}\n".format(port - 4, int(float(value)/2.55)).encode('utf-8'))
+                self.write_to_fd("l{}:{}\n".format(port - 4, int(float(value)/2.55)).encode('utf-8'))
             elif port >= 8 and port <= 9: # central AC
-                self.serial_port.write("a{}:{}\n".format(port - 8, value).encode('utf-8'))
+                self.write_to_fd("a{}:{}\n".format(port - 8, value).encode('utf-8'))
             elif port >= 48 and port <= 49:
-                self.serial_port.write("f{}:{}\n".format(port - 48, value).encode('utf-8'))
+                self.write_to_fd("f{}:{}\n".format(port - 48, value).encode('utf-8'))
         except:
             pass
 

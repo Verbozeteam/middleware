@@ -1,11 +1,13 @@
 from logs import Log
 import fake_serial
 
+from core.select_service import Selectible
+
 #
 # A hardware controller is an object that represents a piece of hardware
 # (such as an Arduino) connected through a COM port
 #
-class HardwareController(object):
+class HardwareController(Selectible):
     # called when the device is detected by the hardware manager
     def __init__(self, hw_manager, comport, baud=9600, fake_serial_port=None):
         self.hw_manager = hw_manager
@@ -22,6 +24,8 @@ class HardwareController(object):
             self.serial_port = None
             raise e
 
+        self.initialize_selectible_fd(self.serial_port)
+
     # called when the device is detached, before the manager destroys it
     def detach(self):
         try:
@@ -29,6 +33,7 @@ class HardwareController(object):
                 self.serial_port.close()
         except Exception as e:
             Log.warning("Failed to safely close serial port communication for device {}".format(self.serial_number), exception=True)
+        self.destroy_selectible()
 
     # Called to periodically update this device
     # cur_time_s current time in seconds
@@ -40,7 +45,6 @@ class HardwareController(object):
     # port   Port to set
     # value  Value to set the port to
     def set_port_value(self, port, value):
-        print("hm..")
         pass
 
     # called to identify if any device that this controller controls is in

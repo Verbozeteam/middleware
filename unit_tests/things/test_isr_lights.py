@@ -31,7 +31,7 @@ class TestISRSwitches(BaseArduinoEmulatorTestUtil):
         assert state.sync == s.virtual_port_data[0][2]
 
         for s in self.switches:
-            assert self.arduino_emu.GetISRPinState(testing_utils.ISRPin(index=s.virtual_port_data[0][-1])).state == s.virtual_port_data[0][1]-1
+            assert self.arduino_emu.GetISRPinState(testing_utils.ISRPin(index=s.virtual_port_data[0][-1])).state <= 2
             assert s.get_state()["intensity"] == 100
 
         self.is_board_synced()
@@ -47,7 +47,7 @@ class TestISRSwitches(BaseArduinoEmulatorTestUtil):
         assert state.sync == s.virtual_port_data[0][2]
 
         for s in self.switches:
-            assert self.arduino_emu.GetISRPinState(testing_utils.ISRPin(index=s.virtual_port_data[0][-1])).state == 0
+            assert self.arduino_emu.GetISRPinState(testing_utils.ISRPin(index=s.virtual_port_data[0][-1])).state >= 100
             assert s.get_state()["intensity"] == 0
 
         self.is_board_synced()

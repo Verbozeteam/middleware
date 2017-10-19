@@ -1,10 +1,11 @@
 # enable the simulation Arduino mode
 from config.hardware_config import HARDWARE_CONFIG
 
-from middleware import Core
+from core.core import Core
 
 import grpc
 import testing_utils
+import time
 
 class BaseArduinoEmulatorTestUtil(object):
     ARDUINO_EMULATOR_ADDRESS = "0.0.0.0:5001"
@@ -38,6 +39,7 @@ class BaseArduinoEmulatorTestUtil(object):
             self.core.hw_manager.update(fake_time)
             fake_time += 1
             assert fake_time < 30000 # virtual 30 seconds
+            time.sleep(0.001)
         self.core.blueprint.update(1) # flushes commands that Things issue upon connecting to a board
         self.is_board_synced()
 

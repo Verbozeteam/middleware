@@ -2,6 +2,7 @@
 from config import GENERAL_CONFIG
 import sys
 GENERAL_CONFIG.SIMULATE_ARDUINO = True
+GENERAL_CONFIG.LOG_VERBOZITY = 7
 
 # content of conftest.py
 def pytest_configure(config):

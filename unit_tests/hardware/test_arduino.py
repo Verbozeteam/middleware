@@ -127,7 +127,7 @@ class TestArduinoController(BaseArduinoEmulatorTestUtil):
         got_reading = {"result": False}
         def on_hardware_data(port, value):
             assert port == "v0"
-            assert value == 50 # reading is always twice as actual temperature
+            assert value == 100 # reading is always 4x the actual temperature
             got_reading["result"] = True
 
         self.core.blueprint.on_hardware_data = on_hardware_data
