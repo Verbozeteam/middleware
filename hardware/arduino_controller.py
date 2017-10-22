@@ -142,7 +142,7 @@ class ArduinoController(HardwareController):
                 if port not in virtual_ports:
                     self.write_to_fd(ArduinoProtocol.create_set_pin_mode(port, thing.output_ports[port]))
 
-            thing.on_new_hardware() # make it issue commands for the controller to set it
+        self.cache = {} # clear cache so things can be written to the board
 
     # Checks or sets the sync state with the controller
     # set_to   If not None, sets the sync state to to this
@@ -229,6 +229,9 @@ class ArduinoController(HardwareController):
         return ArduinoProtocol.on_message(self, message_type, message)
 
     def update(self, cur_time_s):
+        if not super(ArduinoController, self).update(cur_time_s):
+            return False
+
         if self.receive_timeout > 0 and cur_time_s > self.receive_timeout:
             return False # haven't received anything in a long time!
 
@@ -238,6 +241,7 @@ class ArduinoController(HardwareController):
         return True
 
     def set_port_value(self, port, value):
+        super(ArduinoController, self).set_port_value(port, value)
         if self.is_in_sync():
             self.write_to_fd(ArduinoProtocol.create_set_pin_output(port, value))
 
@@ -350,6 +354,7 @@ class ArduinoLegacyController(ArduinoController):
             return False
 
     def set_port_value(self, port, value):
+        super(ArduinoLegacyController, self).set_port_value(port, value)
         try:
             port_type = port[0]
             port = int(port[1:])

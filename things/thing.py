@@ -10,9 +10,6 @@ class Thing(object):
         self.blueprint = blueprint
         self.input_ports = {}                   # Dictionary of pin -> read_interval where pin is a pin that the Thing wants to listen to and read_interval is an integer for the interval at which the port is read (in ms)
         self.output_ports = {}                  # Dictionary of pin -> output type (0 for digital, 1 for PWM)
-        self.dirty = False                      # If True, then this Thing's state has changed since it was last broadcasted to controllers
-        self.pending_commands = []              # List of pending messages to be sent to the hardware
-        self.allow_duplicate_commands = False   # If set to False, commands will be truncated in get_clean_pending_commands() if they target the same port
         self.id = ""                            # id of this Thing
 
     # Should be implemented to return the key in the blueprint that this Thing captures
@@ -22,6 +19,10 @@ class Thing(object):
 
     # Should be implemented to return the state of this Thing that will be sent to controllers (JSON-serializable dictionary)
     def get_state(self):
+        return {}
+
+    # Should be implemented to return the state of this Thing that will be sent to hardware (dictionary of port -> value)
+    def get_hardware_state(self):
         return {}
 
     # Should be implemented to order this Thing to go to sleep (usually turn off)
@@ -37,34 +38,16 @@ class Thing(object):
     def update(self, cur_time_s):
         pass
 
-    # Should be implemented to make this thing add all pending commands necessary
-    # for a newly connected hardware to have the same state as this Thing
-    def on_new_hardware(self):
-        pass
-
-    # Retrieves the pending commands (form controllers)
-    # return  A (cleaned) list of pending commands
-    def get_clean_pending_commands(self):
-        # if pending commands are allowed to duplicate, just return all pending_commands
-        if self.allow_duplicate_commands:
-            return self.pending_commands
-
-        commands = []
-        added_ports = []
-        for command in reversed(self.pending_commands):
-            if command[0] not in added_ports:
-                added_ports.append(command[0])
-                commands = [command] + commands
-        return commands
-
     # Called by the blueprint when hardware has an updated value on a port
-    # port   Port that has updated its value
-    # value  New value on that port
-    def on_hardware_data(self, port, value):
-        pass
+    # port     Port that has updated its value
+    # value    New value on that port
+    # returns  True iff the changes made to the state are more than just the input
+    def set_hardware_state(self, port, value):
+        return True
 
     # Called by the blueprint when a controller sends a message
     # data  Message sent by the controller
-    def on_controller_data(self, data):
-        pass
+    # returns  True iff the changes made to the state are more than just the input
+    def set_state(self, data):
+        return True
 

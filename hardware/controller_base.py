@@ -19,6 +19,7 @@ class HardwareController(Selectible):
             self.serial_port.baudrate = baud
             self.serial_port.port = comport.device
             self.serial_port.open()
+            self.cache = {} # cache of port -> output
         except Exception as e:
             Log.error("Failed to open serial port for device {} at {}".format(self.serial_number, comport.device))
             self.serial_port = None
@@ -47,13 +48,22 @@ class HardwareController(Selectible):
     # cur_time_s current time in seconds
     # returns True to keep the device attached, False to detach it
     def update(self, cur_time_s):
+        try:
+            all_things = self.hw_manager.core.blueprint.get_things()
+
+            for thing in all_things:
+                state = thing.get_hardware_state()
+                for port in state.keys():
+                    if port not in self.cache or state[port] != self.cache[port]:
+                        self.set_port_value(port, state[port])
+        except:
+            Log.error("HardwareController::update() Failed", exception=True)
+            return False
         return True
 
-    # Called when this controller is supposed to set the value of a port
-    # port   Port to set
-    # value  Value to set the port to
+    # Sends a command to the controller to set a port to a certain output value
     def set_port_value(self, port, value):
-        pass
+        self.cache[port] = value
 
     # called to identify if any device that this controller controls is in
     # the serial ports

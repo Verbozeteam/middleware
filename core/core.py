@@ -21,10 +21,10 @@ class Core(object):
         self.ctrl_manager = ControllersManager(self)
 
     def update(self, cur_time_s):
-        #self.hw_manager.update(cur_time_s)
+        self.hw_manager.update(cur_time_s)
         self.ctrl_manager.update(cur_time_s)
 
-        SelectService.perform_select(cur_time_s, select_writes=False)
+        SelectService.perform_select(cur_time_s, select_writes=False) # only reads
 
         for thing in self.blueprint.get_things():
             try:
@@ -32,7 +32,10 @@ class Core(object):
             except:
                 Log.error("Thing {} failed to update".format(thing.id), exception=True)
 
-        SelectService.perform_select(cur_time_s, select_reads=False)
+        self.hw_manager.update(cur_time_s)
+        self.ctrl_manager.update(cur_time_s)
+
+        SelectService.perform_select(cur_time_s, select_reads=False) # only writes
 
     # Main loop for the core (blocks execution)
     def run(self):

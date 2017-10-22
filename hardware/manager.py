@@ -28,11 +28,8 @@ class HardwareManager(object):
             del self.connected_controllers[controller.serial_number]
         except: pass
 
-    # called to periodically update this manager
-    # cur_time_s: current time in seconds
-    def update(self, cur_time_s):
-        # see if any devices are attached/detached
-        if cur_time_s >= self.update_timer:
+    def update_com_ports(self, cur_time_s):
+        if cur_time_s >= self.update_timer: # check if any devices are attached/detached
             try:
                 self.update_timer = cur_time_s + HARDWARE_CONFIG.UPDATE_INTERVAL
                 com_ports = dict(map(lambda com_port: (com_port.serial_number, com_port), fake_serial.comports()))
@@ -48,9 +45,14 @@ class HardwareManager(object):
                     if serial not in all_identified_serials:
                         self.connected_controllers[serial].destroy_selectible()
             except Exception as e:
-                Log.error("Unknown error while identifying COM ports:", e, exception=True)
+                Log.error("Unknown error while identifying COM ports", exception=True)
 
-        for controller in self.connected_controllers.values():
+    # called to periodically update this manager
+    # cur_time_s: current time in seconds
+    def update(self, cur_time_s):
+        self.update_com_ports(cur_time_s)
+
+        for controller in list(self.connected_controllers.values()):
             try:
                 keep = controller.update(cur_time_s)
             except:
@@ -70,16 +72,9 @@ class HardwareManager(object):
     # value   The new value on that port
     def on_port_update(self, device, port, value):
         # @TODO: map local port to global port
-        # Forward the update to the core
+        # Forward the update to the respective thing
         try:
-            self.core.blueprint.on_hardware_data(port, value)
+            things = self.core.blueprint.get_listening_things_by_port(port)
+            for thing in things:
+                thing.set_hardware_state(port, value)
         except: pass
-
-    # Called by the blueprint when hardware is being commanded
-    # port   Port being commanded
-    # value  Value to set port to
-    def on_command(self, port, value):
-        # @TODO: map global port to local port (and pick right HW controller)
-        Log.hammoud("HardwareManager::on_command({}, {})".format(port, value))
-        for controller in self.connected_controllers.values():
-            controller.set_port_value(port, value)

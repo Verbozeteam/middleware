@@ -15,7 +15,7 @@ class SplitAC(Thing):
     def on_hardware_data(self, port, value):
         pass
 
-    def on_controller_data(self, data):
+    def set_state(self, data):
         pass
 
     def get_state(self):
@@ -38,6 +38,7 @@ class CentralAC(Thing):
         self.current_airflow = 0
         self.next_valve_update = 0
         self.is_temp_rising = False
+        self.digital_valve_output = 0
 
     # Should return the key in the blueprint that this Thing captures
     @staticmethod
@@ -46,12 +47,9 @@ class CentralAC(Thing):
 
     def set_fan_speed(self, speed):
         self.current_fan_speed = int(min(max(speed, 0), 2))
-        self.dirty = True
-        self.pending_commands.append((self.fan_port, self.current_fan_speed))
 
     def set_set_point(self, set_pt):
         self.current_set_point = float(min(max(set_pt, 0.0), 50.0))
-        self.dirty = True
 
     def sleep(self):
         self.saved_wakeup_temperature = self.current_set_point
@@ -71,20 +69,17 @@ class CentralAC(Thing):
             self.set_set_point(self.saved_wakeup_temperature)
             self.set_fan_speed(self.saved_wakeup_fan)
 
-    def on_new_hardware(self):
-        self.set_fan_speed(self.current_fan_speed)
-        self.set_set_point(self.current_set_point)
-
-    def on_hardware_data(self, port, value):
+    def set_hardware_state(self, port, value):
         if port == self.temperature_port:
             self.current_temperature = float(value) / 4.0
-            self.dirty = True
+        return False
 
-    def on_controller_data(self, data):
+    def set_state(self, data):
         if "set_pt" in data:
             self.set_set_point(data["set_pt"])
         if "fan" in data:
             self.set_fan_speed(data["fan"])
+        return False
 
     def update(self, cur_time_s):
         if cur_time_s >= self.next_valve_update:
@@ -94,20 +89,19 @@ class CentralAC(Thing):
                 temp_diff = self.current_temperature - self.current_set_point
                 coeff = (min(max(temp_diff, -10), 10)) / 10; # [-1, 1]
                 self.current_airflow = min(max(self.current_airflow + self.homeostasis * coeff, 0.0), 255.0)
-                self.pending_commands.append((self.valve_port, int(self.current_airflow)))
             elif hasattr(self, "digital_valve_port"):
                 if self.is_temp_rising:
                     if self.current_temperature > self.current_set_point + self.homeostasis:
-                        self.pending_commands.append((self.digital_valve_port, 1))
+                        self.digital_valve_output = 1
                         self.is_temp_rising = False
                     else:
-                        self.pending_commands.append((self.digital_valve_port, 0))
+                        self.digital_valve_output = 0
                 if not self.is_temp_rising:
                     if self.current_temperature < self.current_set_point - self.homeostasis:
-                        self.pending_commands.append((self.digital_valve_port, 0))
+                        self.digital_valve_output = 0
                         self.is_temp_rising = True
                     else:
-                        self.pending_commands.append((self.digital_valve_port, 1))
+                        self.digital_valve_output = 1
 
     def get_state(self):
         return {
@@ -115,3 +109,11 @@ class CentralAC(Thing):
             "set_pt": self.current_set_point,
             "fan": self.current_fan_speed,
         }
+
+    def get_hardware_state(self):
+        state = {self.fan_port: int(self.current_fan_speed)}
+        if hasattr(self, "valve_port"):
+            state[self.valve_port] = int(self.current_airflow)
+        if hasattr(self, "digital_valve_port"):
+            state[self.digital_valve_port] = int(self.digital_valve_output)
+        return state

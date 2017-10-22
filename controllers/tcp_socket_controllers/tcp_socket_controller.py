@@ -42,11 +42,11 @@ def downgrade_controller(controller):
 #
 class TCPSocketController(Controller):
     def __init__(self, controllers_manager, conn, addr):
-        super(TCPSocketController, self).__init__(controllers_manager)
         self.connection = conn
         self.address = addr
         self.buffer = bytearray([])
         self.initialize_selectible_fd(conn)
+        super(TCPSocketController, self).__init__(controllers_manager)
 
     def __str__(self):
         return str(self.address)
@@ -64,6 +64,7 @@ class TCPSocketController(Controller):
         if not skip_recv:
             read = self.connection.recv(1024)
             if not read:
+                Log.verboze("Client hung up: {}".format(str(self)))
                 return False
         try:
             self.buffer += read
@@ -88,14 +89,15 @@ class TCPSocketController(Controller):
             return False
 
     # Called when data needs to be sent to the remote controller on the socket
-    def on_send_data(self, json_data):
+    def send_data(self, json_data, cache=True):
+        super(TCPSocketController, self).send_data(json_data, cache)
         try:
             json_data = json.dumps(json_data)
             msg = struct.pack('<I', len(json_data)) + bytearray(json_data.encode("utf-8"))
             self.write_to_fd(msg)
             return True
         except:
-            Log.warning("TCPSocketController::on_send_data({}) Failed".format(str(json_data)), exception=True)
+            Log.warning("TCPSocketController::send_data({}) Failed".format(str(json_data)), exception=True)
             return False
 
 #
@@ -112,6 +114,7 @@ class TCPSocketLegacyController(TCPSocketController):
         if not skip_recv:
             read = self.connection.recv(1024)
             if not read:
+                Log.verboze("Client hung up: {}".format(str(self)))
                 return False
         try:
             self.buffer += read
@@ -137,7 +140,7 @@ class TCPSocketLegacyController(TCPSocketController):
                                 (t, index, value) = m.groups()
                                 index = int(index)
                                 value = int(value)
-                                all_things = self.manager.controllers_manager.core.blueprint.get_things()
+                                all_things = self.manager.core.blueprint.get_things()
                                 command_json = {}
                                 if t == 'c':
                                     curtains = list(sorted(filter(lambda t: type(t) is Curtain, all_things), key=lambda t: t.id))
@@ -192,7 +195,9 @@ class TCPSocketLegacyController(TCPSocketController):
             return False
 
     # Called when data needs to be sent to the remote controller on the socket
-    def on_send_data(self, json_data):
+    def send_data(self, json_data, cache=True):
+        super(TCPLegacySocketController, self).send_data(json_data, cache)
+
         try:
             # HACK: read all things in the blueprint of the room and dump it on every update
             acs = []
@@ -201,7 +206,7 @@ class TCPSocketLegacyController(TCPSocketController):
             curtains = []
             hotel_cards = []
 
-            all_things = self.manager.controllers_manager.core.blueprint.get_things()
+            all_things = self.manager.core.blueprint.get_things()
 
             acs += list(filter(lambda t: type(t) is CentralAC, all_things))
             dimmers += list(filter(lambda t: type(t) is Dimmer, all_things))
@@ -227,5 +232,5 @@ class TCPSocketLegacyController(TCPSocketController):
             self.write_to_fd(msg)
             return True
         except Exception as e:
-            Log.warning("FAILED TCPSocketLegacyController::on_send_data({})".format(json_data), exception=True)
+            Log.warning("FAILED TCPSocketLegacyController::send_data({})".format(json_data), exception=True)
             return False

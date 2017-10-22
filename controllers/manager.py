@@ -1,9 +1,12 @@
 from logs import Log
 from controllers.tcp_socket_controllers import TCPSocketConnectionManager
 
+from functools import reduce
+
 class CONTROL_CODES:
     GET_BLUEPRINT = 0
     GET_THING_STATE = 1
+    SET_LISTENERS = 2
 
 #
 # Controllers manager is responsible for all interaction with controller
@@ -37,7 +40,7 @@ class ControllersManager(object):
         for C in self.connection_managers:
             C.update(cur_time_s)
 
-        for controller in self.connected_controllers:
+        for controller in list(self.connected_controllers):
             try:
                 keep = controller.update(cur_time_s)
             except:
@@ -52,33 +55,21 @@ class ControllersManager(object):
         for C in self.connection_managers:
             C.cleanup()
 
-    # # Called when a Thing wants to broadcast its state to controllers
-    # # thing_id  id of the Thing that wants to broadcast state
-    # # state     JSON-serializable dictionary that is the state of the Thing
-    # def broadcast_thing_state(self, thing_id, state):
-    #     #@TODO: Implement access rights and controllers registering for things updates
-    #     for C in self.connection_managers:
-    #         C.broadcast_thing_state(thing_id, state)
-
-    # # Called when a controller sends commands to a particular Thing
-    # # thing_id  Thing the commands are being sent to
-    # # commands  List of commands for the Thing
-    # def send_thing_commands(self, thing_id, commands):
-    #     #@TODO: Implement access rights
-    #     self.core.blueprint.on_controller_data(thing_id, commands)
-
-    # # Called when a controller sends a control command
-    # # command  The control command (JSON)
-    # def send_control_command(self, controller, command):
-    #     Log.hammoud("ControllersManager::send_control_command({}, {})".format(str(controller), command))
-    #     try:
-    #         if command["code"] == CONTROL_CODES.GET_BLUEPRINT:
-    #             controller.on_send_data(self.core.blueprint.get_controller_view())
-    #         elif command["code"] == CONTROL_CODES.GET_THING_STATE:
-    #             all_things = self.core.blueprint.get_things()
-    #             if "thing-id" in command:
-    #                 all_things = list(filter(lambda t: t.id == command["thing-id"], all_things))
-    #             for T in all_things:
-    #                 controller.on_thing_state(T.id, T.get_state())
-    #     except Exception as e:
-    #         pass
+    # Called when a controller sends a control command
+    # controller  Controller that sent the command
+    # command     JSON control command sent
+    def on_control_command(self, controller, command):
+        if "code" in command:
+            Log.debug("ControllersManager::on_control_command({}, {})".format(str(controller), command))
+            try:
+                if command["code"] == CONTROL_CODES.GET_BLUEPRINT:
+                    controller.send_data(self.core.blueprint.get_controller_view(), cache=False)
+                elif command["code"] == CONTROL_CODES.GET_THING_STATE:
+                    controller.invalidate_cache(thing_id=command.get("thing-id", None))
+                elif command["code"] == CONTROL_CODES.SET_LISTENERS:
+                    listeners = command.get("things", None)
+                    if listeners and type(listeners) is list and reduce(lambda l1, l2: l1 and l2, map(lambda s: type(s) is str, listeners)):
+                        controller.things_listening = listeners
+            except:
+                Log.error("Failed to respond to a control command", exception=True)
+                pass

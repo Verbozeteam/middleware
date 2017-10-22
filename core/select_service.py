@@ -30,8 +30,10 @@ class Selectible(object):
 			# call the write function
 			getattr(self.fd, self.write_function)(self.pending_write_to_fd)
 			self.pending_write_to_fd = bytearray([])
+			return True
 		except:
 			Log.debug("Selectible::on_write_ready() failed.", exception=True)
+			return False
 
 #
 # A simple select-based event pump
@@ -44,11 +46,13 @@ class SelectService(object):
 	# selectible  A Selectible object
 	@staticmethod
 	def register_selectible(selectible):
+		print("registered selectible ", str(selectible))
 		SelectService.selectibles[str(selectible)] = selectible
 
 	# Deregisters a selectible
 	@staticmethod
 	def deregister_selectible(selectible):
+		print("DEregistered selectible ", str(selectible))
 		key = str(selectible)
 		if key in SelectService.selectibles:
 			del SelectService.selectibles[key]
@@ -77,12 +81,18 @@ class SelectService(object):
 			(ready_read_descriptors, ready_write_descriptors, _) = select.select(read_descriptors, write_descriptors, [], GENERAL_CONFIG.SELECT_TIMEOUT)
 			for D in ready_write_descriptors:
 				try:
-					writable_descriptors[str(D)].on_write_ready(cur_time_s)
-				except: pass
+					keep = writable_descriptors[str(D)].on_write_ready(cur_time_s)
+				except:
+					keep = False
+				if not keep:
+					writable_descriptors[str(D)].destroy_selectible()
 			for D in ready_read_descriptors:
 				try:
-					readable_descriptors[str(D)].on_read_ready(cur_time_s)
-				except: pass
+					keep = readable_descriptors[str(D)].on_read_ready(cur_time_s)
+				except:
+					keep = False
+				if not keep:
+					readable_descriptors[str(D)].destroy_selectible()
 		except KeyboardInterrupt:
 			raise
 		except:

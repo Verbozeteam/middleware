@@ -24,23 +24,17 @@ class HotelControls(Thing):
     def get_blueprint_tag():
         return "hotel_controls"
 
-    def on_hardware_data(self, port, value):
+    def set_hardware_state(self, port, value):
         if port == self.hotel_card:
             self.card_in = value
+        return False
 
-    def on_controller_data(self, data):
+    def set_state(self, data):
         if "do_not_disturb" in data:
-            self.do_not_disturb = data["do_not_disturb"]
-            self.dirty = True
-            self.pending_commands.append((self.do_not_disturb_port, self.do_not_disturb))
+            self.do_not_disturb = int(data["do_not_disturb"])
         if "room_service" in data:
-            self.room_service = data["room_service"]
-            self.dirty = True
-            self.pending_commands.append((self.room_service_port, self.room_service))
-
-    def on_new_hardware(self):
-            self.pending_commands.append((self.do_not_disturb_port, self.do_not_disturb))
-            self.pending_commands.append((self.room_service_port, self.room_service))
+            self.room_service = int(data["room_service"])
+        return False
 
     def update(self, cur_time_s):
         if self.card_in == 0:
@@ -52,8 +46,7 @@ class HotelControls(Thing):
                     things = self.blueprint.get_things()
                     for thing in things:
                         thing.sleep()
-                self.power = 0
-                self.pending_commands.append((self.power_port, 0)) # turn off power
+                self.power = 0 # turn off power
         else:
             if cur_time_s >= self.power_next_update:
                 if self.power == 0: # just turned on, wake Things up
@@ -62,8 +55,7 @@ class HotelControls(Thing):
                         thing.wake_up()
                 self.power_next_update = cur_time_s + 5
                 self.card_out_start = -1
-                self.power = 1
-                self.pending_commands.append((self.power_port, 1)) # turn on power
+                self.power = 1 # turn on power
 
     def get_state(self):
         return {
@@ -71,4 +63,11 @@ class HotelControls(Thing):
             "room_service": self.room_service,
             "do_not_disturb": self.do_not_disturb,
             "power": self.power,
+        }
+
+    def get_hardware_state(self):
+        return {
+            self.power_port: self.power,
+            self.do_not_disturb_port: self.do_not_disturb,
+            self.room_service_port: self.room_service,
         }

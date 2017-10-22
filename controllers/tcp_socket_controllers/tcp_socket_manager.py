@@ -8,8 +8,8 @@ import socket
 import netifaces
 
 class TCPHostedSocket(Selectible):
-    def __init__(self, controllers_manager, interface, ip):
-        self.controllers_manager = controllers_manager
+    def __init__(self, connection_manager, interface, ip):
+        self.connection_manager = connection_manager
         self.interface = interface
         self.ip = ip
         self.sock = TCPHostedSocket.create_server_socket(self.ip)
@@ -21,18 +21,20 @@ class TCPHostedSocket(Selectible):
         if CONTROLLERS_CONFIG.LEGACY_MODE:
             self.controller_class = TCPSocketLegacyController
 
+        self.connection_manager.register_server_sock(self.interface, self)
         Log.info("Listening on {}:{}".format(ip, CONTROLLERS_CONFIG.SOCKET_SERVER_BIND_PORT))
 
     def destroy_selectible(self):
         try:
             self.sock.close()
         except: pass
+        self.connection_manager.deregister_server_sock(self.interface)
         super(TCPHostedSocket, self).destroy_selectible()
 
     def on_read_ready(self, cur_time_s):
         try:
             conn, addr = self.sock.accept()
-            self.controller_class(self, conn, addr) # registers itself
+            self.controller_class(self.connection_manager.controllers_manager, conn, addr) # registers itself
         except:
             Log.error("Failed to accept a connection", exception=True)
             return False
@@ -67,6 +69,12 @@ class TCPSocketConnectionManager(ConnectionManager):
         self.server_socks = {} # dictionary of iface name -> TCPHostedSocket on that iface
         self.reconnect_timer = 0
 
+    def register_server_sock(self, iface, s):
+        self.server_socks[iface] = s
+
+    def deregister_server_sock(self, iface):
+        del self.server_socks[iface]
+
     # Remove interfaces no longer on the system (or their IPs changed) and add newly discovered ones
     # cur_time_s. Current time in seconds
     def update_hosting_interfaces(self, cur_time_s):
@@ -78,11 +86,9 @@ class TCPSocketConnectionManager(ConnectionManager):
                 matching_interfaces = list(filter(lambda i: i[0] == iface, available_interfaces))
                 if len(matching_interfaces) == 0 or matching_interfaces[0][1] != self.server_socks[iface].ip: # either interface no longer available or IP has changed
                     self.server_socks[iface].destroy_selectible()
-                    del self.server_socks[iface]
             for (iface, ip) in available_interfaces:
                 if iface not in self.server_socks:
-                    try:
-                        self.server_socks[iface] = TCPHostedSocket(self, iface, ip)
+                    try: TCPHostedSocket(self, iface, ip) # registers itself
                     except: pass
 
     # non-blocking listening to new connections and connected controllers
