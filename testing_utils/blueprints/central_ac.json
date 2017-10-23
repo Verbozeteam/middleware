@@ -17,6 +17,7 @@
                 "temperature_port": "v0",
                 "fan_port": "d48",
                 "valve_port": "d8",
+                "digital_valve_port": "d12",
                 "virtual_port_data": [[0, 0]]
             }]
         }]

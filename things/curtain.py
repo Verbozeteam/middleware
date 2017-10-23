@@ -30,6 +30,9 @@ class Curtain(Thing):
         return False
 
     def get_state(self):
+        return {}
+
+    def get_hardware_state(self):
         return {
             self.up_port: self.up_output,
             self.down_port: self.down_output,

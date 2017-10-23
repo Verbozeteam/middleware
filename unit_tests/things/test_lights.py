@@ -6,6 +6,7 @@ from things.light import LightSwitch, Dimmer
 
 import time
 import testing_utils
+import random
 
 #
 # SWITCHES
@@ -29,8 +30,8 @@ class TestSwitches(BaseTestFramework):
 
         self.system.arduino_emulator.sync_board()
 
-        for i in range(0, 2):
-            for s in self.switches:
+        for i in reversed(range(0, 2)):
+            for s in random.sample(self.switches, 4):
                 s.set_state({"intensity": i})
                 assert s.get_state()["intensity"] == i
                 assert s.get_hardware_state()[s.switch_port] == i

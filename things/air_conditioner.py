@@ -28,7 +28,7 @@ class CentralAC(Thing):
         self.output_ports[self.fan_port] = 1 # digital output
         if hasattr(self, "valve_port"):
             self.output_ports[self.valve_port] = 2 # pwm output
-        else:
+        if hasattr(self, "digital_valve_port"):
             self.output_ports[self.digital_valve_port] = 1 # digital OPEN/CLOSE valve
         self.id = "central-ac-" + self.temperature_port + "-" + self.fan_port
         self.current_set_point = 25
@@ -89,7 +89,7 @@ class CentralAC(Thing):
                 temp_diff = self.current_temperature - self.current_set_point
                 coeff = (min(max(temp_diff, -10), 10)) / 10; # [-1, 1]
                 self.current_airflow = min(max(self.current_airflow + self.homeostasis * coeff, 0.0), 255.0)
-            elif hasattr(self, "digital_valve_port"):
+            if hasattr(self, "digital_valve_port"):
                 if self.is_temp_rising:
                     if self.current_temperature > self.current_set_point + self.homeostasis:
                         self.digital_valve_output = 1

@@ -239,6 +239,7 @@ class ArduinoController(HardwareController):
             return False
 
         if self.receive_timeout > 0 and cur_time_s > self.receive_timeout:
+            Log.warning("ArduinoController::update() timed out")
             return False # haven't received anything in a long time!
 
         if self.sync_input_buffer(cur_time_s):
