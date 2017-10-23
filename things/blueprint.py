@@ -116,7 +116,7 @@ class Blueprint(object):
     def get_listening_things_by_port(self, port):
         listeners = []
         for room in self.rooms:
-            for thing in thing.room.things.values():
+            for thing in room.things.values():
                 if port in thing.input_ports or port in thing.output_ports:
                     listeners.append(thing)
         return listeners

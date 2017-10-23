@@ -63,7 +63,7 @@ class HardwareManager(object):
     # Called when this manager needs to free all its resources
     def cleanup(self):
         # detach all devices
-        for controller in self.connected_controllers.values():
+        for controller in list(self.connected_controllers.values()):
             controller.destroy_selectible()
 
     # Called by a device when it has an updated value on a port
@@ -77,4 +77,5 @@ class HardwareManager(object):
             things = self.core.blueprint.get_listening_things_by_port(port)
             for thing in things:
                 thing.set_hardware_state(port, value)
-        except: pass
+        except:
+            Log.error("HardwareManager::on_port_update({}, {}, {})".format(device, port, value), exception=True)

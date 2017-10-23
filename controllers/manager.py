@@ -50,7 +50,7 @@ class ControllersManager(object):
 
     # Called when this manager needs to free all its resources
     def cleanup(self):
-        for controller in self.connected_controllers:
+        for controller in list(self.connected_controllers):
             controller.destroy_selectible()
         for C in self.connection_managers:
             C.cleanup()

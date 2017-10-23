@@ -111,6 +111,7 @@ class ArduinoController(HardwareController):
         self.sync_send_timer = 0
         self.sync_send_period = 1
         self.receive_timeout = -1
+        self.is_initialized = False
         super(ArduinoController, self).__init__(hw_manager, comport, baud=9600, fake_serial_port=fake_serial_port)
 
     def initialize_board(self):
@@ -143,6 +144,7 @@ class ArduinoController(HardwareController):
                     self.write_to_fd(ArduinoProtocol.create_set_pin_mode(port, thing.output_ports[port]))
 
         self.cache = {} # clear cache so things can be written to the board
+        self.is_initialized = True
 
     # Checks or sets the sync state with the controller
     # set_to   If not None, sets the sync state to to this
@@ -154,8 +156,10 @@ class ArduinoController(HardwareController):
             if set_to == False:
                 self.sync_send_timer = 0
                 self.sync_send_period = 1
+                self.is_initialized = False
             elif set_to == True:
                 self.sync_send_period = 10
+
         return self.full_sync
 
     # Synchronizes the read buffer with the Arduino if its not already in sync.
@@ -187,7 +191,6 @@ class ArduinoController(HardwareController):
                     Log.hammoud("ArduinoController::sync_input_buffer() found FULL sequence")
                     self.is_in_sync(True)
                     self.sync_send_timer = 0
-                    self.initialize_board()
                 else:
                     Log.hammoud("ArduinoController::sync_input_buffer() found HALF sequence")
                     self.half_sync = True
@@ -198,6 +201,9 @@ class ArduinoController(HardwareController):
                         break;
                 # truncate the beginning of the read buffer
                 self.read_buffer = self.read_buffer[truncate_size:]
+
+        if self.full_sync and not self.is_initialized:
+            self.initialize_board()
 
         return self.is_in_sync()
 
@@ -286,10 +292,10 @@ class ArduinoLegacyController(ArduinoController):
     # hotel power: 42 (output 0v/5v)
 
     def __init__(self, hw_manager, comport):
-        super(ArduinoLegacyController, self).__init__(hw_manager, comport, fake_serial_port=9912)
         self.read_buffer = bytearray([])
         self.BEGINNING_BYTE = 254
         self.ENDING_BYTE = 255
+        super(ArduinoLegacyController, self).__init__(hw_manager, comport, fake_serial_port=9912)
 
     def is_in_sync(self, set_to=None):
         return True
@@ -344,21 +350,21 @@ class ArduinoLegacyController(ArduinoController):
                 raise 1 # invalid message...
             for i in range(len(ACs)):
                 ArduinoProtocol.on_message(self, MESSAGE_TYPE.FROMDEVICE_PINSTATE, bytearray([PIN_TYPE.DIGITAL[0], 48+i, ACs[i][0]]))
-                ArduinoProtocol.on_message(MESSAGE_TYPE.FROMDEVICE_PINSTATE, bytearray([PIN_TYPE.VIRTUAL[0], i, ACs[i][2]]))
+                ArduinoProtocol.on_message(self, MESSAGE_TYPE.FROMDEVICE_PINSTATE, bytearray([PIN_TYPE.VIRTUAL[0], i, ACs[i][2]]))
             for i in range(len(dimmers)):
-                ArduinoProtocol.on_message(MESSAGE_TYPE.FROMDEVICE_PINSTATE, bytearray([PIN_TYPE.DIGITAL[0], 4+i, dimmers[i]]))
+                ArduinoProtocol.on_message(self, MESSAGE_TYPE.FROMDEVICE_PINSTATE, bytearray([PIN_TYPE.DIGITAL[0], 4+i, dimmers[i]]))
             for i in range(len(lights)):
-                ArduinoProtocol.on_message(MESSAGE_TYPE.FROMDEVICE_PINSTATE, bytearray([PIN_TYPE.DIGITAL[0], 37-i, lights[i]]))
+                ArduinoProtocol.on_message(self, MESSAGE_TYPE.FROMDEVICE_PINSTATE, bytearray([PIN_TYPE.DIGITAL[0], 37-i, lights[i]]))
             return True
         except Exception as e:
+            Log.error("ArduinoLegacyController::on_message() Failed", exception=True)
             return False
 
     def set_port_value(self, port, value):
-        super(ArduinoLegacyController, self).set_port_value(port, value)
+        super(ArduinoController, self).set_port_value(port, value)
         try:
             port_type = port[0]
             port = int(port[1:])
-            Log.hammoud("ArduinoLegacyController::set_port_value({}, {})".format(port, value))
             if port_type == "v" and port == 0: # AC set point
                 self.write_to_fd("a{}:{}\n".format(port, int(value*2)).encode('utf-8'))
             if port >= 22 and port <= 27: # curtain

@@ -101,9 +101,8 @@ class TCPSocketConnectionManager(ConnectionManager):
     # Called when this manager needs to free all its resources
     def cleanup(self):
         super(TCPSocketConnectionManager, self).cleanup()
-        for iface in self.server_socks:
-            try: self.server_socks[iface].close()
-            except: pass
+        for iface in list(self.server_socks):
+            self.server_socks[iface].destroy_selectible()
         self.server_socks = {}
 
     # Discovers network interfaces active on this machine

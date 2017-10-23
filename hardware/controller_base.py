@@ -63,6 +63,7 @@ class HardwareController(Selectible):
 
     # Sends a command to the controller to set a port to a certain output value
     def set_port_value(self, port, value):
+        Log.hammoud("HardwareController::set_port_value({}, {})".format(port, value))
         self.cache[port] = value
 
     # called to identify if any device that this controller controls is in
