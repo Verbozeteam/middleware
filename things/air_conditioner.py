@@ -45,17 +45,21 @@ class CentralAC(Thing):
         return "central_acs"
 
     def set_fan_speed(self, speed):
-        self.current_fan_speed = int(min(max(speed, 0), 2))
-        self.dirty = True
-        self.pending_commands.append((self.fan_port, self.current_fan_speed))
+        if self.current_fan_speed != speed:
+            self.current_fan_speed = int(min(max(speed, 0), 2))
+            self.dirty = True
+            self.pending_commands.append((self.fan_port, self.current_fan_speed))
 
     def set_set_point(self, set_pt):
-        self.current_set_point = float(min(max(set_pt, 0.0), 50.0))
-        self.dirty = True
+        if self.current_set_point != set_pt:
+            self.current_set_point = float(min(max(set_pt, 0.0), 50.0))
+            self.dirty = True
 
     def sleep(self):
-        self.saved_wakeup_temperature = self.current_set_point
-        self.saved_wakeup_fan = self.current_fan_speed
+        if not hasattr(self, "saved_wakeup_temperature"):
+            self.saved_wakeup_temperature = self.current_set_point
+            self.saved_wakeup_fan = self.current_fan_speed
+
         if hasattr(self, "default_sleep_temperature"):
             self.set_set_point(self.default_sleep_temperature)
             self.set_fan_speed(1) # fan must be on
@@ -71,6 +75,11 @@ class CentralAC(Thing):
             self.set_set_point(self.saved_wakeup_temperature)
             self.set_fan_speed(self.saved_wakeup_fan)
 
+        if hasattr(self, "saved_wakeup_temperature"):
+            delattr(self, "saved_wakeup_temperature")
+        if hasattr(self, "saved_wakeup_fan"):
+            delattr(self, "saved_wakeup_fan")
+
     def on_new_hardware(self):
         self.set_fan_speed(self.current_fan_speed)
         self.set_set_point(self.current_set_point)
@@ -81,6 +90,9 @@ class CentralAC(Thing):
             self.dirty = True
 
     def on_controller_data(self, data):
+        if hasattr(self, "saved_wakeup_temperature"):
+            return # block updates while sleeping
+
         if "set_pt" in data:
             self.set_set_point(data["set_pt"])
         if "fan" in data:

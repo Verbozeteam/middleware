@@ -20,7 +20,9 @@ class LightSwitch(Thing):
         self.pending_commands.append((self.switch_port, self.intensity))
 
     def sleep(self):
-        self.saved_wakeup_value = self.intensity
+        if not hasattr(self, "saved_wakeup_value"):
+            self.saved_wakeup_value = self.intensity
+
         if self.intensity == 1:
             self.set_intensity(0)
 
@@ -30,10 +32,16 @@ class LightSwitch(Thing):
         elif hasattr(self, "saved_wakeup_value"):
             self.set_intensity(self.saved_wakeup_value)
 
+        if hasattr(self, "saved_wakeup_value"):
+            delattr(self, "saved_wakeup_value")
+
     def on_new_hardware(self):
         self.set_intensity(self.intensity)
 
     def on_controller_data(self, data):
+        if hasattr(self, "saved_wakeup_value"):
+            return # block updates while sleeping
+
         if "intensity" in data:
             self.set_intensity(data["intensity"])
 
@@ -59,17 +67,24 @@ class Dimmer(Thing):
         self.intensity = int(min(max(intensity, 0), 100))
         self.dirty = True
         if self.is_isr_dimmer:
-            light_power = int(min(max(100.0 - (float(self.intensity) / 1.2), 17.0), 100.0))
+            # light_power = int(self.intensity) # 0-100
+            # if light_power > 100: light_power = 100
+            # if light_power < 5: light_power = 0
+            # light_power = 100 - (light_power/2) # 50-100
+
+            light_power = int(min(max(100.0 - (float(self.intensity) / 1.3), 25.0), 100.0))
             if light_power > 85 and light_power < 97:
                 light_power = 85
             elif light_power >= 97:
                 light_power = 105 # so that zero-crossing has no way of nakba
-            self.pending_commands.append((self.dimmer_port, light_power))
+            self.pending_commands.append((self.dimmer_port, int(light_power)))
         else:
             self.pending_commands.append((self.dimmer_port, int(self.intensity * 2.55)))
 
     def sleep(self):
-        self.saved_wakeup_value = self.intensity
+        if not hasattr(self, "saved_wakeup_value"):
+            self.saved_wakeup_value = self.intensity
+
         if self.intensity > 0:
             self.set_intensity(0)
 
@@ -79,10 +94,16 @@ class Dimmer(Thing):
         elif hasattr(self, "saved_wakeup_value"):
             self.set_intensity(self.saved_wakeup_value)
 
+        if hasattr(self, "saved_wakeup_value"):
+            delattr(self, "saved_wakeup_value")
+
     def on_new_hardware(self):
         self.set_intensity(self.intensity)
 
     def on_controller_data(self, data):
+        if hasattr(self, "saved_wakeup_value"):
+            return # block updates while sleeping
+
         if "intensity" in data:
             self.set_intensity(data["intensity"])
 
