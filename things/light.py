@@ -20,7 +20,9 @@ class LightSwitch(Thing):
         self.pending_commands.append((self.switch_port, self.intensity))
 
     def sleep(self):
-        self.saved_wakeup_value = self.intensity
+        if not hasattr(self, "saved_wakeup_value"):
+            self.saved_wakeup_value = self.intensity
+
         if self.intensity == 1:
             self.set_intensity(0)
 
@@ -30,10 +32,16 @@ class LightSwitch(Thing):
         elif hasattr(self, "saved_wakeup_value"):
             self.set_intensity(self.saved_wakeup_value)
 
+        if hasattr(self, "saved_wakeup_value"):
+            delattr(self, "saved_wakeup_value")
+
     def on_new_hardware(self):
         self.set_intensity(self.intensity)
 
     def on_controller_data(self, data):
+        if hasattr(self, "saved_wakeup_value"):
+            return # block updates while sleeping
+
         if "intensity" in data:
             self.set_intensity(data["intensity"])
 
@@ -74,7 +82,9 @@ class Dimmer(Thing):
             self.pending_commands.append((self.dimmer_port, int(self.intensity * 2.55)))
 
     def sleep(self):
-        self.saved_wakeup_value = self.intensity
+        if not hasattr(self, "saved_wakeup_value"):
+            self.saved_wakeup_value = self.intensity
+
         if self.intensity > 0:
             self.set_intensity(0)
 
@@ -84,10 +94,16 @@ class Dimmer(Thing):
         elif hasattr(self, "saved_wakeup_value"):
             self.set_intensity(self.saved_wakeup_value)
 
+        if hasattr(self, "saved_wakeup_value"):
+            delattr(self, "saved_wakeup_value")
+
     def on_new_hardware(self):
         self.set_intensity(self.intensity)
 
     def on_controller_data(self, data):
+        if hasattr(self, "saved_wakeup_value"):
+            return # block updates while sleeping
+
         if "intensity" in data:
             self.set_intensity(data["intensity"])
 
