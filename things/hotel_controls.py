@@ -27,6 +27,7 @@ class HotelControls(Thing):
     def on_hardware_data(self, port, value):
         if port == self.hotel_card:
             self.card_in = value
+            self.power_next_update = 0
 
     def on_controller_data(self, data):
         if "do_not_disturb" in data:
