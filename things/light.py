@@ -59,12 +59,17 @@ class Dimmer(Thing):
         self.intensity = int(min(max(intensity, 0), 100))
         self.dirty = True
         if self.is_isr_dimmer:
-            light_power = int(min(max(100.0 - (float(self.intensity) / 2.0), 50.0), 100.0))
-            if light_power > 85 and light_power < 97:
-                light_power = 85
-            elif light_power >= 97:
-                light_power = 105 # so that zero-crossing has no way of nakba
-            self.pending_commands.append((self.dimmer_port, light_power))
+            light_power = int(self.intensity) # 0-100
+            if light_power > 100: light_power = 100
+            if light_power < 5: light_power = 0
+            light_power = 100 - (light_power/2) # 50-100
+
+            # light_power = int(min(max(100.0 - (float(self.intensity) / 1.2), 17.0), 100.0))
+            # if light_power > 85 and light_power < 97:
+            #     light_power = 85
+            # elif light_power >= 97:
+            #     light_power = 105 # so that zero-crossing has no way of nakba
+            self.pending_commands.append((self.dimmer_port, int(light_power)))
         else:
             self.pending_commands.append((self.dimmer_port, int(self.intensity * 2.55)))
 

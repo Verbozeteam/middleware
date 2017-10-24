@@ -37,6 +37,7 @@ class Core(object):
 
 if __name__ == '__main__':
     # Initialize and run the core
+    Log.initialize()
     core = Core()
     core.run()
     core.cleanup()
