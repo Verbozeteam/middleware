@@ -59,7 +59,9 @@ class ControllersManager(object):
     # controller  Controller that sent the command
     # command     JSON control command sent
     def on_control_command(self, controller, command):
-        if "code" in command:
+        if len(command) == 0: # heartbeat
+            controller.send_data({}) # reply
+        elif "code" in command:
             Log.debug("ControllersManager::on_control_command({}, {})".format(str(controller), command))
             try:
                 if command["code"] == CONTROL_CODES.GET_BLUEPRINT:
