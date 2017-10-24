@@ -47,8 +47,11 @@ class Controller(Selectible):
     # command  JSON command sent by the controller
     def on_command(self, command):
         if "thing" in command:
-            Log.debug("Controller::on_command({}, {})".format(str(self), command))
             thing_id = command["thing"]
+            if thing_id not in self.things_listening and self.things_listening != []:
+                Log.verboze("Controller::on_command({}, {}) BLOCKED (no access)".format(str(self), command))
+                return
+            Log.debug("Controller::on_command({}, {})".format(str(self), command))
             thing = self.manager.core.blueprint.get_thing(thing_id)
             if thing:
                 update_cache = self.cache.get(thing_id, None) == thing.get_state() # update cache only if the previous view of the state is already up to date
