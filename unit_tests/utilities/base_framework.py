@@ -26,7 +26,7 @@ class BaseTestFramework(object):
                 if condition(self):
                     return True
             except: pass
-            time.sleep(0.02)
+            time.sleep(0.03)
             count += 1
             if count == attempts:
                 assert condition(self)
