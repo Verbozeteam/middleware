@@ -5,7 +5,7 @@ import json
 class HotelControls(Thing):
     def __init__(self, blueprint, hotel_json):
         super(HotelControls, self).__init__(blueprint, hotel_json)
-        self.input_ports[self.hotel_card] = -10000 # read card every 10 seconds (negative for pullup)
+        self.input_ports[self.hotel_card] = -1000 # read card every 1 second (negative for pullup)
         self.output_ports[self.power_port] = 1 # digital output
         self.output_ports[self.do_not_disturb_port] = 1 # digital output
         self.output_ports[self.room_service_port] = 1 # digital output
@@ -15,9 +15,8 @@ class HotelControls(Thing):
         self.room_service = 0
         self.power = 1
         self.card_out_start = -1
-        self.power_next_update = 0
         if not hasattr(self, "nocard_power_timeout"):
-            self.nocard_power_timeout = 60
+            self.nocard_power_timeout = 20
 
     # Should return the key in the blueprint that this Thing captures
     @staticmethod
@@ -42,20 +41,19 @@ class HotelControls(Thing):
                 self.card_out_start = cur_time_s
             elif cur_time_s - self.card_out_start > self.nocard_power_timeout:
                 self.card_out_start = cur_time_s # prevents spam commands
-                if self.power == 1: # just turned off, make Things sleep
-                    things = self.blueprint.get_things()
-                    for thing in things:
-                        thing.sleep()
                 self.power = 0 # turn off power
         else:
-            if cur_time_s >= self.power_next_update:
-                if self.power == 0: # just turned on, wake Things up
-                    things = self.blueprint.get_things()
-                    for thing in things:
-                        thing.wake_up()
-                self.power_next_update = cur_time_s + 5
-                self.card_out_start = -1
-                self.power = 1 # turn on power
+            if self.power == 0: # just turned on, wake Things up
+                things = self.blueprint.get_things()
+                for thing in things:
+                    thing.wake_up()
+            self.card_out_start = -1
+            self.power = 1 # turn on power
+
+        if self.power == 0: # force sleep everything, every update...
+            things = self.blueprint.get_things()
+            for thing in things:
+                thing.sleep()
 
     def get_state(self):
         return {

@@ -9,3 +9,4 @@ class GENERAL_CONFIG:
     LOG_MAX_FILESIZE = 1024*1024
 
     SELECT_TIMEOUT = 1 # 1 second
+

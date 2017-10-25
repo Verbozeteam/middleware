@@ -18,7 +18,9 @@ class LightSwitch(Thing):
         self.intensity = int(min(max(intensity, 0), 1))
 
     def sleep(self):
-        self.saved_wakeup_value = self.intensity
+        if not hasattr(self, "saved_wakeup_value"):
+            self.saved_wakeup_value = self.intensity
+
         if self.intensity == 1:
             self.set_intensity(0)
 
@@ -28,7 +30,13 @@ class LightSwitch(Thing):
         elif hasattr(self, "saved_wakeup_value"):
             self.set_intensity(self.saved_wakeup_value)
 
+        if hasattr(self, "saved_wakeup_value"):
+            delattr(self, "saved_wakeup_value")
+
     def set_state(self, data):
+        if hasattr(self, "saved_wakeup_value"):
+            return # block updates while sleeping
+
         if "intensity" in data:
             self.set_intensity(data["intensity"])
         return False
@@ -60,7 +68,9 @@ class Dimmer(Thing):
         self.intensity = int(min(max(intensity, 0), 100))
 
     def sleep(self):
-        self.saved_wakeup_value = self.intensity
+        if not hasattr(self, "saved_wakeup_value"):
+            self.saved_wakeup_value = self.intensity
+
         if self.intensity > 0:
             self.set_intensity(0)
 
@@ -70,7 +80,13 @@ class Dimmer(Thing):
         elif hasattr(self, "saved_wakeup_value"):
             self.set_intensity(self.saved_wakeup_value)
 
+        if hasattr(self, "saved_wakeup_value"):
+            delattr(self, "saved_wakeup_value")
+
     def set_state(self, data):
+        if hasattr(self, "saved_wakeup_value"):
+            return # block updates while sleeping
+
         if "intensity" in data:
             self.set_intensity(data["intensity"])
         return False
@@ -82,13 +98,13 @@ class Dimmer(Thing):
 
     def get_hardware_state(self):
         if self.is_isr_dimmer:
-            light_power = int(min(max(100.0 - (float(self.intensity) / 1.2), 17.0), 100.0))
+            light_power = int(min(max(100.0 - (float(self.intensity) / 1.3), 25.0), 100.0))
             if light_power > 85 and light_power < 97:
                 light_power = 85
             elif light_power >= 97:
                 light_power = 105 # so that zero-crossing has no way of nakba
             return {
-                self.dimmer_port: light_power,
+                self.dimmer_port: int(light_power),
             }
         else:
             return {

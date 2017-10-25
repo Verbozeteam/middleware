@@ -60,6 +60,7 @@ class Log(object):
     def error(*args, **kwargs):
         Log.log(VERBOZITY.ERROR, *args, **kwargs)
         Log.logger.error(*args)
+<<<<<<< HEAD
 
     @staticmethod
     def warning(*args, **kwargs):
@@ -87,6 +88,35 @@ class Log(object):
         Log.logger.debug(*args)
 
     @staticmethod
+=======
+
+    @staticmethod
+    def warning(*args, **kwargs):
+        Log.log(VERBOZITY.WARNING, *args, **kwargs)
+        Log.logger.warning(*args)
+
+    @staticmethod
+    def info(*args, **kwargs):
+        Log.log(VERBOZITY.INFO, *args, **kwargs)
+        Log.logger.info(*args)
+
+    @staticmethod
+    def debug(*args, **kwargs):
+        Log.log(VERBOZITY.DEBUG, *args, **kwargs)
+        Log.logger.debug(*args)
+
+    @staticmethod
+    def verboze(*args, **kwargs):
+        Log.log(VERBOZITY.VERBOZE, *args, **kwargs)
+        Log.logger.debug(*args)
+
+    @staticmethod
+    def hammoud(*args, **kwargs):
+        Log.log(VERBOZITY.HAMMOUD, *args, **kwargs)
+        Log.logger.debug(*args)
+
+    @staticmethod
+>>>>>>> master
     def initialize():
         try:
             Log.logger = logging.getLogger('middleware')
@@ -120,6 +150,13 @@ class Log(object):
             hdlr = RotatingFileHandler(os.path.join(log_folder_name, "mw.log"), backupCount=GENERAL_CONFIG.LOG_NUM_FILES, maxBytes=GENERAL_CONFIG.LOG_MAX_FILESIZE) # 10MB total per run
             formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
             hdlr.setFormatter(formatter)
+<<<<<<< HEAD
             Log.logger.addHandler(hdlr)
         except Exception as e:
             Log.log(VERBOZITY.ERROR, "Failed to open logs!", exception=True)
+=======
+            Log.logger.addHandler(hdlr) 
+        except Exception as e:
+            Log.log(VERBOZITY.ERROR, "Failed to open logs!", exception=True)
+
+>>>>>>> master
