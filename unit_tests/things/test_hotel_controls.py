@@ -24,7 +24,6 @@ class TestHotelControls(BaseTestFramework):
     def set_card(self, state=1):
         self.hotel_controls.card_in = 1 - state
         self.system.arduino_emulator.set_pin(type=0, index=int(self.hotel_controls.hotel_card[1:]), state=state)
-        self.hotel_controls.power_next_update = 0 # make sure update immediately goes thru
         self.wait_for_condition(lambda self: self.hotel_controls.get_state()["card"] == state)
 
     def test_controls(self):
@@ -87,7 +86,7 @@ class TestHotelControls(BaseTestFramework):
 
         # Now power should go out
         self.wait_for_condition(lambda self:
-            self.hotel_controls.sleep.call_count == 1 and
+            self.hotel_controls.sleep.call_count >= 1 and
             self.hotel_controls.wake_up.call_count == 0 and
             self.hotel_controls.card_in == 0 and
             self.hotel_controls.power == 0 and
@@ -103,7 +102,6 @@ class TestHotelControls(BaseTestFramework):
 
         # Now power should come back
         self.wait_for_condition(lambda self:
-            self.hotel_controls.sleep.call_count == 0 and
             self.hotel_controls.wake_up.call_count == 1 and
             self.hotel_controls.card_in == 1 and
             self.hotel_controls.power == 1 and
