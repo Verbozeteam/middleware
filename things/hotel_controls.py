@@ -5,7 +5,7 @@ import json
 class HotelControls(Thing):
     def __init__(self, blueprint, hotel_json):
         super(HotelControls, self).__init__(blueprint, hotel_json)
-        self.input_ports[self.hotel_card] = -2000 # read card every 10 seconds (negative for pullup)
+        self.input_ports[self.hotel_card] = -1000 # read card every 1 second (negative for pullup)
         self.output_ports[self.power_port] = 1 # digital output
         self.output_ports[self.do_not_disturb_port] = 1 # digital output
         self.output_ports[self.room_service_port] = 1 # digital output
