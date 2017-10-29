@@ -33,12 +33,12 @@ class HardwareController(Selectible):
 
     # called when the device is detached, before the manager destroys it
     def destroy_selectible(self):
+        super(HardwareController, self).destroy_selectible()
         try:
             if self.serial_port != None:
                 self.serial_port.close()
         except Exception as e:
             Log.warning("Failed to safely close serial port communication for device {}".format(self.serial_number), exception=True)
-        super(HardwareController, self).destroy_selectible()
 
         self.hw_manager.deregister_controller(self)
 

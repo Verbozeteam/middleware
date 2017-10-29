@@ -25,11 +25,11 @@ class TCPHostedSocket(Selectible):
         Log.info("Listening on {}:{}".format(ip, CONTROLLERS_CONFIG.SOCKET_SERVER_BIND_PORT))
 
     def destroy_selectible(self):
+        super(TCPHostedSocket, self).destroy_selectible()
         try:
             self.sock.close()
         except: pass
         self.connection_manager.deregister_server_sock(self.interface)
-        super(TCPHostedSocket, self).destroy_selectible()
 
     def on_read_ready(self, cur_time_s):
         try:

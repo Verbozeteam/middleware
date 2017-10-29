@@ -28,8 +28,11 @@ class Selectible(object):
 	def on_write_ready(self, cur_time_s):
 		try:
 			# call the write function
-			getattr(self.fd, self.write_function)(self.pending_write_to_fd)
-			self.pending_write_to_fd = bytearray([])
+			nsent = getattr(self.fd, self.write_function)(self.pending_write_to_fd)
+			if nsent <= 0:
+				Log.debug("Selectible::on_write_ready() wrote 0 bytes")
+				return False
+			self.pending_write_to_fd = self.pending_write_to_fd[nsent:]
 			return True
 		except:
 			Log.debug("Selectible::on_write_ready() failed.", exception=True)
@@ -47,13 +50,13 @@ class SelectService(object):
 	@staticmethod
 	def register_selectible(selectible):
 		print("registered selectible ", str(selectible))
-		SelectService.selectibles[str(selectible)] = selectible
+		SelectService.selectibles[selectible.fd.fileno()] = selectible
 
 	# Deregisters a selectible
 	@staticmethod
 	def deregister_selectible(selectible):
 		print("DEregistered selectible ", str(selectible))
-		key = str(selectible)
+		key = selectible.fd.fileno()
 		if key in SelectService.selectibles:
 			del SelectService.selectibles[key]
 
@@ -61,17 +64,18 @@ class SelectService(object):
 	# cur_time_s  Current time in seconds
 	@staticmethod
 	def perform_select(cur_time_s, select_reads=True, select_writes=True):
+		print (SelectService.selectibles)
 		all_selectibles = SelectService.selectibles.values()
 
 		read_descriptors = []
 		write_descriptors = []
 
 		if select_reads:
-			readable_descriptors = dict(map(lambda s: (str(s.fd), s), all_selectibles))
+			readable_descriptors = dict(map(lambda s: (s.fd.fileno(), s), all_selectibles))
 			read_descriptors = list(map(lambda rd: rd.fd, readable_descriptors.values()))
 
 		if select_writes:
-			writable_descriptors = dict(map(lambda s: (str(s.fd), s), filter(lambda s: len(s.pending_write_to_fd) > 0, all_selectibles)))
+			writable_descriptors = dict(map(lambda s: (s.fd.fileno(), s), filter(lambda s: len(s.pending_write_to_fd) > 0, all_selectibles)))
 			write_descriptors = list(map(lambda wd: wd.fd, writable_descriptors.values()))
 
 		if len(read_descriptors) + len(write_descriptors) == 0:
@@ -80,19 +84,21 @@ class SelectService(object):
 		try:
 			(ready_read_descriptors, ready_write_descriptors, _) = select.select(read_descriptors, write_descriptors, [], GENERAL_CONFIG.SELECT_TIMEOUT)
 			for D in ready_write_descriptors:
+				fd = D.fileno()
 				try:
-					keep = writable_descriptors[str(D)].on_write_ready(cur_time_s)
+					keep = writable_descriptors[fd].on_write_ready(cur_time_s)
 				except:
 					keep = False
 				if not keep:
-					writable_descriptors[str(D)].destroy_selectible()
+					writable_descriptors[fd].destroy_selectible()
 			for D in ready_read_descriptors:
+				fd = D.fileno()
 				try:
-					keep = readable_descriptors[str(D)].on_read_ready(cur_time_s)
+					keep = readable_descriptors[fd].on_read_ready(cur_time_s)
 				except:
 					keep = False
 				if not keep:
-					readable_descriptors[str(D)].destroy_selectible()
+					readable_descriptors[fd].destroy_selectible()
 		except KeyboardInterrupt:
 			raise
 		except:

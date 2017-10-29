@@ -53,10 +53,10 @@ class TCPSocketController(Controller):
 
     # Called before the controller gets disconnected
     def destroy_selectible(self):
+        super(TCPSocketController, self).destroy_selectible()
         try:
             self.connection.close()
         except: pass
-        super(TCPSocketController, self).destroy_selectible()
 
     # Called when the socket has pending bytes to read
     def on_read_ready(self, cur_time_s, skip_recv=False):

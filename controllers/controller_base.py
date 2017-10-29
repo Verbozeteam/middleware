@@ -10,9 +10,9 @@ class Controller(Selectible):
         Log.info("Controller connected: {}".format(str(self)))
 
     def destroy_selectible(self):
+        super(Controller, self).destroy_selectible()
         self.manager.deregister_controller(self)
         Log.info("Controller disconnected: {}".format(str(self)))
-        super(Controller, self).destroy_selectible()
 
     # Called for a periodic update
     def update(self, cur_time_s):
