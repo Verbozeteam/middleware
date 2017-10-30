@@ -49,13 +49,13 @@ class SelectService(object):
 	# selectible  A Selectible object
 	@staticmethod
 	def register_selectible(selectible):
-		print("registered selectible ", str(selectible))
+		Log.info("registered selectible {}".format(str(selectible)))
 		SelectService.selectibles[selectible.fd.fileno()] = selectible
 
 	# Deregisters a selectible
 	@staticmethod
 	def deregister_selectible(selectible):
-		print("DEregistered selectible ", str(selectible))
+		Log.info("DEregistered selectible {}".format(str(selectible)))
 		key = selectible.fd.fileno()
 		if key in SelectService.selectibles:
 			del SelectService.selectibles[key]
@@ -64,7 +64,6 @@ class SelectService(object):
 	# cur_time_s  Current time in seconds
 	@staticmethod
 	def perform_select(cur_time_s, select_reads=True, select_writes=True):
-		print (SelectService.selectibles)
 		all_selectibles = SelectService.selectibles.values()
 
 		read_descriptors = []
