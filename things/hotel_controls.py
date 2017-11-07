@@ -23,6 +23,9 @@ class HotelControls(Thing):
     def get_blueprint_tag():
         return "hotel_controls"
 
+    def sleep(self):
+        self.do_not_disturb = 0 # turn off DND on sleep
+
     def set_hardware_state(self, port, value):
         if port == self.hotel_card:
             self.card_in = value
