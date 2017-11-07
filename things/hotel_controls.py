@@ -24,6 +24,21 @@ class HotelControls(Thing):
     def get_blueprint_tag():
         return "hotel_controls"
 
+    def set_dnd(self, set_to):
+        if set_to != self.do_not_disturb:
+            self.do_not_disturb = set_to
+            self.dirty = True
+            self.pending_commands.append((self.do_not_disturb_port, self.do_not_disturb))
+
+    def set_rs(self, set_to):
+        if set_to != self.room_service:
+            self.room_service = set_to
+            self.dirty = True
+            self.pending_commands.append((self.room_service_port, self.room_service))
+
+    def sleep(self):
+        self.set_dnd(0)
+
     def on_hardware_data(self, port, value):
         if port == self.hotel_card:
             self.card_in = value
@@ -31,13 +46,9 @@ class HotelControls(Thing):
 
     def on_controller_data(self, data):
         if "do_not_disturb" in data:
-            self.do_not_disturb = data["do_not_disturb"]
-            self.dirty = True
-            self.pending_commands.append((self.do_not_disturb_port, self.do_not_disturb))
+            self.set_dnd(data["do_not_disturb"])
         if "room_service" in data:
-            self.room_service = data["room_service"]
-            self.dirty = True
-            self.pending_commands.append((self.room_service_port, self.room_service))
+            self.set_rs(data["room_service"])
 
     def on_new_hardware(self):
             self.pending_commands.append((self.do_not_disturb_port, self.do_not_disturb))
