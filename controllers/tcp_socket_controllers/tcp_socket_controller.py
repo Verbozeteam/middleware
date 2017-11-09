@@ -196,7 +196,7 @@ class TCPSocketLegacyController(TCPSocketController):
 
     # Called when data needs to be sent to the remote controller on the socket
     def send_data(self, json_data, cache=True):
-        super(TCPLegacySocketController, self).send_data(json_data, cache)
+        super(TCPSocketLegacyController, self).send_data(json_data, cache)
 
         try:
             # HACK: read all things in the blueprint of the room and dump it on every update
