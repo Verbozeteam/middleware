@@ -6,7 +6,7 @@ class Controller(Selectible):
         self.manager = controllers_manager
         self.manager.register_controller(self)
         self.cache = {} # thing_id -> thing state
-        self.things_listening = [] # a list of things this Controller listens to ([] means all)
+        self.things_listening = None # a list of things this Controller listens to (None means all)
         Log.info("Controller connected: {}".format(str(self)))
 
     def destroy_selectible(self):
@@ -18,7 +18,7 @@ class Controller(Selectible):
     def update(self, cur_time_s):
         try:
             my_things = self.manager.core.blueprint.get_things()
-            if self.things_listening != []:
+            if self.things_listening != None:
                 my_things = filter(lambda t: t.id in self.things_listening, my_things)
 
             big_update = {}
@@ -48,7 +48,7 @@ class Controller(Selectible):
     def on_command(self, command):
         if "thing" in command:
             thing_id = command["thing"]
-            if thing_id not in self.things_listening and self.things_listening != []:
+            if self.things_listening != None and thing_id not in self.things_listening:
                 Log.verboze("Controller::on_command({}, {}) BLOCKED (no access)".format(str(self), command))
                 return
             Log.debug("Controller::on_command({}, {})".format(str(self), command))
