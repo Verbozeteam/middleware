@@ -24,6 +24,7 @@ class Controller(Selectible):
             big_update = {}
             for thing in my_things:
                 state = thing.get_state()
+                state["token"] = thing.last_change_token
                 if not thing.id in self.cache or self.cache[thing.id] != state: # @TODO: FIX EQUALITY?
                     big_update[thing.id] = state
                     big_update[thing.id]["token"] = thing.last_change_token
