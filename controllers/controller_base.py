@@ -26,6 +26,7 @@ class Controller(Selectible):
                 state = thing.get_state()
                 if not thing.id in self.cache or self.cache[thing.id] != state: # @TODO: FIX EQUALITY?
                     big_update[thing.id] = state
+                    big_update[thing.id]["token"] = thing.last_change_token
 
             if big_update != {}:
                 self.send_data(big_update)
@@ -53,6 +54,9 @@ class Controller(Selectible):
                 return
             Log.debug("Controller::on_command({}, {})".format(str(self), command))
             thing = self.manager.core.blueprint.get_thing(thing_id)
+            thing.set_state(command)
+            thing.last_change_token = command.get("token", "")
+            # CACHING ON COMMAND DISABLED
             # if thing:
             #     update_cache = self.cache.get(thing_id, None) == thing.get_state() # update cache only if the previous view of the state is already up to date
             #     if not thing.set_state(command) and update_cache: # if set_state returns False, then its safe to assume the state is known to the controller
