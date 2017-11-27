@@ -68,8 +68,11 @@ class TestSingleController(BaseTestFramework):
             def received_view(self):
                 cur_view.update(self.controller.recv_json(maxlen=10000, timeout=2))
                 for key in expected_result:
-                    if key not in cur_view or cur_view[key] != expected_result[key]:
+                    if key not in cur_view:
                         return False
+                    for subkey in expected_result[key]:
+                        if subkey not in cur_view[key] or cur_view[key][subkey] != expected_result[key][subkey]:
+                            return False
                 return True
 
             self.wait_for_condition(received_view)

@@ -29,6 +29,10 @@ class Selectible(object):
 		try:
 			# call the write function
 			nsent = getattr(self.fd, self.write_function)(self.pending_write_to_fd)
+			if nsent == None:
+				print (self.fd, self.write_function, self, self.pending_write_to_fd)
+				import traceback
+				traceback.print_stack()
 			if nsent <= 0:
 				Log.debug("Selectible::on_write_ready() wrote 0 bytes")
 				return False

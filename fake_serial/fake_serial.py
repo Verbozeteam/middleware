@@ -22,7 +22,8 @@ class Serial(object):
 
     def write(self, bytes):
         if self.sock:
-            self.sock.send(bytes)
+            return self.sock.send(bytes)
+        return -1
 
     def read(self, num_bytes):
         while len(self.buffered_bytes) < num_bytes:

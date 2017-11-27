@@ -7,6 +7,7 @@ from things.light import LightSwitch, Dimmer
 import time
 import testing_utils
 import random
+from functools import reduce
 
 #
 # SWITCHES
@@ -38,7 +39,9 @@ class TestSwitches(BaseTestFramework):
 
                 def controller_received_update(self):
                     self.system.fake_controllers[0].recv_json(10000, timeout=0.1)
-                    return self.system.fake_controllers[0].cache.get(s.id, {}) == s.get_state()
+                    expected = s.get_state()
+                    received = self.system.fake_controllers[0].cache.get(s.id, {})
+                    return  reduce(lambda x, y: x and y, (map(lambda key: key in received and received[key] == expected[key], expected.keys())))
                 self.wait_for_condition(controller_received_update)
 
                 self.wait_for_condition(lambda self: self.system.arduino_emulator.get_pin(type=0, index=int(s.switch_port[1:])) == i)
@@ -105,7 +108,9 @@ class TestDimmers(BaseTestFramework):
 
                 def controller_received_update(self):
                     self.system.fake_controllers[0].recv_json(10000, timeout=0)
-                    return self.system.fake_controllers[0].cache.get(s.id, {}) == s.get_state()
+                    expected = s.get_state()
+                    received = self.system.fake_controllers[0].cache.get(s.id, {})
+                    return  reduce(lambda x, y: x and y, (map(lambda key: key in received and received[key] == expected[key], expected.keys())))
                 self.wait_for_condition(controller_received_update)
 
                 self.wait_for_condition(lambda self: abs(self.system.arduino_emulator.get_pin(type=0, index=int(s.dimmer_port[1:])) - int(val*2.55)) <= 1.0)

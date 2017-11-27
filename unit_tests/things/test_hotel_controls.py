@@ -75,7 +75,7 @@ class TestHotelControls(BaseTestFramework):
         # Make sure card is in
         self.set_card(state=1)
         assert self.hotel_controls.card_in == 1 and self.hotel_controls.power == 1
-        assert self.system.arduino_emulator.get_pin(type=0, index=int(self.hotel_controls.power_port[1:])) == 1
+        self.wait_for_condition(lambda self: self.system.arduino_emulator.get_pin(type=0, index=int(self.hotel_controls.power_port[1:])) == 1)
 
         self.hotel_controls.sleep = Mock()
         self.hotel_controls.wake_up = Mock()
