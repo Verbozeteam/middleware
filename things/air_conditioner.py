@@ -12,15 +12,6 @@ class SplitAC(Thing):
     def get_blueprint_tag():
         return "split_acs"
 
-    def on_hardware_data(self, port, value):
-        pass
-
-    def set_state(self, data):
-        pass
-
-    def get_state(self):
-        return {}
-
 class CentralAC(Thing):
     def __init__(self, blueprint, ac_json):
         super(CentralAC, self).__init__(blueprint, ac_json)
@@ -52,6 +43,7 @@ class CentralAC(Thing):
         self.current_set_point = float(min(max(set_pt, 0.0), 50.0))
 
     def sleep(self):
+        super(CentralAC, self).sleep()
         if not hasattr(self, "saved_wakeup_temperature"):
             self.saved_wakeup_temperature = self.current_set_point
             self.saved_wakeup_fan = self.current_fan_speed
@@ -64,6 +56,7 @@ class CentralAC(Thing):
             self.set_fan_speed(1) # fan must be on
 
     def wake_up(self):
+        super(CentralAC, self).wake_up()
         if hasattr(self, "default_wakeup_temperature"):
             self.set_set_point(self.default_wakeup_temperature)
             self.set_fan_speed(1) # fan must be on
@@ -77,11 +70,13 @@ class CentralAC(Thing):
             delattr(self, "saved_wakeup_fan")
 
     def set_hardware_state(self, port, value):
+        super(CentralAC, self).set_hardware_state(port, value)
         if port == self.temperature_port:
             self.current_temperature = float(value) / 4.0
         return False
 
-    def set_state(self, data):
+    def set_state(self, data, token_from="system"):
+        super(CentralAC, self).set_state(data, token_from)
         if hasattr(self, "saved_wakeup_temperature"):
             return # block updates while sleeping
 

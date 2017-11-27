@@ -28,10 +28,12 @@ class Thing(object):
 
     # Should be implemented to order this Thing to go to sleep (usually turn off)
     def sleep(self):
+        self.thing.last_change_token = "system"
         pass
 
     # Should be implemented to order this Thing wake up (usually turn on)
     def wake_up(self):
+        self.thing.last_change_token = "system"
         pass
 
     # perform any Thing-specific logic
@@ -44,11 +46,14 @@ class Thing(object):
     # value    New value on that port
     # returns  True iff the changes made to the state are more than just the input
     def set_hardware_state(self, port, value):
+        self.thing.last_change_token = "system"
         return True
 
     # Called by the blueprint when a controller sends a message
-    # data  Message sent by the controller
-    # returns  True iff the changes made to the state are more than just the input
-    def set_state(self, data):
+    # data       Message sent by the controller
+    # token_from
+    # returns    True iff the changes made to the state are more than just the input
+    def set_state(self, data, token_from="system"):
+        self.thing.last_change_token = token_from
         return True
 

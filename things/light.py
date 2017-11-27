@@ -18,6 +18,7 @@ class LightSwitch(Thing):
         self.intensity = int(min(max(intensity, 0), 1))
 
     def sleep(self):
+        super(LightSwitch, self).sleep()
         if not hasattr(self, "saved_wakeup_value"):
             self.saved_wakeup_value = self.intensity
 
@@ -25,6 +26,7 @@ class LightSwitch(Thing):
             self.set_intensity(0)
 
     def wake_up(self):
+        super(LightSwitch, self).wake_up()
         if hasattr(self, "default_wakeup_value"):
             self.set_intensity(self.default_wakeup_value)
         elif hasattr(self, "saved_wakeup_value"):
@@ -33,7 +35,8 @@ class LightSwitch(Thing):
         if hasattr(self, "saved_wakeup_value"):
             delattr(self, "saved_wakeup_value")
 
-    def set_state(self, data):
+    def set_state(self, data, token_from="system"):
+        super(LightSwitch, self).set_state(data, token_from)
         if hasattr(self, "saved_wakeup_value"):
             return # block updates while sleeping
 
@@ -68,6 +71,7 @@ class Dimmer(Thing):
         self.intensity = int(min(max(intensity, 0), 100))
 
     def sleep(self):
+        super(Dimmer, self).sleep()
         if not hasattr(self, "saved_wakeup_value"):
             self.saved_wakeup_value = self.intensity
 
@@ -75,6 +79,7 @@ class Dimmer(Thing):
             self.set_intensity(0)
 
     def wake_up(self):
+        super(Dimmer, self).wake_up()
         if hasattr(self, "default_wakeup_value"):
             self.set_intensity(self.default_wakeup_value)
         elif hasattr(self, "saved_wakeup_value"):
@@ -83,7 +88,8 @@ class Dimmer(Thing):
         if hasattr(self, "saved_wakeup_value"):
             delattr(self, "saved_wakeup_value")
 
-    def set_state(self, data):
+    def set_state(self, data, token_from="system"):
+        super(Dimmer, self).set_state(data, token_from)
         if hasattr(self, "saved_wakeup_value"):
             return # block updates while sleeping
 

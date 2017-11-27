@@ -16,7 +16,8 @@ class Curtain(Thing):
     def get_blueprint_tag():
         return "curtains"
 
-    def set_state(self, data):
+    def set_state(self, data, token_from="system"):
+        super(Curtain, self).set_state(data, token_from)
         if "curtain" in data:
             if data["curtain"] == 0: # stop curtain
                 self.up_output = 0

@@ -26,14 +26,17 @@ class HotelControls(Thing):
         return "hotel_controls"
 
     def sleep(self):
+        super(HotelControls, self).sleep()
         self.do_not_disturb = 0 # turn off DND on sleep
 
     def set_hardware_state(self, port, value):
+        super(HotelControls, self).set_hardware_state(port, value)
         if port == self.hotel_card:
             self.card_in = 1 if value == self.card_in_state else 0
         return False
 
-    def set_state(self, data):
+    def set_state(self, data, token_from="system"):
+        super(HotelControls, self).set_state(data, token_from)
         if "do_not_disturb" in data:
             self.do_not_disturb = int(data["do_not_disturb"])
         if "room_service" in data:

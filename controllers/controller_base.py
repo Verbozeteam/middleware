@@ -55,8 +55,7 @@ class Controller(Selectible):
                 return
             Log.debug("Controller::on_command({}, {})".format(str(self), command))
             thing = self.manager.core.blueprint.get_thing(thing_id)
-            thing.set_state(command)
-            thing.last_change_token = command.get("token", "")
+            thing.set_state(command, token_from=command.get("token", ""))
             # CACHING ON COMMAND DISABLED
             # if thing:
             #     update_cache = self.cache.get(thing_id, None) == thing.get_state() # update cache only if the previous view of the state is already up to date

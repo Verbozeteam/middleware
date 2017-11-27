@@ -37,7 +37,8 @@ class KitchenControls(Thing):
     def get_blueprint_tag():
         return "kitchen_controls"
 
-    def set_state(self, data):
+    def set_state(self, data, token_from):
+        super(KitchenControls, self).set_state(data, token_from)
         if "order" in data and "placed_by_name" in data and\
             type(data["order"]) is list and len(data["order"]) > 0 and\
             (reduce(lambda x, y: x and y,\
