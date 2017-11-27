@@ -77,5 +77,6 @@ class HardwareManager(object):
             things = self.core.blueprint.get_listening_things_by_port(port)
             for thing in things:
                 thing.set_hardware_state(port, value)
+                thing.last_change_token = "" # state change by the system
         except:
             Log.error("HardwareManager::on_port_update({}, {}, {})".format(device, port, value), exception=True)
