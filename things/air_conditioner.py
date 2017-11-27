@@ -61,7 +61,7 @@ class CentralAC(Thing):
             self.set_fan_speed(1) # fan must be on
         else:
             self.set_set_point(25.0)
-            self.set_fan_speed(0) # turn off the fan
+            self.set_fan_speed(1) # fan must be on
 
     def wake_up(self):
         if hasattr(self, "default_wakeup_temperature"):
@@ -95,19 +95,21 @@ class CentralAC(Thing):
         if cur_time_s >= self.next_valve_update:
             self.next_valve_update = cur_time_s + 5
 
+            target_temperature = self.current_set_point if self.current_fan_speed > 0 else 50.0
+
             if hasattr(self, "valve_port"):
-                temp_diff = self.current_temperature - self.current_set_point
+                temp_diff = self.current_temperature - target_temperature
                 coeff = (min(max(temp_diff, -10), 10)) / 10; # [-1, 1]
                 self.current_airflow = min(max(self.current_airflow + self.homeostasis * coeff, 0.0), 255.0)
             if hasattr(self, "digital_valve_port"):
                 if self.is_temp_rising:
-                    if self.current_temperature > self.current_set_point + self.homeostasis:
+                    if self.current_temperature > target_temperature + self.homeostasis:
                         self.digital_valve_output = 1
                         self.is_temp_rising = False
                     else:
                         self.digital_valve_output = 0
                 if not self.is_temp_rising:
-                    if self.current_temperature < self.current_set_point - self.homeostasis:
+                    if self.current_temperature < target_temperature - self.homeostasis:
                         self.digital_valve_output = 0
                         self.is_temp_rising = True
                     else:
