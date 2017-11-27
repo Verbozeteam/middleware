@@ -15,7 +15,6 @@ class HotelControls(Thing):
         self.room_service = 0
         self.power = 1
         self.card_out_start = -1
-        self.power_next_update = 0
         if not hasattr(self, "nocard_power_timeout"):
             self.nocard_power_timeout = 20
 
@@ -24,35 +23,20 @@ class HotelControls(Thing):
     def get_blueprint_tag():
         return "hotel_controls"
 
-    def set_dnd(self, set_to):
-        if set_to != self.do_not_disturb:
-            self.do_not_disturb = set_to
-            self.dirty = True
-            self.pending_commands.append((self.do_not_disturb_port, self.do_not_disturb))
-
-    def set_rs(self, set_to):
-        if set_to != self.room_service:
-            self.room_service = set_to
-            self.dirty = True
-            self.pending_commands.append((self.room_service_port, self.room_service))
-
     def sleep(self):
-        self.set_dnd(0)
+        self.do_not_disturb = 0 # turn off DND on sleep
 
-    def on_hardware_data(self, port, value):
+    def set_hardware_state(self, port, value):
         if port == self.hotel_card:
             self.card_in = value
-            self.power_next_update = 0
+        return False
 
-    def on_controller_data(self, data):
+    def set_state(self, data):
         if "do_not_disturb" in data:
-            self.set_dnd(data["do_not_disturb"])
+            self.do_not_disturb = int(data["do_not_disturb"])
         if "room_service" in data:
-            self.set_rs(data["room_service"])
-
-    def on_new_hardware(self):
-            self.pending_commands.append((self.do_not_disturb_port, self.do_not_disturb))
-            self.pending_commands.append((self.room_service_port, self.room_service))
+            self.room_service = int(data["room_service"])
+        return False
 
     def update(self, cur_time_s):
         if self.card_in == 0:
@@ -60,18 +44,15 @@ class HotelControls(Thing):
                 self.card_out_start = cur_time_s
             elif cur_time_s - self.card_out_start > self.nocard_power_timeout:
                 self.card_out_start = cur_time_s # prevents spam commands
-                self.power = 0
-                self.pending_commands.append((self.power_port, 0)) # turn off power
+                self.power = 0 # turn off power
         else:
-            if cur_time_s >= self.power_next_update:
-                if self.power == 0: # just turned on, wake Things up
-                    things = self.blueprint.get_things()
-                    for thing in things:
-                        thing.wake_up()
-                self.power_next_update = cur_time_s + 5
-                self.card_out_start = -1
-                self.power = 1
-                self.pending_commands.append((self.power_port, 1)) # turn on power
+            if self.power == 0: # just turned on, wake Things up
+                things = self.blueprint.get_things()
+                for thing in things:
+                    thing.wake_up()
+            self.card_out_start = -1
+            self.power = 1 # turn on power
+
         if self.power == 0: # force sleep everything, every update...
             things = self.blueprint.get_things()
             for thing in things:
@@ -83,4 +64,11 @@ class HotelControls(Thing):
             "room_service": self.room_service,
             "do_not_disturb": self.do_not_disturb,
             "power": self.power,
+        }
+
+    def get_hardware_state(self):
+        return {
+            self.power_port: self.power,
+            self.do_not_disturb_port: self.do_not_disturb,
+            self.room_service_port: self.room_service,
         }

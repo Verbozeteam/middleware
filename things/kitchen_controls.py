@@ -37,7 +37,7 @@ class KitchenControls(Thing):
     def get_blueprint_tag():
         return "kitchen_controls"
 
-    def on_controller_data(self, data):
+    def set_state(self, data):
         if "order" in data and "placed_by_name" in data and\
             type(data["order"]) is list and len(data["order"]) > 0 and\
             (reduce(lambda x, y: x and y,\
@@ -56,19 +56,17 @@ class KitchenControls(Thing):
                 "items": data["order"],
             })
             self.id_generator += 1
-            self.dirty = True
         if "accept" in data:
             for o in self.orders:
                 for oi in o["items"]:
                     if oi["id"] == data["accept"]:
                         oi["status"] = 1
-                        self.dirty = True
         if "reject" in data:
             for o in self.orders:
                 for oi in o["items"]:
                     if oi["id"] == data["reject"]:
                         oi["status"] = 0
-                        self.dirty = True
+        return True # A lot of potential changes in the state
 
     def update(self, cur_time_s):
         for o in self.orders:

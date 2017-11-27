@@ -120,7 +120,6 @@ class Log(object):
             hdlr = RotatingFileHandler(os.path.join(log_folder_name, "mw.log"), backupCount=GENERAL_CONFIG.LOG_NUM_FILES, maxBytes=GENERAL_CONFIG.LOG_MAX_FILESIZE) # 10MB total per run
             formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
             hdlr.setFormatter(formatter)
-            Log.logger.addHandler(hdlr) 
+            Log.logger.addHandler(hdlr)
         except Exception as e:
             Log.log(VERBOZITY.ERROR, "Failed to open logs!", exception=True)
-
