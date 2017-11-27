@@ -140,7 +140,7 @@ class ArduinoController(HardwareController):
                     pin_mode = PIN_MODE.INPUT_PULLUP if thing.input_ports[port].get("is_pullup", False) else PIN_MODE.INPUT
                 if port not in virtual_ports:
                     self.write_to_fd(ArduinoProtocol.create_set_pin_mode(port, pin_mode))
-                self.write_to_fd(ArduinoProtocol.create_register_pin_listener(port, pin_read_freq))
+                self.write_to_fd(ArduinoProtocol.create_register_pin_listener(port, read_interval))
 
             for port in thing.output_ports.keys():
                 if port not in virtual_ports:
