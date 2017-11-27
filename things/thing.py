@@ -8,10 +8,17 @@ class Thing(object):
 
         # auto-generated attributes
         self.blueprint = blueprint
-        self.input_ports = {}                   # Dictionary of pin -> read_interval where pin is a pin that the Thing wants to listen to and read_interval is an integer for the interval at which the port is read (in ms)
-        self.output_ports = {}                  # Dictionary of pin -> output type (0 for digital, 1 for PWM)
         self.id = ""                            # id of this Thing
         self.last_change_token = ""             # token from the controller who last changed the state
+
+        self.input_ports = {}                   # Dictionary of pin -> {"read_interval": (int), "is_pullup": (bool)}
+                                                # OR            pin -> read_interval (int)
+                                                # pin: pin that the Thing wants to listen to
+                                                # read_interval: is an integer for the interval at which the port is read (in ms)
+                                                # is_pullup (optional): indicates whether or not to use a pullup resistor
+
+        self.output_ports = {}                  # Dictionary of pin -> output type (0 for digital, 1 for PWM)
+
 
     # Should be implemented to return the key in the blueprint that this Thing captures
     @staticmethod

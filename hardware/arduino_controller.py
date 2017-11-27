@@ -119,7 +119,7 @@ class ArduinoController(HardwareController):
         self.write_to_fd(ArduinoProtocol.create_reset_board())
         things = self.hw_manager.core.blueprint.get_things()
         for thing in things:
-            all_ports = list(thing.input_ports) + list(thing.output_ports)
+            all_ports = list(thing.input_ports.keys()) + list(thing.output_ports.keys())
             virtual_ports = []
             for p in all_ports:
                 if "v" in p:
@@ -133,8 +133,11 @@ class ArduinoController(HardwareController):
                 self.write_to_fd(ArduinoProtocol.create_set_virtual_pin_mode(virtual_ports[i], thing.virtual_port_data[i]))
 
             for port in thing.input_ports.keys():
-                pin_mode = PIN_MODE.INPUT if thing.input_ports[port] >= 0 else PIN_MODE.INPUT_PULLUP
-                pin_read_freq = abs(thing.input_ports[port])
+                read_interval = thing.input_ports[port]
+                pin_mode = PIN_MODE.INPUT
+                if type(read_interval) is not int:
+                    read_interval = thing.input_ports[port]["read_interval"]
+                    pin_mode = PIN_MODE.INPUT_PULLUP if thing.input_ports[port].get("is_pullup", False) else PIN_MODE.INPUT
                 if port not in virtual_ports:
                     self.write_to_fd(ArduinoProtocol.create_set_pin_mode(port, pin_mode))
                 self.write_to_fd(ArduinoProtocol.create_register_pin_listener(port, pin_read_freq))
