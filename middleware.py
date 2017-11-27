@@ -9,5 +9,8 @@ if __name__ == '__main__':
     # Initialize and run the core
     Log.initialize()
     core = Core()
-    core.run()
+    try:
+        core.run()
+    except Exception as e:
+        Log.fatal("Fatal error in program: ", e, exception=True)
     core.cleanup()
