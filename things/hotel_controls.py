@@ -12,7 +12,7 @@ class HotelControls(Thing):
         self.output_ports[self.power_port] = 1 # digital output
         self.output_ports[self.do_not_disturb_port] = 1 # digital output
         self.output_ports[self.room_service_port] = 1 # digital output
-        self.id = "hotel-controls-" + self.power_port
+        self.id = hotel_json.get("id", "hotel-controls-" + self.power_port)
         self.card_in = 1
         self.do_not_disturb = 0
         self.room_service = 0

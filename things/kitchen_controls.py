@@ -26,7 +26,7 @@ from functools import reduce
 class KitchenControls(Thing):
     def __init__(self, blueprint, kitchen_json):
         super(KitchenControls, self).__init__(blueprint, kitchen_json)
-        self.id = "kitchen"
+        self.id = kitchen_json.get("id", "kitchen")
         self.orders = []
         if not hasattr(self, "menu"):
             self.menu = []

@@ -5,7 +5,7 @@ import json
 class SplitAC(Thing):
     def __init__(self, blueprint, ac_json):
         super(SplitAC, self).__init__(blueprint, ac_json)
-        self.id = "split-ac-" + self.pwm_port
+        self.id = ac_json.get("id", "split-ac-" + self.pwm_port)
 
     # Should return the key in the blueprint that this Thing captures
     @staticmethod
@@ -21,7 +21,7 @@ class CentralAC(Thing):
             self.output_ports[self.valve_port] = 2 # pwm output
         if hasattr(self, "digital_valve_port"):
             self.output_ports[self.digital_valve_port] = 1 # digital OPEN/CLOSE valve
-        self.id = "central-ac-" + self.temperature_port + "-" + self.fan_port
+        self.id = ac_json.get("id", "central-ac-" + self.temperature_port + "-" + self.fan_port)
         self.current_set_point = 25
         self.current_temperature = 25
         self.current_fan_speed = 1

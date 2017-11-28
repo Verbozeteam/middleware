@@ -59,7 +59,7 @@ class Dimmer(Thing):
         super(Dimmer, self).__init__(blueprint, dimmer_json)
         self.output_ports[self.dimmer_port] = 2 # pwm output
         self.is_isr_dimmer = "v" in self.dimmer_port # if dimmer_port is a virtual port then this is an ISR light
-        self.id = "dimmer-" + self.dimmer_port
+        self.id = dimmer_json.get("id", "dimmer-" + self.dimmer_port)
         self.intensity = 0
 
     # Should return the key in the blueprint that this Thing captures

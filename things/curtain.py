@@ -7,7 +7,7 @@ class Curtain(Thing):
         super(Curtain, self).__init__(blueprint, curtain_json)
         self.output_ports[self.up_port] = 1 # digital output
         self.output_ports[self.down_port] = 1 # digital output
-        self.id = "curtain-" + self.up_port + "-" + self.down_port
+        self.id = curtain_json.get("id", "curtain-" + self.up_port + "-" + self.down_port)
         self.up_output = 0
         self.down_output = 0
 
