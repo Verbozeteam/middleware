@@ -118,7 +118,7 @@ class CentralAC(Thing):
         }
 
     def get_hardware_state(self):
-        state = {self.fan_port: max(min(int(self.current_fan_speed-1), 0), 1)}
+        state = {self.fan_port: min(max(int(self.current_fan_speed-1), 0), 1)}
         if hasattr(self, "valve_port"):
             state[self.valve_port] = int(self.current_airflow)
         if hasattr(self, "digital_valve_port"):
