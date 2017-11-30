@@ -17,21 +17,29 @@ class Room(object):
         self.config["detail"] = room_json["detail"]
         self.config["layout"] = room_json["layout"]
         self.config["grid"] = room_json["grid"]
+
+        panels_things = {}
         for column in self.config["grid"]:
             for panel in column["panels"]:
-                things = []
                 for i in range(len(panel["things"])):
                     if len(panel["things"][i]) == 0: # empty space - don't load a Thing
                         panel["things"][i] = {"category": "empty"}
-                    else:
+                    elif len(panel["things"][i]) > 1: # ignore the ones with only one key - they are references to other Things
                         t = blueprint.load_thing(panel["things"][i])
-                        things.append(t)
                         self.things[t.id] = t
                         panel["things"][i] = {
                             "category": panel["things"][i]["category"],
                             "id": t.id,
                             "name": panel["things"][i]["name"],
                         }
+                        panels_things[t.id] = panel["things"][i]
+
+        # Load the references
+        for column in self.config["grid"]:
+            for panel in column["panels"]:
+                for i in range(len(panel["things"])):
+                    if len(panel["things"][i]) == 1 and "id" in panel["things"][i]:
+                        panel["things"][i] = panels_things[panel["things"][i]["id"]]
 
 class Blueprint(object):
     def __init__(self, core):
