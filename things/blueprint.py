@@ -128,7 +128,7 @@ class Blueprint(object):
             for column in room.config["grid"]:
                 for panel in column["panels"]:
                     for i in range(len(panel["things"])):
-                        if len(panel["things"][i]) > 1 && "id" in panel["things"][i] && panel["things"][i]["id"] == thing_id:
+                        if len(panel["things"][i]) > 1 and "id" in panel["things"][i] and panel["things"][i]["id"] == thing_id:
                             return panel["things"][i]
         return None
 
