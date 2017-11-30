@@ -18,7 +18,6 @@ class Room(object):
         self.config["layout"] = room_json["layout"]
         self.config["grid"] = room_json["grid"]
 
-        panels_things = {}
         for column in self.config["grid"]:
             for panel in column["panels"]:
                 for i in range(len(panel["things"])):
@@ -32,14 +31,16 @@ class Room(object):
                             "id": t.id,
                             "name": panel["things"][i]["name"],
                         }
-                        panels_things[t.id] = panel["things"][i]
 
-        # Load the references
+    # Loads the references (Things in the config with only 1 key "id") to be copies of what they refer to
+    def load_references(self, blueprint):
         for column in self.config["grid"]:
             for panel in column["panels"]:
                 for i in range(len(panel["things"])):
                     if len(panel["things"][i]) == 1 and "id" in panel["things"][i]:
-                        panel["things"][i] = panels_things[panel["things"][i]["id"]]
+                        panel["things"][i] = blueprint.get_thing_metadata(panel["things"][i]["id"])
+                        if panel["things"][i] == None:
+                            raise ("Failed to find reference to " + panel["things"][i]["id"])
 
 class Blueprint(object):
     def __init__(self, core):
@@ -70,6 +71,8 @@ class Blueprint(object):
             return
 
         self.rooms = [Room(self, R) for R in J]
+        for R in self.rooms:
+            R.load_references(self)
 
     # Load a thing from a JSON config and append to to the given room
     # thing_json  JSON of the Thing config
@@ -113,9 +116,20 @@ class Blueprint(object):
     # returns   The Thing with id thing_id, None if not found
     def get_thing(self, thing_id):
         for room in self.rooms:
-            for tid in room.things.keys():
-                if tid == thing_id:
-                    return room.things[tid]
+            if thing_id in room.things:
+                return room.things[thing_id]
+        return None
+
+    # Retrieves the Thing object that is stored in the config (name, category and id)
+    # thing_id  ID of the Thing to look for
+    # returns   {name, category, id} of the found Thing
+    def get_thing_metadata(self, thing_id):
+        for room in self.rooms:
+            for column in room.config["grid"]:
+                for panel in column["panels"]:
+                    for i in range(len(panel["things"])):
+                        if len(panel["things"][i]) > 1 && "id" in panel["things"][i] && panel["things"][i]["id"] == thing_id:
+                            return panel["things"][i]
         return None
 
     # Retrieves the list of Things that are listening to a given port
