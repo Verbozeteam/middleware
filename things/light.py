@@ -8,6 +8,8 @@ class LightSwitch(Thing):
         self.output_ports[self.switch_port] = 1 # digital output
         self.id = light_json.get("id", "lightswitch-" + self.switch_port)
         self.intensity = 0
+        if not hasattr(self, "on_state"):
+            self.on_state = 1
 
     # Should return the key in the blueprint that this Thing captures
     @staticmethod
@@ -51,7 +53,7 @@ class LightSwitch(Thing):
 
     def get_hardware_state(self):
         return {
-            self.switch_port: self.intensity,
+            self.switch_port: self.intensity if self.on_state == 1 else 1 - self.intensity,
         }
 
 class Dimmer(Thing):

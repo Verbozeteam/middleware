@@ -30,6 +30,8 @@ class CentralAC(Thing):
         self.next_valve_update = 0
         self.is_temp_rising = False
         self.digital_valve_output = 0
+        if not hasattr(self, "on_state"):
+            self.on_state = 1
 
     # Should return the key in the blueprint that this Thing captures
     @staticmethod
@@ -119,8 +121,9 @@ class CentralAC(Thing):
 
     def get_hardware_state(self):
         state = {self.fan_port: min(max(int(self.current_fan_speed-1), 0), 1)}
+        state[self.fan_port] = state[self.fan_port] if self.on_state == 1 else 1 - state[self.fan_port]
         if hasattr(self, "valve_port"):
             state[self.valve_port] = int(self.current_airflow)
         if hasattr(self, "digital_valve_port"):
-            state[self.digital_valve_port] = int(self.digital_valve_output)
+            state[self.digital_valve_port] = int(self.digital_valve_output) if self.on_state == 1 else 1 - int(self.digital_valve_output)
         return state

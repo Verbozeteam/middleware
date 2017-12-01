@@ -22,6 +22,8 @@ class HotelControls(Thing):
             self.nocard_power_timeout = 20
         if not hasattr(self, "card_in_state"): # card state/value that means "card is in"
             self.card_in_state = 1
+        if not hasattr(self, "on_state"):
+            self.on_state = 1
 
     # Should return the key in the blueprint that this Thing captures
     @staticmethod
@@ -76,7 +78,7 @@ class HotelControls(Thing):
 
     def get_hardware_state(self):
         return {
-            self.power_port: self.power,
-            self.do_not_disturb_port: self.do_not_disturb,
-            self.room_service_port: self.room_service,
+            self.power_port: self.power if self.on_state == 1 else 1 - self.power,
+            self.do_not_disturb_port: self.do_not_disturb if self.on_state == 1 else 1 - self.do_not_disturb,
+            self.room_service_port: self.room_service if self.on_state == 1 else 1 - self.room_service,
         }
