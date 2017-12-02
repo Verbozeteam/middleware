@@ -106,7 +106,7 @@ class Dimmer(Thing):
 
     def get_hardware_state(self):
         if self.is_isr_dimmer:
-            light_power = int(min(max(100.0 - (float(self.intensity) / 1.2), 17.0), 100.0))
+            light_power = int(min(max(100.0 - (float(self.intensity) / 1.1), 10.0), 100.0))
             if light_power > 85 and light_power < 97:
                 light_power = 85
             elif light_power >= 97:
