@@ -70,7 +70,8 @@ class Blueprint(object):
             Log.fatal("Invalid blueprint: {}".format(str(e)))
             return
 
-        self.rooms = [Room(self, R) for R in J]
+        self.id = str(J["id"])
+        self.rooms = [Room(self, R) for R in J["rooms"]]
         for R in self.rooms:
             R.load_references(self)
 
@@ -97,7 +98,12 @@ class Blueprint(object):
 
     # returns  The config view of the blueprint for the controller
     def get_controller_view(self):
-        view = { "config": { "rooms": list(map(lambda r: r.config, self.rooms)) } }
+        view = {
+            "config": {
+                "rooms": list(map(lambda r: r.config, self.rooms)),
+                "id": str(self.id)
+            }
+        }
         for room in self.rooms:
             for thing in room.things.keys():
                 view[thing] = room.things[thing].get_state()

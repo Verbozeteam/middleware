@@ -1,122 +1,125 @@
-[{
-    "name": {
-        "en": "Hasan's Room",
-        "ar": "غرفة حسن"
-    },
-    "grid": [{
-        "ratio": 2,
-        "panels": [{
-            "ratio": 5,
-            "name": {
-                "en": "Room Lights",
-                "ar": "إضائة الغرفة"
-            },
-            "things": [{
-                "category": "dimmers",
+{
+    "id": "1",
+    "rooms": [{
+        "name": {
+            "en": "Hasan's Room",
+            "ar": "غرفة حسن"
+        },
+        "grid": [{
+            "ratio": 2,
+            "panels": [{
+                "ratio": 5,
                 "name": {
-                    "en": "Dimmer 1"
+                    "en": "Room Lights",
+                    "ar": "إضائة الغرفة"
                 },
-                "dimmer_port": "d4"
+                "things": [{
+                    "category": "dimmers",
+                    "name": {
+                        "en": "Dimmer 1"
+                    },
+                    "dimmer_port": "d4"
+                }, {
+                    "category": "dimmers",
+                    "name": {
+                        "en": "Dimmer 2"
+                    },
+                    "dimmer_port": "d5"
+                }, {
+                    "category": "light_switches",
+                    "name": {
+                        "en": "Light switch 1"
+                    },
+                    "switch_port": "d37"
+                }, {
+                    "category": "light_switches",
+                    "name": {
+                        "en": "Light switch 2"
+                    },
+                    "switch_port": "d36"
+                }, {
+                    "category": "light_switches",
+                    "name": {
+                        "en": "Light switch 3"
+                    },
+                    "switch_port": "d35"
+                }, {
+                    "category": "light_switches",
+                    "name": {
+                        "en": "Light switch 4"
+                    },
+                    "switch_port": "d34"
+                }]
             }, {
-                "category": "dimmers",
+                "ratio": 3,
                 "name": {
-                    "en": "Dimmer 2"
+                    "en": "Bathroom Lights",
+                    "ar": "إضائة الحمام"
                 },
-                "dimmer_port": "d5"
-            }, {
-                "category": "light_switches",
-                "name": {
-                    "en": "Light switch 1"
-                },
-                "switch_port": "d37"
-            }, {
-                "category": "light_switches",
-                "name": {
-                    "en": "Light switch 2"
-                },
-                "switch_port": "d36"
-            }, {
-                "category": "light_switches",
-                "name": {
-                    "en": "Light switch 3"
-                },
-                "switch_port": "d35"
-            }, {
-                "category": "light_switches",
-                "name": {
-                    "en": "Light switch 4"
-                },
-                "switch_port": "d34"
-            }]
-        }, {
-            "ratio": 3,
-            "name": {
-                "en": "Bathroom Lights",
-                "ar": "إضائة الحمام"
-            },
-            "things": [{
-                "category": "light_switches",
-                "name": {
-                    "en": "Bathroom light switch 1"
-                },
-                "switch_port": "d33"
-            }, {
-                "category": "light_switches",
-                "name": {
-                    "en": "Bathroom light switch 2"
-                },
-                "switch_port": "d32"
-            }, {
-            }, {
-                "category": "light_switches",
-                "name": {
-                    "en": "Bathroom light switch 3"
-                },
-                "switch_port": "d31"
-            }]
-        }]
-    }, {
-        "ratio": 1,
-        "panels": [{
-            "ratio": 1,
-            "name": {
-                "en": "Air Conditioning",
-                "ar": "التكييف"
-            },
-            "things": [{
-                "category": "central_acs",
-                "name": {
-                    "en": "Air conditioner"
-                },
-                "temperature_port": "v0",
-                "fan_port": "d48",
-                "valve_port": "d8",
-                "virtual_port_data": [[0, 0]]
+                "things": [{
+                    "category": "light_switches",
+                    "name": {
+                        "en": "Bathroom light switch 1"
+                    },
+                    "switch_port": "d33"
+                }, {
+                    "category": "light_switches",
+                    "name": {
+                        "en": "Bathroom light switch 2"
+                    },
+                    "switch_port": "d32"
+                }, {
+                }, {
+                    "category": "light_switches",
+                    "name": {
+                        "en": "Bathroom light switch 3"
+                    },
+                    "switch_port": "d31"
+                }]
             }]
         }, {
             "ratio": 1,
-            "name": {
-                "en": "Room Service",
-                "ar": "خدمات الغرفة"
-            },
-            "things": [{
-                "category": "hotel_controls",
+            "panels": [{
+                "ratio": 1,
                 "name": {
-                    "en": "Millennium"
+                    "en": "Air Conditioning",
+                    "ar": "التكييف"
                 },
-                "power_port": "d42",
-                "hotel_card": "d44",
-                "do_not_disturb_port": "d29",
-                "room_service_port": "d28",
-                "card_in_state": 0
+                "things": [{
+                    "category": "central_acs",
+                    "name": {
+                        "en": "Air conditioner"
+                    },
+                    "temperature_port": "v0",
+                    "fan_port": "d48",
+                    "valve_port": "d8",
+                    "virtual_port_data": [[0, 0]]
+                }]
+            }, {
+                "ratio": 1,
+                "name": {
+                    "en": "Room Service",
+                    "ar": "خدمات الغرفة"
+                },
+                "things": [{
+                    "category": "hotel_controls",
+                    "name": {
+                        "en": "Millennium"
+                    },
+                    "power_port": "d42",
+                    "hotel_card": "d44",
+                    "do_not_disturb_port": "d29",
+                    "room_service_port": "d28",
+                    "card_in_state": 0
+                }]
             }]
-        }]
-    }],
-    "detail": {
-        "ratio": 4,
-        "side": "right"
-    },
-    "layout": {
-        "margin": 5
-    }
-}]
+        }],
+        "detail": {
+            "ratio": 4,
+            "side": "right"
+        },
+        "layout": {
+            "margin": 5
+        }
+    }]
+}
