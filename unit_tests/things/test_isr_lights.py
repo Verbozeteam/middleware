@@ -31,7 +31,7 @@ class TestISRDimmers(BaseTestFramework):
 
         for s in self.switches:
             self.wait_for_condition(lambda self:
-                self.system.arduino_emulator.get_isr_pin(index=s.virtual_port_data[0][-1]) == s.get_hardware_state()[s.dimmer_port] and
+                self.system.arduino_emulator.get_isr_pin(index=s.virtual_port_data[0][-1]) >= s.get_hardware_state()[s.dimmer_port] and
                 s.get_state()["intensity"] == 100
             )
 
@@ -43,7 +43,7 @@ class TestISRDimmers(BaseTestFramework):
 
         for s in self.switches:
             self.wait_for_condition(lambda self:
-                self.system.arduino_emulator.get_isr_pin(index=s.virtual_port_data[0][-1]) == s.get_hardware_state()[s.dimmer_port] and
+                self.system.arduino_emulator.get_isr_pin(index=s.virtual_port_data[0][-1]) >= s.get_hardware_state()[s.dimmer_port] and
                 s.get_state()["intensity"] == 0
             )
 

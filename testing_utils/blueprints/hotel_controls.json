@@ -1,26 +1,29 @@
-[{
-    "name": {
-        "en": "Testing room"
-    },
-    "grid": [{
-        "ratio": 1,
-        "panels": [{
+{
+    "id": "1",
+    "rooms": [{
+        "name": {
+            "en": "Testing room"
+        },
+        "grid": [{
             "ratio": 1,
-            "name": {
-                "en": "Test section"
-            },
-            "things": [{
-                "category": "hotel_controls",
+            "panels": [{
+                "ratio": 1,
                 "name": {
-                    "english": "Millennium"
+                    "en": "Test section"
                 },
-                "power_port": "d42",
-                "hotel_card": "d44",
-                "do_not_disturb_port": "d29",
-                "room_service_port": "d28"
+                "things": [{
+                    "category": "hotel_controls",
+                    "name": {
+                        "english": "Millennium"
+                    },
+                    "power_port": "d42",
+                    "hotel_card": "d44",
+                    "do_not_disturb_port": "d29",
+                    "room_service_port": "d28"
+                }]
             }]
-        }]
-    }],
-    "detail": {},
-    "layout": {}
-}]
+        }],
+        "detail": {},
+        "layout": {}
+    }]
+}

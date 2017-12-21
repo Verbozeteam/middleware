@@ -1,120 +1,123 @@
-[{
-    "name": {
-        "en": "Hasan‘s Room",
-        "ar": "غرفة حسن"
-    },
-    "grid": [{
-        "ratio": 2,
-        "panels": [{
-            "ratio": 5,
-            "name": {
-                "en": "Room Lights",
-                "ar": "إضائة الغرفة"
-            },
-            "things": [{
-                "category": "dimmers",
+{
+    "id": "1",
+    "rooms": [{
+        "name": {
+            "en": "Hasan‘s Room",
+            "ar": "غرفة حسن"
+        },
+        "grid": [{
+            "ratio": 2,
+            "panels": [{
+                "ratio": 5,
                 "name": {
-                    "en": "Dimmer 1"
+                    "en": "Room Lights",
+                    "ar": "إضائة الغرفة"
                 },
-                "dimmer_port": "d4"
-            }, {
-                "category": "dimmers",
-                "name": {
-                    "en": "Dimmer 2"
-                },
-                "dimmer_port": "d5"
-            }, {
-                "category": "light_switches",
-                "name": {
-                    "en": "Light switch 1"
-                },
-                "switch_port": "d37"
-            }, {
-                "category": "light_switches",
-                "name": {
-                    "en": "Light switch 2"
-                },
-                "switch_port": "d36"
-            }, {
-                "category": "light_switches",
-                "name": {
-                    "en": "Light switch 3"
-                },
-                "switch_port": "d35"
-            }, {
-                "category": "light_switches",
-                "name": {
-                    "en": "Light switch 4"
-                },
-                "switch_port": "d34"
-            }]
-        }, {
-            "ratio": 3,
-            "name": {
-                "en": "Curtains",
-                "ar": ""
-            },
-            "things": [{
-                "category": "curtains",
-                "name": {
-                    "english": "Curtain 1"
-                },
-                "up_port": "d22",
-                "down_port": "d23"
-            }, {
-                "category": "curtains",
-                "name": {
-                    "english": "Curtain 2"
-                },
-                "up_port": "d24",
-                "down_port": "d25"
-            }]
-        }]
-    }, {
-        "ratio": 1,
-        "panels": [{
-            "ratio": 1,
-            "name": {
-                "en": "Air Conditioning",
-                "ar": "التكييف"
-            },
-            "things": [{
-                "category": "central_acs",
-                "name": {
-                    "en": "Air conditioning",
-                    "ar": "التكييف"
-                },
-                "temperature_port": "v0",
-                "fan_port": "d48",
-                "valve_port": "d8",
-                "virtual_port_data": [[0, 0]]
-            }]
-        }, {
-            "ratio": 1,
-            "name": {
-                "en": "Kitchen",
-                "ar": ""
-            },
-            "things": [{
-                "category": "kitchen_controls",
-                "name": {
-                    "en": "Kitchen"
-                },
-                "menu": [{
-                    "name": "Shawerma"
+                "things": [{
+                    "category": "dimmers",
+                    "name": {
+                        "en": "Dimmer 1"
+                    },
+                    "dimmer_port": "d4"
                 }, {
-                    "name": "Machboos"
+                    "category": "dimmers",
+                    "name": {
+                        "en": "Dimmer 2"
+                    },
+                    "dimmer_port": "d5"
                 }, {
-                    "name": "Falafel"
+                    "category": "light_switches",
+                    "name": {
+                        "en": "Light switch 1"
+                    },
+                    "switch_port": "d37"
+                }, {
+                    "category": "light_switches",
+                    "name": {
+                        "en": "Light switch 2"
+                    },
+                    "switch_port": "d36"
+                }, {
+                    "category": "light_switches",
+                    "name": {
+                        "en": "Light switch 3"
+                    },
+                    "switch_port": "d35"
+                }, {
+                    "category": "light_switches",
+                    "name": {
+                        "en": "Light switch 4"
+                    },
+                    "switch_port": "d34"
+                }]
+            }, {
+                "ratio": 3,
+                "name": {
+                    "en": "Curtains",
+                    "ar": ""
+                },
+                "things": [{
+                    "category": "curtains",
+                    "name": {
+                        "english": "Curtain 1"
+                    },
+                    "up_port": "d22",
+                    "down_port": "d23"
+                }, {
+                    "category": "curtains",
+                    "name": {
+                        "english": "Curtain 2"
+                    },
+                    "up_port": "d24",
+                    "down_port": "d25"
                 }]
             }]
-        }]
-    }],
-    "detail": {
-        "ratio": 4,
-        "side": "right"
-    },
-    "layout": {
-        "margin": 5
-    }
-}]
+        }, {
+            "ratio": 1,
+            "panels": [{
+                "ratio": 1,
+                "name": {
+                    "en": "Air Conditioning",
+                    "ar": "التكييف"
+                },
+                "things": [{
+                    "category": "central_acs",
+                    "name": {
+                        "en": "Air conditioning",
+                        "ar": "التكييف"
+                    },
+                    "temperature_port": "v0",
+                    "fan_port": "d48",
+                    "valve_port": "d8",
+                    "virtual_port_data": [[0, 0]]
+                }]
+            }, {
+                "ratio": 1,
+                "name": {
+                    "en": "Kitchen",
+                    "ar": ""
+                },
+                "things": [{
+                    "category": "kitchen_controls",
+                    "name": {
+                        "en": "Kitchen"
+                    },
+                    "menu": [{
+                        "name": "Shawerma"
+                    }, {
+                        "name": "Machboos"
+                    }, {
+                        "name": "Falafel"
+                    }]
+                }]
+            }]
+        }],
+        "detail": {
+            "ratio": 4,
+            "side": "right"
+        },
+        "layout": {
+            "margin": 5
+        }
+    }]
+}

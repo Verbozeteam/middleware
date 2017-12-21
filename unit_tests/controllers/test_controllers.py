@@ -53,7 +53,7 @@ class TestSingleController(BaseTestFramework):
         self.controller.send_json({"thing": self.light.id, "intensity": 1})
 
         def controller_recevied(self):
-            return call({"thing": self.light.id, "intensity": 1}) in self.light.set_state.mock_calls
+            return call({"thing": self.light.id, "intensity": 1}, token_from="") in self.light.set_state.mock_calls
 
         self.wait_for_condition(controller_recevied)
 

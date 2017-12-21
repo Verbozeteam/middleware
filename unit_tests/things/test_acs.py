@@ -24,10 +24,10 @@ class TestCentralAC(BaseTestFramework):
     def test_controller_input_fan(self):
         self.system.arduino_emulator.sync_board()
 
-        # fan on
-        self.ac.set_state({"fan": 1})
+        # fan HIGH
+        self.ac.set_state({"fan": 2})
         self.wait_for_condition(lambda self:
-            self.ac.get_state()["fan"] == 1 and
+            self.ac.get_state()["fan"] == 2 and
             self.system.arduino_emulator.get_pin(type=0, index=int(self.ac.fan_port[1:])) == 1
         )
 
@@ -111,12 +111,12 @@ class TestCentralAC(BaseTestFramework):
             delattr(self.ac, "default_sleep_temperature")
 
         self.ac.current_set_point = 16.0
-        self.ac.current_fan_speed = 1
+        self.ac.current_fan_speed = 0
         self.ac.sleep()
-        assert self.ac.current_fan_speed == 0 and abs(self.ac.current_set_point - 25.0) < 0.1
+        assert self.ac.current_fan_speed == 1 and abs(self.ac.current_set_point - 25.0) < 0.1
 
         self.ac.wake_up()
-        assert self.ac.current_fan_speed == 1 and abs(self.ac.current_set_point - 16.0) < 0.1
+        assert self.ac.current_fan_speed == 0 and abs(self.ac.current_set_point - 16.0) < 0.1
 
         # test with default wakeup/sleep values
         self.ac.default_sleep_temperature = 30.0

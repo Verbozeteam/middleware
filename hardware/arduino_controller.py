@@ -241,7 +241,10 @@ class ArduinoController(HardwareController):
         if not super(ArduinoController, self).update(cur_time_s):
             return False
 
-        if self.receive_timeout > 0 and cur_time_s > self.receive_timeout:
+        if self.receive_timeout < 0:
+            self.receive_timeout = cur_time_s + 13
+
+        if cur_time_s > self.receive_timeout:
             Log.warning("ArduinoController::update() timed out")
             return False # haven't received anything in a long time!
 

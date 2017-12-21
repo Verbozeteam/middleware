@@ -1,31 +1,34 @@
-[{
-    "name": {
-        "en": "Testing room"
-    },
-    "grid": [{
-        "ratio": 1,
-        "panels": [{
+{
+    "id": "1",
+    "rooms": [{
+        "name": {
+            "en": "Testing room"
+        },
+        "grid": [{
             "ratio": 1,
-            "name": {
-                "en": "Test section"
-            },
-            "things": [{
-                "category": "curtains",
+            "panels": [{
+                "ratio": 1,
                 "name": {
-                    "english": "Curtain 1"
+                    "en": "Test section"
                 },
-                "up_port": "d22",
-                "down_port": "d23"
-            }, {
-                "category": "curtains",
-                "name": {
-                    "english": "Curtain 2"
-                },
-                "up_port": "d24",
-                "down_port": "d25"
+                "things": [{
+                    "category": "curtains",
+                    "name": {
+                        "english": "Curtain 1"
+                    },
+                    "up_port": "d22",
+                    "down_port": "d23"
+                }, {
+                    "category": "curtains",
+                    "name": {
+                        "english": "Curtain 2"
+                    },
+                    "up_port": "d24",
+                    "down_port": "d25"
+                }]
             }]
-        }]
-    }],
-    "detail": {},
-    "layout": {}
-}]
+        }],
+        "detail": {},
+        "layout": {}
+    }]
+}
