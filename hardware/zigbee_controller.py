@@ -1,3 +1,21 @@
+#
+# Zigbee controller is implemented by making a single main controller that manages
+# all zigbees. Each zigbee it registers has the following characteristics:
+#  - The Zigbee must have an address 0x2 - 0xFE
+#  - The Zigbee will be delegated all ports with index [(address-2) * 10 to (address-1) * 10[
+#  - The Zigbee will map each port (e.g. d22) to 0-10 range local to the Arduino on the other
+#    side of the zigbee (e.g. d2)
+#  - The data read from the Zigbee will have their ports mapped opposite to the above mapping
+#  - The Zigbee will constantly be in sync with the zigbee controller similar to normal arduinos
+#  - The Zigbee will mimic the behavior of a normal Arduino controller except the above mapping
+#    and wrapping data sent and received in Zigbee headers
+# Communication with zigbees is done by connecting to a Zigbee on the serial port using API mode
+# with address 0x1.
+#
+# * ALL ZIGBEE CONTROLLERS CONNECTED MUST HAVE ADDRESSES 0x2-0xFE
+# * ALL ZIGBEE CONTROLLERS CONNECTED MUST ASSUME THE MASTER'S ADDRESS IS 0x1
+#
+
 from hardware.controller_base import HardwareController
 from hardware.arduino_controller import ArduinoController, ArduinoProtocol
 from logs import Log
