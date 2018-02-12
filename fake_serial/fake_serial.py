@@ -1,6 +1,8 @@
 import socket
 import select
 
+from config.general_config import GENERAL_CONFIG
+
 class Serial(object):
     def __init__(self):
         self.sock = None
@@ -48,8 +50,8 @@ class Serial(object):
 class FakeComPort:
     def __init__(self):
         self.serial_number = "123456789"
-        self.vendor = "arduino"
-        self.device = "arduino"
+        self.vendor = GENERAL_CONFIG.SIMULATED_BOARD_NAME
+        self.device = GENERAL_CONFIG.SIMULATED_BOARD_NAME
 
 def comports():
     return [FakeComPort()]

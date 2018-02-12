@@ -53,6 +53,14 @@ class VIRTUAL_PIN_TYPE:
     ISR_LIGHT   = 1
 
 class ArduinoProtocol:
+    pin_offsets = {0: 0, 1: 0, 2: 0} # offset of pins (digital, analog, virtual)
+    pin_ranges = {0: -1, 1: -1, 2: -1} # maximum pin index allowed (-1 for no maximum)
+
+    @staticmethod
+    def set_pin_ranges(digital, num_digital, analog, num_analog, virtual, num_virtual):
+        ArduinoProtocol.pin_offsets = {0: digital, 1: analog, 2: virtual}
+        ArduinoProtocol.pin_ranges = {0: num_digital, 1: num_analog, 2: num_virtual}
+
     @staticmethod
     def on_message(controller, message_type, message):
         Log.hammoud("ArduinoProtocol::on_message({}, {} --{} bytes--)".format(message_type, list(message), len(message)))
@@ -70,30 +78,41 @@ class ArduinoProtocol:
     @staticmethod
     def create_set_pin_mode(pin, mode):
         pin_type = PIN_TYPE.from_str(pin[0])[0]
-        pin_index = int(pin[1:])
+        pin_index = int(pin[1:]) + ArduinoProtocol.pin_offsets[pin_type]
+        if pin_index < 0 or pin_index >= ArduinoProtocol.pin_ranges[pin_type]:
+            return bytearray([])
         return struct.pack('BBBBB', 1, 3, pin_type, pin_index, mode)
 
     @staticmethod
     def create_set_virtual_pin_mode(pin, data):
-        pin_index = int(pin[1:])
+        pin_type = PIN_TYPE.from_str(pin[0])[0]
+        pin_index = int(pin[1:]) + ArduinoProtocol.pin_offsets[pin_type]
+        if pin_index < 0 or pin_index >= ArduinoProtocol.pin_ranges[pin_type]:
+            return bytearray([])
         return struct.pack('BBBB', 2, len(data)+2, 2, pin_index) + bytearray(data)
 
     @staticmethod
     def create_set_pin_output(pin, output):
         pin_type = PIN_TYPE.from_str(pin[0])[0]
-        pin_index = int(pin[1:])
+        pin_index = int(pin[1:]) + ArduinoProtocol.pin_offsets[pin_type]
+        if pin_index < 0 or pin_index >= ArduinoProtocol.pin_ranges[pin_type]:
+            return bytearray([])
         return struct.pack('BBBBB', 3, 3, pin_type, pin_index, output)
 
     @staticmethod
     def create_read_pin_input(pin):
         pin_type = PIN_TYPE.from_str(pin[0])[0]
-        pin_index = int(pin[1:])
+        pin_index = int(pin[1:]) + ArduinoProtocol.pin_offsets[pin_type]
+        if pin_index < 0 or pin_index >= ArduinoProtocol.pin_ranges[pin_type]:
+            return bytearray([])
         return struct.pack('BBBBB', 4, 2, pin_type, pin_index)
 
     @staticmethod
     def create_register_pin_listener(pin, interval_ms):
         pin_type = PIN_TYPE.from_str(pin[0])[0]
-        pin_index = int(pin[1:])
+        pin_index = int(pin[1:]) + ArduinoProtocol.pin_offsets[pin_type]
+        if pin_index < 0 or pin_index >= ArduinoProtocol.pin_ranges[pin_type]:
+            return bytearray([])
         return struct.pack('<BBBBI', 5, 6, pin_type, pin_index, interval_ms)
 
     @staticmethod
@@ -114,6 +133,7 @@ class ArduinoController(HardwareController):
         self.is_initialized = False
         super(ArduinoController, self).__init__(hw_manager, comport, baud=9600, fake_serial_port=fake_serial_port)
 
+    # Initializes the Things that this controller controls
     def initialize_board(self):
         Log.hammoud("ArduinoController::initialize_board()")
         self.write_to_fd(ArduinoProtocol.create_reset_board())
