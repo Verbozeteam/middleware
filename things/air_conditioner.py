@@ -21,6 +21,8 @@ class CentralAC(Thing):
             self.output_ports[self.valve_port] = 2 # pwm output
         if hasattr(self, "digital_valve_port"):
             self.output_ports[self.digital_valve_port] = 1 # digital OPEN/CLOSE valve
+        if hasattr(self, "smoke_detector_port"): # smoke detector - when detected, stop fan
+            self.input_ports[self.smoke_detector_port] = {"interval": 0, "is_pullup": True}
         self.id = ac_json.get("id", "central-ac-" + self.temperature_port + "-" + self.fan_port)
         self.current_set_point = 25
         self.current_temperature = 25
@@ -32,6 +34,7 @@ class CentralAC(Thing):
         self.digital_valve_output = 0
         if not hasattr(self, "on_state"):
             self.on_state = 1
+        self.smoke_detector_value = 1 - self.on_state
 
     # Should return the key in the blueprint that this Thing captures
     @staticmethod
@@ -39,7 +42,7 @@ class CentralAC(Thing):
         return "central_acs"
 
     def set_fan_speed(self, speed):
-        self.current_fan_speed = int(min(max(speed, 0), 2))
+        self.current_fan_speed = int(min(max(speed, 0), 3))
 
     def set_set_point(self, set_pt):
         self.current_set_point = float(min(max(set_pt, 0.0), 50.0))
@@ -75,6 +78,8 @@ class CentralAC(Thing):
         super(CentralAC, self).set_hardware_state(port, value)
         if port == self.temperature_port:
             self.current_temperature = float(value) / 4.0
+        elif hasattr(self, "smoke_detector_port") and port == self.smoke_detector_port:
+            self.smoke_detector_value = int(value)
         return False
 
     def set_state(self, data, token_from="system"):
@@ -89,6 +94,9 @@ class CentralAC(Thing):
         return False
 
     def update(self, cur_time_s):
+        if hasattr(self, "smoke_detector_port") and self.smoke_detector_value == self.on_state:
+            self.current_fan_speed = 0
+
         if cur_time_s >= self.next_valve_update:
             self.next_valve_update = cur_time_s + 5
 
