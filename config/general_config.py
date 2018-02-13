@@ -1,6 +1,6 @@
 
 class GENERAL_CONFIG:
-    SIMULATE_ARDUINO = True
+    SIMULATE_ARDUINO = False
     SIMULATED_BOARD_NAME = "FT231X USB UART" #"arduino"
     BLUEPRINT_FILENAME = "blueprint.json"
     LOG_VERBOZITY = 3

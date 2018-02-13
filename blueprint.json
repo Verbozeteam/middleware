@@ -20,12 +20,6 @@
                     },
                     "dimmer_port": "d4"
                 }, {
-                    "category": "dimmers",
-                    "name": {
-                        "en": "Dimmer 2"
-                    },
-                    "dimmer_port": "d5"
-                }, {
                     "category": "light_switches",
                     "name": {
                         "en": "Light switch 1"
@@ -37,18 +31,6 @@
                         "en": "Light switch 2"
                     },
                     "switch_port": "d36"
-                }, {
-                    "category": "light_switches",
-                    "name": {
-                        "en": "Light switch 3"
-                    },
-                    "switch_port": "d35"
-                }, {
-                    "category": "light_switches",
-                    "name": {
-                        "en": "Light switch 4"
-                    },
-                    "switch_port": "d34"
                 }]
             }, {
                 "ratio": 3,
@@ -75,6 +57,12 @@
                         "en": "Bathroom light switch 3"
                     },
                     "switch_port": "d31"
+                }, {
+                    "category": "dimmers",
+                    "name": {
+                        "en": "Dimmer 3"
+                    },
+                    "dimmer_port": "d6"
                 }]
             }]
         }, {
