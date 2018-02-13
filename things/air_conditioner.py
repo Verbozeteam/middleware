@@ -84,6 +84,9 @@ class CentralAC(Thing):
 
     def set_state(self, data, token_from="system"):
         super(CentralAC, self).set_state(data, token_from)
+        if "sleep_temp" in data:
+            self.default_sleep_temperature = float(data["sleep_temp"])
+
         if hasattr(self, "saved_wakeup_temperature"):
             return # block updates while sleeping
 
