@@ -141,7 +141,11 @@ class CentralAC(Thing):
         }
 
     def get_hardware_state(self):
-        state = dict(map(lambda speed, i: ("fan_"+speed+"_port", (self.on_state) if i == self.current_fan_speed-1 else (1-self.on_state)), self.fan_Speeds))
+        state = {}
+        i = 1
+        for speed in self.fan_speeds:
+            state["fan_"+speed+"_port"] = (self.on_state) if i == self.current_fan_speed-1 else (1-self.on_state)
+            i += 1
         if hasattr(self, "valve_port"):
             state[self.valve_port] = int(self.current_airflow)
         if hasattr(self, "digital_valve_port"):
