@@ -19,13 +19,13 @@ class CentralAC(Thing):
         self.fan_speeds = []
         if hasattr(self, "fan_low_port"):
             self.output_ports[self.fan_low_port] = 1 # digital output
-            self.fan_speeds.append("low")
+            self.fan_speeds.append("Low")
         if hasattr(self, "fan_medium_port"):
             self.output_ports[self.fan_medium_port] = 1 # digital output
-            self.fan_speeds.append("medium")
+            self.fan_speeds.append("Medium")
         if hasattr(self, "fan_high_port"):
             self.output_ports[self.fan_high_port] = 1 # digital output
-            self.fan_speeds.append("high")
+            self.fan_speeds.append("High")
         if hasattr(self, "valve_port"):
             self.output_ports[self.valve_port] = 2 # pwm output
         if hasattr(self, "digital_valve_port"):
@@ -144,7 +144,7 @@ class CentralAC(Thing):
         state = {}
         i = 1
         for speed in self.fan_speeds:
-            state[getattr(self, "fan_"+speed+"_port")] = (self.on_state) if i == self.current_fan_speed else (1-self.on_state)
+            state[getattr(self, "fan_"+speed.lower()+"_port")] = (self.on_state) if i == self.current_fan_speed else (1-self.on_state)
             i += 1
         if hasattr(self, "valve_port"):
             state[self.valve_port] = int(self.current_airflow)
