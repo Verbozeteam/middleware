@@ -136,36 +136,38 @@ class ArduinoController(HardwareController):
     # Initializes the Things that this controller controls
     def initialize_board(self):
         Log.hammoud("ArduinoController::initialize_board()")
-        self.write_to_fd(ArduinoProtocol.create_reset_board())
-        things = self.hw_manager.core.blueprint.get_things()
-        for thing in things:
-            all_ports = list(thing.input_ports.keys()) + list(thing.output_ports.keys())
-            virtual_ports = []
-            for p in all_ports:
-                if "v" in p:
-                    virtual_ports.append(p)
-            virtual_ports = sorted(virtual_ports, key=lambda p: int(p[1:]))
-            if len(virtual_ports) > 0 and (("virtual_port_data" not in dir(thing)) or (len(virtual_ports) != len(thing.virtual_port_data))):
-                Log.error("Thing {} has a virtual port but no virtual_port_data".format(thing.id))
-                continue
+        try:
+            self.write_to_fd(ArduinoProtocol.create_reset_board())
+            things = self.hw_manager.core.blueprint.get_things()
+            for thing in things:
+                all_ports = list(thing.input_ports.keys()) + list(thing.output_ports.keys())
+                virtual_ports = []
+                for p in all_ports:
+                    if "v" in p:
+                        virtual_ports.append(p)
+                virtual_ports = sorted(virtual_ports, key=lambda p: int(p[1:]))
+                if len(virtual_ports) > 0 and (("virtual_port_data" not in dir(thing)) or (len(virtual_ports) != len(thing.virtual_port_data))):
+                    Log.error("Thing {} has a virtual port but no virtual_port_data".format(thing.id))
+                    continue
 
-            for i in range(0, len(virtual_ports)):
-                self.write_to_fd(ArduinoProtocol.create_set_virtual_pin_mode(virtual_ports[i], thing.virtual_port_data[i]))
+                for i in range(0, len(virtual_ports)):
+                    self.write_to_fd(ArduinoProtocol.create_set_virtual_pin_mode(virtual_ports[i], thing.virtual_port_data[i]))
 
-            for port in thing.input_ports.keys():
-                read_interval = thing.input_ports[port]
-                pin_mode = PIN_MODE.INPUT
-                if type(read_interval) is not int:
-                    read_interval = thing.input_ports[port]["read_interval"]
-                    pin_mode = PIN_MODE.INPUT_PULLUP if thing.input_ports[port].get("is_pullup", False) else PIN_MODE.INPUT
-                if port not in virtual_ports:
-                    self.write_to_fd(ArduinoProtocol.create_set_pin_mode(port, pin_mode))
-                self.write_to_fd(ArduinoProtocol.create_register_pin_listener(port, read_interval))
+                for port in thing.input_ports.keys():
+                    read_interval = thing.input_ports[port]
+                    pin_mode = PIN_MODE.INPUT
+                    if type(read_interval) is not int:
+                        read_interval = thing.input_ports[port]["read_interval"]
+                        pin_mode = PIN_MODE.INPUT_PULLUP if thing.input_ports[port].get("is_pullup", False) else PIN_MODE.INPUT
+                    if port not in virtual_ports:
+                        self.write_to_fd(ArduinoProtocol.create_set_pin_mode(port, pin_mode))
+                    self.write_to_fd(ArduinoProtocol.create_register_pin_listener(port, read_interval))
 
-            for port in thing.output_ports.keys():
-                if port not in virtual_ports:
-                    self.write_to_fd(ArduinoProtocol.create_set_pin_mode(port, thing.output_ports[port]))
-
+                for port in thing.output_ports.keys():
+                    if port not in virtual_ports:
+                        self.write_to_fd(ArduinoProtocol.create_set_pin_mode(port, thing.output_ports[port]))
+        except:
+            Log.fatal("Failed to initalize board!", exception=True)
         self.cache = {} # clear cache so things can be written to the board
         self.is_initialized = True
 

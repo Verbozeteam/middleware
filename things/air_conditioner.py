@@ -22,7 +22,7 @@ class CentralAC(Thing):
         if hasattr(self, "digital_valve_port"):
             self.output_ports[self.digital_valve_port] = 1 # digital OPEN/CLOSE valve
         if hasattr(self, "smoke_detector_port"): # smoke detector - when detected, stop fan
-            self.input_ports[self.smoke_detector_port] = {"interval": 0, "is_pullup": True}
+            self.input_ports[self.smoke_detector_port] = {"read_interval": 0, "is_pullup": True}
         self.id = ac_json.get("id", "central-ac-" + self.temperature_port + "-" + self.fan_port)
         self.current_set_point = 25
         self.current_temperature = 25
