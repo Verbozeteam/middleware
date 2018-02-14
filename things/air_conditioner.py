@@ -16,14 +16,23 @@ class CentralAC(Thing):
     def __init__(self, blueprint, ac_json):
         super(CentralAC, self).__init__(blueprint, ac_json)
         self.input_ports[self.temperature_port] = 5000 # read temperature every 5 seconds
-        self.output_ports[self.fan_port] = 1 # digital output
+        self.fan_speeds = []
+        if hasattr(self, "fan_low_port"):
+            self.output_ports[self.fan_low_port] = 1 # digital output
+            self.fan_speeds.append("low")
+        if hasattr(self, "fan_medium_port"):
+            self.output_ports[self.fan_medium_port] = 1 # digital output
+            self.fan_speeds.append("medium")
+        if hasattr(self, "fan_high_port"):
+            self.output_ports[self.fan_high_port] = 1 # digital output
+            self.fan_speeds.append("high")
         if hasattr(self, "valve_port"):
             self.output_ports[self.valve_port] = 2 # pwm output
         if hasattr(self, "digital_valve_port"):
             self.output_ports[self.digital_valve_port] = 1 # digital OPEN/CLOSE valve
         if hasattr(self, "smoke_detector_port"): # smoke detector - when detected, stop fan
             self.input_ports[self.smoke_detector_port] = {"read_interval": 0, "is_pullup": True}
-        self.id = ac_json.get("id", "central-ac-" + self.temperature_port + "-" + self.fan_port)
+        self.id = ac_json.get("id", "central-ac-" + self.temperature_port)
         self.current_set_point = 25
         self.current_temperature = 25
         self.current_fan_speed = 1
@@ -42,7 +51,7 @@ class CentralAC(Thing):
         return "central_acs"
 
     def set_fan_speed(self, speed):
-        self.current_fan_speed = int(min(max(speed, 0), 3))
+        self.current_fan_speed = int(min(max(speed, 0), len(self.fan_speeds)))
 
     def set_set_point(self, set_pt):
         self.current_set_point = float(min(max(set_pt, 0.0), 50.0))
@@ -128,11 +137,11 @@ class CentralAC(Thing):
             "temp": self.current_temperature,
             "set_pt": self.current_set_point,
             "fan": self.current_fan_speed,
+            "fan_speeds": self.fan_speeds,
         }
 
     def get_hardware_state(self):
-        state = {self.fan_port: min(max(int(self.current_fan_speed-1), 0), 1)}
-        state[self.fan_port] = state[self.fan_port] if self.on_state == 1 else 1 - state[self.fan_port]
+        state = dict(map(lambda speed, i: ("fan_"+speed+"_port", (self.on_state) if i == self.current_fan_speed-1 else (1-self.on_state)), self.fan_Speeds))
         if hasattr(self, "valve_port"):
             state[self.valve_port] = int(self.current_airflow)
         if hasattr(self, "digital_valve_port"):
