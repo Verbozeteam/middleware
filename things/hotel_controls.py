@@ -12,6 +12,8 @@ class HotelControls(Thing):
         self.output_ports[self.power_port] = 1 # digital output
         self.output_ports[self.do_not_disturb_port] = 1 # digital output
         self.output_ports[self.room_service_port] = 1 # digital output
+        if hasattr(self, "room_check_button"):
+            self.input_ports[self.room_check_button] = {"read_interval": 0, "is_pullup": True}
         self.id = hotel_json.get("id", "hotel-controls-" + self.power_port)
         self.card_in = 1
         self.do_not_disturb = 0
@@ -24,6 +26,7 @@ class HotelControls(Thing):
             self.card_in_state = 1
         if not hasattr(self, "on_state"):
             self.on_state = 1
+        self.room_check_status = 1 - self.card_in_state
 
     # Should return the key in the blueprint that this Thing captures
     @staticmethod
@@ -38,6 +41,8 @@ class HotelControls(Thing):
         super(HotelControls, self).set_hardware_state(port, value)
         if port == self.hotel_card:
             self.card_in = 1 if value == self.card_in_state else 0
+        elif hasattr(self, "room_check_button") and port == self.room_check_button:
+            self.room_check_status = value
         return False
 
     def set_state(self, data, token_from="system"):
@@ -77,8 +82,16 @@ class HotelControls(Thing):
         }
 
     def get_hardware_state(self):
+        dnd = self.do_not_disturb if self.on_state == 1 else 1 - self.do_not_disturb
+        rs = self.room_service if self.on_state == 1 else 1 - self.room_service
+        if self.room_check_status == self.card_in_state:
+            dnd = rs = 1 - self.on_state
+            if self.card_in:
+                dnd = self.on_state
+            else:
+                rs = self.on_state
         return {
             self.power_port: self.power if self.on_state == 1 else 1 - self.power,
-            self.do_not_disturb_port: self.do_not_disturb if self.on_state == 1 else 1 - self.do_not_disturb,
-            self.room_service_port: self.room_service if self.on_state == 1 else 1 - self.room_service,
+            self.do_not_disturb_port: dnd,
+            self.room_service_port: rs,
         }
