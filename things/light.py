@@ -66,6 +66,8 @@ class Dimmer(Thing):
 
         if not hasattr(self, "max_output_percentage"):
             self.max_output_percentage = 80
+        if not hasattr(self, "has_switch"):
+            self.has_switch = 0
 
     # Should return the key in the blueprint that this Thing captures
     @staticmethod
@@ -104,7 +106,8 @@ class Dimmer(Thing):
 
     def get_state(self):
         return {
-            "intensity": self.intensity
+            "intensity": self.intensity,
+            "has_switch": self.has_switch,
         }
 
     def get_hardware_state(self):

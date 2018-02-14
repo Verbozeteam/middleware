@@ -144,7 +144,7 @@ class CentralAC(Thing):
         state = {}
         i = 1
         for speed in self.fan_speeds:
-            state[getattr(self, "fan_"+speed+"_port")] = (self.on_state) if i == self.current_fan_speed-1 else (1-self.on_state)
+            state[getattr(self, "fan_"+speed+"_port")] = (self.on_state) if i == self.current_fan_speed else (1-self.on_state)
             i += 1
         if hasattr(self, "valve_port"):
             state[self.valve_port] = int(self.current_airflow)
