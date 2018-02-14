@@ -95,6 +95,7 @@ class ZigbeeController(HardwareController):
         self.m_remoteZigbees = {} # address -> Remote zigbees connected to this zigbee
         self.m_frameNumber = 1
         self.m_readBuffer = bytearray([])
+        Log.hammoud("Zigbee was found!")
         super(ZigbeeController, self).__init__(hw_manager, comport, baud=9600, fake_serial_port=fake_serial_port)
 
         # find target addresses

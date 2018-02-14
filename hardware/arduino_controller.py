@@ -79,7 +79,7 @@ class ArduinoProtocol:
     def create_set_pin_mode(pin, mode):
         pin_type = PIN_TYPE.from_str(pin[0])[0]
         pin_index = int(pin[1:]) + ArduinoProtocol.pin_offsets[pin_type]
-        if pin_index < 0 or pin_index >= ArduinoProtocol.pin_ranges[pin_type]:
+        if pin_index < 0 or (pin_index >= ArduinoProtocol.pin_ranges[pin_type] and ArduinoProtocol.pin_ranges[pin_type] != -1):
             return bytearray([])
         return struct.pack('BBBBB', 1, 3, pin_type, pin_index, mode)
 
@@ -87,7 +87,7 @@ class ArduinoProtocol:
     def create_set_virtual_pin_mode(pin, data):
         pin_type = PIN_TYPE.from_str(pin[0])[0]
         pin_index = int(pin[1:]) + ArduinoProtocol.pin_offsets[pin_type]
-        if pin_index < 0 or pin_index >= ArduinoProtocol.pin_ranges[pin_type]:
+        if pin_index < 0 or (pin_index >= ArduinoProtocol.pin_ranges[pin_type] and ArduinoProtocol.pin_ranges[pin_type] != -1):
             return bytearray([])
         return struct.pack('BBBB', 2, len(data)+2, 2, pin_index) + bytearray(data)
 
@@ -95,7 +95,7 @@ class ArduinoProtocol:
     def create_set_pin_output(pin, output):
         pin_type = PIN_TYPE.from_str(pin[0])[0]
         pin_index = int(pin[1:]) + ArduinoProtocol.pin_offsets[pin_type]
-        if pin_index < 0 or pin_index >= ArduinoProtocol.pin_ranges[pin_type]:
+        if pin_index < 0 or (pin_index >= ArduinoProtocol.pin_ranges[pin_type] and ArduinoProtocol.pin_ranges[pin_type] != -1):
             return bytearray([])
         return struct.pack('BBBBB', 3, 3, pin_type, pin_index, output)
 
@@ -103,7 +103,7 @@ class ArduinoProtocol:
     def create_read_pin_input(pin):
         pin_type = PIN_TYPE.from_str(pin[0])[0]
         pin_index = int(pin[1:]) + ArduinoProtocol.pin_offsets[pin_type]
-        if pin_index < 0 or pin_index >= ArduinoProtocol.pin_ranges[pin_type]:
+        if pin_index < 0 or (pin_index >= ArduinoProtocol.pin_ranges[pin_type] and ArduinoProtocol.pin_ranges[pin_type] != -1):
             return bytearray([])
         return struct.pack('BBBBB', 4, 2, pin_type, pin_index)
 
@@ -111,7 +111,7 @@ class ArduinoProtocol:
     def create_register_pin_listener(pin, interval_ms):
         pin_type = PIN_TYPE.from_str(pin[0])[0]
         pin_index = int(pin[1:]) + ArduinoProtocol.pin_offsets[pin_type]
-        if pin_index < 0 or pin_index >= ArduinoProtocol.pin_ranges[pin_type]:
+        if pin_index < 0 or (pin_index >= ArduinoProtocol.pin_ranges[pin_type] and ArduinoProtocol.pin_ranges[pin_type] != -1):
             return bytearray([])
         return struct.pack('<BBBBI', 5, 6, pin_type, pin_index, interval_ms)
 
