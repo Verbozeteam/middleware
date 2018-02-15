@@ -1,32 +1,22 @@
 {
     "id": "1",
     "rooms": [{
-        "name": {
-            "en": "Testing room"
-        },
-        "grid": [{
-            "ratio": 1,
-            "panels": [{
-                "ratio": 1,
-                "name": {
-                    "en": "Test section"
-                },
-                "things": [{
-                    "category": "central_acs",
-                    "name": {
-                        "english": "Air conditioner"
-                    },
-                    "temperature_port": "v0",
-                    "fan_low_port": "d48",
-                    "fan_medium_port": "d49",
-                    "fan_high_port": "d50",
-                    "valve_port": "d8",
-                    "digital_valve_port": "d12",
-                    "virtual_port_data": [[0, 0]]
-                }]
+        "id": "room-1",
+        "name": "Testing room",
+        "groups": [{
+            "id": "group-1",
+            "name": "Test section",
+            "things": [{
+                "category": "central_acs",
+                "name": "Air conditioner",
+                "temperature_port": "v0",
+                "fan_low_port": "d48",
+                "fan_medium_port": "d49",
+                "fan_high_port": "d50",
+                "valve_port": "d8",
+                "digital_valve_port": "d12",
+                "virtual_port_data": [[0, 0]]
             }]
-        }],
-        "detail": {},
-        "layout": {}
+        }]
     }]
 }

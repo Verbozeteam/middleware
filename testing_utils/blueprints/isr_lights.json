@@ -1,34 +1,22 @@
 {
     "id": "1",
     "rooms": [{
-        "name": {
-            "en": "Testing room"
-        },
-        "grid": [{
-            "ratio": 1,
-            "panels": [{
-                "ratio": 1,
-                "name": {
-                    "en": "Test section"
-                },
-                "things": [{
-                    "category": "dimmers",
-                    "name": {
-                        "english": "S1"
-                    },
-                    "dimmer_port": "v0",
-                    "virtual_port_data": [[1, 50, 3, 40]]
-                }, {
-                    "category": "dimmers",
-                    "name": {
-                        "english": "S2"
-                    },
-                    "dimmer_port": "v1",
-                    "virtual_port_data": [[1, 50, 3, 41]]
-                }]
+        "id": "room-1",
+        "name": "Testing room",
+        "groups": [{
+            "id": "group-1",
+            "name": "Test section",
+            "things": [{
+                "category": "dimmers",
+                "name": "S1",
+                "dimmer_port": "v0",
+                "virtual_port_data": [[1, 50, 3, 40]]
+            }, {
+                "category": "dimmers",
+                "name": "S2",
+                "dimmer_port": "v1",
+                "virtual_port_data": [[1, 50, 3, 41]]
             }]
-        }],
-        "detail": {},
-        "layout": {}
+        }]
     }]
 }
