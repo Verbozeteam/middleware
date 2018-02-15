@@ -11,36 +11,48 @@ import json
 class Room(object):
     def __init__(self, blueprint, room_json):
         self.things = {} # Thing id -> Thing dictionary
-        # expected keys: "name", "grid", "detail" and "layout"
+        self.things_meta = {} # Thing id -> Thing metadata dictionary (metadata is category/id/name (created below))
+
+        # expected keys: "name", "id" and "groups"
         self.config = {}
         self.config["name"] = room_json["name"]
-        self.config["detail"] = room_json["detail"]
-        self.config["layout"] = room_json["layout"]
-        self.config["grid"] = room_json["grid"]
+        self.config["id"] = room_json["id"]
+        self.config["groups"] = json.loads(json.dumps(room_json["groups"]))
 
-        for column in self.config["grid"]:
-            for panel in column["panels"]:
-                for i in range(len(panel["things"])):
-                    if len(panel["things"][i]) == 0: # empty space - don't load a Thing
-                        panel["things"][i] = {"category": "empty"}
-                    elif len(panel["things"][i]) > 1: # ignore the ones with only one key - they are references to other Things
-                        t = blueprint.load_thing(panel["things"][i])
-                        self.things[t.id] = t
-                        panel["things"][i] = {
-                            "category": panel["things"][i]["category"],
-                            "id": t.id,
-                            "name": panel["things"][i]["name"],
-                        }
+        if type(self.config["id"]) != type(str()):
+            raise ("Room id type not string: " + str(self.config))
+
+        found_groups = {}
+        for group in self.config["groups"]:
+            if "id" not in group:
+                raise ("Missing group id: " + str(group))
+            if type(group["id"]) != type(str()):
+                raise ("Group id type not string: " + str(group))
+            if group["id"] in found_groups:
+                raise ("Duplicated group id: " + group["id"])
+            found_groups[group["id"]] = 1
+            for i in range(len(group["things"])):
+                thing = group["things"][i]
+                if len(group["things"][i]) == 0: # empty space - don't load a Thing
+                    group["things"][i] = {"category": "empty"}
+                elif len(group["things"][i]) > 1: # ignore the ones with only one key - they are references to other Things
+                    t = blueprint.load_thing(group["things"][i])
+                    self.things[t.id] = t
+                    group["things"][i] = {
+                        "category": group["things"][i]["category"],
+                        "id": t.id,
+                        "name": group["things"][i]["name"],
+                    }
 
     # Loads the references (Things in the config with only 1 key "id") to be copies of what they refer to
     def load_references(self, blueprint):
-        for column in self.config["grid"]:
-            for panel in column["panels"]:
-                for i in range(len(panel["things"])):
-                    if len(panel["things"][i]) == 1 and "id" in panel["things"][i]:
-                        panel["things"][i] = blueprint.get_thing_metadata(panel["things"][i]["id"])
-                        if panel["things"][i] == None:
-                            raise ("Failed to find reference to " + panel["things"][i]["id"])
+        for group in self.config["groups"]:
+            for i in range(len(group["things"])):
+                thing = group["things"][i]
+                if len(thing) == 1 and "id" in thing:
+                    group["things"][i] = blueprint.get_thing_metadata(thing["id"])
+                    if thing == None:
+                        raise ("Failed to find reference to " + thing["id"])
 
 class Blueprint(object):
     def __init__(self, core):
@@ -72,7 +84,11 @@ class Blueprint(object):
 
         self.id = str(J["id"])
         self.rooms = [Room(self, R) for R in J["rooms"]]
+        found_room_ids = {}
         for R in self.rooms:
+            if R.config["id"] in found_room_ids:
+                raise ("Dumplicate room id" + R.config["id"])
+            found_room_ids[R.config["id"]] = 1
             R.load_references(self)
 
     # Load a thing from a JSON config and append to to the given room
@@ -131,11 +147,8 @@ class Blueprint(object):
     # returns   {name, category, id} of the found Thing
     def get_thing_metadata(self, thing_id):
         for room in self.rooms:
-            for column in room.config["grid"]:
-                for panel in column["panels"]:
-                    for i in range(len(panel["things"])):
-                        if len(panel["things"][i]) > 1 and "id" in panel["things"][i] and panel["things"][i]["id"] == thing_id:
-                            return panel["things"][i]
+            if thing_id in room.things_meta:
+                return room.things_meta[thing_id]
         return None
 
     # Retrieves the list of Things that are listening to a given port

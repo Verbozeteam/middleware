@@ -1,34 +1,22 @@
 {
     "id": "1",
     "rooms": [{
-        "name": {
-            "en": "Testing room"
-        },
-        "grid": [{
-            "ratio": 1,
-            "panels": [{
-                "ratio": 1,
-                "name": {
-                    "en": "Test section"
-                },
-                "things": [{
-                    "category": "curtains",
-                    "name": {
-                        "english": "Curtain 1"
-                    },
-                    "up_port": "d22",
-                    "down_port": "d23"
-                }, {
-                    "category": "curtains",
-                    "name": {
-                        "english": "Curtain 2"
-                    },
-                    "up_port": "d24",
-                    "down_port": "d25"
-                }]
+        "id": "room-1",
+        "name": "Testing room",
+        "groups": [{
+            "id": "group-1",
+            "name": "Test section",
+            "things": [{
+                "category": "curtains",
+                "name": "Curtain 1",
+                "up_port": "d22",
+                "down_port": "d23"
+            }, {
+                "category": "curtains",
+                "name": "Curtain 2",
+                "up_port": "d24",
+                "down_port": "d25"
             }]
-        }],
-        "detail": {},
-        "layout": {}
+        }]
     }]
 }
