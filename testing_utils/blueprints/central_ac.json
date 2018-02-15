@@ -17,7 +17,9 @@
                         "english": "Air conditioner"
                     },
                     "temperature_port": "v0",
-                    "fan_port": "d48",
+                    "fan_low_port": "d48",
+                    "fan_medium_port": "d49",
+                    "fan_high_port": "d50",
                     "valve_port": "d8",
                     "digital_valve_port": "d12",
                     "virtual_port_data": [[0, 0]]

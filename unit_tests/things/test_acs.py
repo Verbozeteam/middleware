@@ -25,17 +25,39 @@ class TestCentralAC(BaseTestFramework):
         self.system.arduino_emulator.sync_board()
 
         # fan HIGH
+        self.ac.set_state({"fan": 3})
+        self.wait_for_condition(lambda self:
+            self.ac.get_state()["fan"] == 3 and
+            self.system.arduino_emulator.get_pin(type=0, index=int(self.ac.fan_low_port[1:])) == 0 and
+            self.system.arduino_emulator.get_pin(type=0, index=int(self.ac.fan_medium_port[1:])) == 0 and
+            self.system.arduino_emulator.get_pin(type=0, index=int(self.ac.fan_high_port[1:])) == 1
+        )
+
+        # fan MEDIUM
         self.ac.set_state({"fan": 2})
         self.wait_for_condition(lambda self:
             self.ac.get_state()["fan"] == 2 and
-            self.system.arduino_emulator.get_pin(type=0, index=int(self.ac.fan_port[1:])) == 1
+            self.system.arduino_emulator.get_pin(type=0, index=int(self.ac.fan_low_port[1:])) == 0 and
+            self.system.arduino_emulator.get_pin(type=0, index=int(self.ac.fan_medium_port[1:])) == 1 and
+            self.system.arduino_emulator.get_pin(type=0, index=int(self.ac.fan_high_port[1:])) == 0
+        )
+
+        # fan LOW
+        self.ac.set_state({"fan": 1})
+        self.wait_for_condition(lambda self:
+            self.ac.get_state()["fan"] == 1 and
+            self.system.arduino_emulator.get_pin(type=0, index=int(self.ac.fan_low_port[1:])) == 1 and
+            self.system.arduino_emulator.get_pin(type=0, index=int(self.ac.fan_medium_port[1:])) == 0 and
+            self.system.arduino_emulator.get_pin(type=0, index=int(self.ac.fan_high_port[1:])) == 0
         )
 
         # fan off
         self.ac.set_state({"fan": 0})
         self.wait_for_condition(lambda self:
             self.ac.get_state()["fan"] == 0 and
-            self.system.arduino_emulator.get_pin(type=0, index=int(self.ac.fan_port[1:])) == 0
+            self.system.arduino_emulator.get_pin(type=0, index=int(self.ac.fan_low_port[1:])) == 0 and
+            self.system.arduino_emulator.get_pin(type=0, index=int(self.ac.fan_medium_port[1:])) == 0 and
+            self.system.arduino_emulator.get_pin(type=0, index=int(self.ac.fan_high_port[1:])) == 0
         )
 
         assert self.system.arduino_emulator.is_board_synced()
