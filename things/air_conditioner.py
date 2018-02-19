@@ -137,7 +137,6 @@ class CentralAC(Thing):
             "temp": self.current_temperature,
             "set_pt": self.current_set_point,
             "fan": self.current_fan_speed,
-            "fan_speeds": self.fan_speeds,
         }
 
     def get_hardware_state(self):
@@ -151,3 +150,8 @@ class CentralAC(Thing):
         if hasattr(self, "digital_valve_port"):
             state[self.digital_valve_port] = int(self.digital_valve_output) if self.on_state == 1 else 1 - int(self.digital_valve_output)
         return state
+
+    def get_metadata(self):
+        return {
+            "fan_speeds": self.fan_speeds,
+        }

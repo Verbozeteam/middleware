@@ -39,11 +39,12 @@ class Room(object):
                 elif len(group["things"][i]) > 1: # ignore the ones with only one key - they are references to other Things
                     t = blueprint.load_thing(group["things"][i])
                     self.things[t.id] = t
-                    group["things"][i] = {
-                        "category": group["things"][i]["category"],
-                        "id": t.id,
-                        "name": group["things"][i]["name"],
-                    }
+                    name = group["things"][i]["name"]
+                    category = group["things"][i]["category"]
+                    group["things"][i] = t.get_metadata()
+                    group["things"][i]["category"] = category
+                    group["things"][i]["id"] = t.id
+                    group["things"][i]["name"] = name
 
     # Loads the references (Things in the config with only 1 key "id") to be copies of what they refer to
     def load_references(self, blueprint):
@@ -85,6 +86,7 @@ class Blueprint(object):
             return
 
         self.id = str(J["id"])
+        self.translations = J.get("translations", {})
         self.rooms = [Room(self, R) for R in J["rooms"]]
         found_room_ids = {}
         for R in self.rooms:
@@ -118,6 +120,7 @@ class Blueprint(object):
     def get_controller_view(self):
         view = {
             "config": {
+                "translations": self.translations,
                 "rooms": list(map(lambda r: r.config, self.rooms)),
                 "id": str(self.id)
             }
