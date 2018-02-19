@@ -64,3 +64,8 @@ class Thing(object):
         self.last_change_token = token_from
         return True
 
+    # Called by the blueprint ONCE (at the beginning) to know if there is any metadata for this Thing
+    # returns  A dictionary of metadata ammended to the Thing in the config in the blueprint
+    def get_metadata(self):
+        return {}
+

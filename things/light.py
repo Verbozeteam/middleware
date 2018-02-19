@@ -107,7 +107,6 @@ class Dimmer(Thing):
     def get_state(self):
         return {
             "intensity": self.intensity,
-            "has_switch": self.has_switch,
         }
 
     def get_hardware_state(self):
@@ -124,4 +123,9 @@ class Dimmer(Thing):
             return {
                 self.dimmer_port: int(self.intensity * 2.55),
             }
+
+    def get_metadata(self):
+        return {
+            "has_switch": self.has_switch,
+        }
 

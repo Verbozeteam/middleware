@@ -22,20 +22,34 @@
                 "switch_port": "d36"
             }]
         }, {
+            "id": "group-1.5",
+            "name": "Curtains",
+            "things": [{
+                "category": "curtains",
+                "name": "Curtain 1",
+                "up_port": "d22",
+                "down_port": "d23"
+            }, {
+                "category": "curtains",
+                "name": "Curtain 2",
+                "up_port": "d24",
+                "down_port": "d25"
+            }]
+        }, {
             "id": "group-2",
             "name": "Bathroom",
             "things": [{
                 "category": "light_switches",
-                "name": "Bathroom light switch 1",
+                "name": "Bathroom switch 1",
                 "switch_port": "d33"
             }, {
                 "category": "light_switches",
-                "name": "Bathroom light switch 2",
+                "name": "Bathroom switch 2",
                 "switch_port": "d32"
             }, {
             }, {
                 "category": "light_switches",
-                "name": "Bathroom light switch 3",
+                "name": "Bathroom switch 3",
                 "switch_port": "d31"
             }, {
                 "category": "dimmers",
@@ -44,7 +58,7 @@
             }]
         }, {
             "id": "group-3",
-            "name": "Air Conditioning",
+            "name": "Thermostat",
             "things": [{
                 "category": "central_acs",
                 "name": "Air conditioner",
@@ -73,18 +87,23 @@
     }],
     "translations": {
         "Hasan's Room": {
+            "en": "Hasan's Room",
             "ar": "غرفة حسن"
         },
         "Room Lights": {
+            "en": "Room Lights",
             "ar": "إضائة الغرفة"
         },
         "Bathroom Lights": {
+            "en": "Bathroom Lights",
             "ar": "إضائة الحمام"
         },
-        "Air Conditioning": {
+        "Thermostat": {
+            "en": "Thermostat",
             "ar": "التكييف"
         },
         "Room Service": {
+            "en": "Room Service",
             "ar": "خدمات الغرفة"
         }
     }
