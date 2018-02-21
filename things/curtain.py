@@ -12,6 +12,8 @@ class Curtain(Thing):
         self.down_output = 0
         if not hasattr(self, "on_state"):
             self.on_state = 1
+        if not hasattr(self, "max_move_time"):
+            self.max_move_time = 10000
 
     # Should return the key in the blueprint that this Thing captures
     @staticmethod
@@ -33,10 +35,18 @@ class Curtain(Thing):
         return False
 
     def get_state(self):
-        return {}
+        return {
+            "curtain": 0 if (self.up_output == self.down_output) else (1 if self.up_output == 1 else 2)
+        }
 
     def get_hardware_state(self):
         return {
             self.up_port: self.up_output if self.on_state == 1 else 1 - self.up_output,
             self.down_port: self.down_output if self.on_state == 1 else 1 - self.down_output,
         }
+
+    def get_metadata(self):
+        return {
+            "max_move_time": self.max_move_time
+        }
+
