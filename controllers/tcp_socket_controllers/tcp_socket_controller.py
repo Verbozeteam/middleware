@@ -21,7 +21,7 @@ def upgrade_controller(legacy_controller):
     Log.debug("upgrade_controller({})".format(str(legacy_controller)))
     # Override those 2 methods (and make them bound to legacy_controller)
     legacy_controller.on_read_ready = types.MethodType(TCPSocketController.on_read_ready, legacy_controller)
-    legacy_controller.on_send_data = types.MethodType(TCPSocketController.on_send_data, legacy_controller)
+    legacy_controller.on_send_data = types.MethodType(TCPSocketController.send_data, legacy_controller)
     return True
 
 # Makes a TCPSocketController behave like a legacy controller
@@ -34,7 +34,7 @@ def downgrade_controller(controller):
     Log.debug("downgrade_controller({})".format(str(controller)))
     # Override those 2 methods (and make them bound to controller)
     controller.on_read_ready = types.MethodType(TCPSocketLegacyController.on_read_ready, controller)
-    controller.on_send_data = types.MethodType(TCPSocketLegacyController.on_send_data, controller)
+    controller.on_send_data = types.MethodType(TCPSocketLegacyController.send_data, controller)
     return True
 
 #
@@ -84,7 +84,7 @@ class TCPSocketController(Controller):
                 else:
                     break
             return True
-        except Exception as e:
+        except:
             Log.warning("TCPSocketController::on_read_ready()", exception=True)
             return False
 
@@ -231,6 +231,6 @@ class TCPSocketLegacyController(TCPSocketController):
             msg += bytearray([len(curtains), 255])
             self.write_to_fd(msg)
             return True
-        except Exception as e:
+        except:
             Log.warning("FAILED TCPSocketLegacyController::send_data({})".format(json_data), exception=True)
             return False

@@ -56,7 +56,7 @@ class RemoteZigbee(ArduinoController):
 
             if self.sync_input_buffer(cur_time_s):
                 return self.process_read_buffer()
-        except Exception as e:
+        except:
             Log.error("", exception=True)
 
         return True
@@ -112,7 +112,7 @@ class ZigbeeController(HardwareController):
             self.m_remoteZigbees[addr] = RemoteZigbee(self, addr)
 
     def initiateDiscovery(self):
-        self.zigbeeTx(0xFFFF, [ord('D')], 1);
+        self.zigbeeTx(0xFFFF, [ord('D')])
 
     def zigbeeTx(self, addrTo, data):
         # Create an API frame targeting addrTo and escape and stuff
@@ -123,7 +123,7 @@ class ZigbeeController(HardwareController):
             if self.m_frameNumber == 256:
                 self.m_frameNumber = 1
 
-            self.zigbeeAPICall(buf);
+            self.zigbeeAPICall(buf)
 
     def zigbeeChecksum(self, data):
         return 0xFF - (sum(list(data)) % 256)
@@ -184,8 +184,8 @@ class ZigbeeController(HardwareController):
             elif cmdID == 0x81 and len(frame) >= 5: # Rx from a 16 bit address
                 addr_msb = frame[1]
                 addr_lsb = frame[2]
-                rssi = frame[3]
-                options = frame[4]
+                # rssi = frame[3]
+                # options = frame[4]
                 data = frame[5:]
                 addr = (addr_msb << 8) | addr_lsb
                 if addr in self.m_remoteZigbees:
@@ -209,7 +209,7 @@ class ZigbeeController(HardwareController):
                 if cur_pos >= len(self.m_readBuffer):
                     break
                 if len_msb == ESCAPE_CHARACTER:
-                    len_msb = self.m_readBuffer[cur_pos] ^ UNESCAPE_CHARACTER;
+                    len_msb = self.m_readBuffer[cur_pos] ^ UNESCAPE_CHARACTER
                     cur_pos += 1
                 if cur_pos >= len(self.m_readBuffer):
                     break
@@ -219,7 +219,7 @@ class ZigbeeController(HardwareController):
                 if cur_pos >= len(self.m_readBuffer):
                     break
                 if len_lsb == ESCAPE_CHARACTER:
-                    len_lsb = self.m_readBuffer[cur_pos] ^ UNESCAPE_CHARACTER;
+                    len_lsb = self.m_readBuffer[cur_pos] ^ UNESCAPE_CHARACTER
                     cur_pos += 1
                 if cur_pos >= len(self.m_readBuffer):
                     break
@@ -228,7 +228,7 @@ class ZigbeeController(HardwareController):
 
                 # count escape characters found
                 content_and_checksum = bytearray([])
-                i = 0;
+                i = 0
                 while i < content_len + 1: # +1 for checksum
                     if cur_pos >= len(self.m_readBuffer):
                         break

@@ -102,7 +102,7 @@ class Log(object):
                     m = re.search("run_([0-9]+)+", run)
                     max_run_number = max(max_run_number, int(m.groups()[0]))
                     sorted_runs[int(m.groups()[0])] = run
-                except Exception as e:
+                except:
                     if run != ".." and run != ".":
                         try: os.remove(os.path.join("log_files", run))
                         except: pass
@@ -121,5 +121,5 @@ class Log(object):
             formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
             hdlr.setFormatter(formatter)
             Log.logger.addHandler(hdlr)
-        except Exception as e:
+        except:
             Log.log(VERBOZITY.ERROR, "Failed to open logs!", exception=True)

@@ -1,5 +1,5 @@
 import argparse
-from config import *
+import config
 import os, sys
 import re
 
@@ -16,11 +16,11 @@ if not hasattr(sys, '_called_from_test'):
     parser.add_argument("-i", "--interfaces", required=False, nargs='+', help="List of network interfaces to host sockets on")
     cmd_args = parser.parse_args()
 
-    if cmd_args.verbozity: GENERAL_CONFIG.LOG_VERBOZITY = cmd_args.verbozity
-    if cmd_args.regex: GENERAL_CONFIG.LOG_REGEX = re.compile(cmd_args.regex)
-    if cmd_args.blueprint: GENERAL_CONFIG.BLUEPRINT_FILENAME = cmd_args.blueprint
-    if cmd_args.address: CONTROLLERS_CONFIG.SOCKET_SERVER_BIND_IP = cmd_args.address
-    if cmd_args.port: CONTROLLERS_CONFIG.SOCKET_SERVER_BIND_PORT = cmd_args.port
-    if cmd_args.interfaces: CONTROLLERS_CONFIG.SOCKET_HOSTING_INTERCACES = list(cmd_args.interfaces)
+    if cmd_args.verbozity: config.GENERAL_CONFIG.LOG_VERBOZITY = cmd_args.verbozity
+    if cmd_args.regex: config.GENERAL_CONFIG.LOG_REGEX = re.compile(cmd_args.regex)
+    if cmd_args.blueprint: config.GENERAL_CONFIG.BLUEPRINT_FILENAME = cmd_args.blueprint
+    if cmd_args.address: config.CONTROLLERS_CONFIG.SOCKET_SERVER_BIND_IP = cmd_args.address
+    if cmd_args.port: config.CONTROLLERS_CONFIG.SOCKET_SERVER_BIND_PORT = cmd_args.port
+    if cmd_args.interfaces: config.CONTROLLERS_CONFIG.SOCKET_HOSTING_INTERCACES = list(cmd_args.interfaces)
 
-    if cmd_args.simulate: GENERAL_CONFIG.SIMULATE_ARDUINO = True
+    if cmd_args.simulate: config.GENERAL_CONFIG.SIMULATE_ARDUINO = True

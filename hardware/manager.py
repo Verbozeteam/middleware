@@ -44,7 +44,7 @@ class HardwareManager(object):
                 for serial in registered_serials:
                     if serial not in all_identified_serials:
                         self.connected_controllers[serial].destroy_selectible()
-            except Exception as e:
+            except:
                 Log.error("Unknown error while identifying COM ports", exception=True)
 
     # called to periodically update this manager

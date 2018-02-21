@@ -223,7 +223,7 @@ class ArduinoController(HardwareController):
                 truncate_size = 0
                 for truncate_size in range(0, len(self.read_buffer)):
                     if self.read_buffer[truncate_size] == SYNC_SEQUENCE[0]:
-                        break;
+                        break
                 # truncate the beginning of the read buffer
                 self.read_buffer = self.read_buffer[truncate_size:]
 
@@ -373,10 +373,10 @@ class ArduinoLegacyController(ArduinoController):
             base_idx += 1
             lights = list(message[base_idx:base_idx+num_lights])
             base_idx += num_lights
-            num_curtains = message[base_idx]
+            # num_curtains = message[base_idx]
             base_idx += 1
             if base_idx != len(message):
-                raise 1 # invalid message...
+                raise Exception(1) # invalid message...
             for i in range(len(ACs)):
                 ArduinoProtocol.on_message(self, MESSAGE_TYPE.FROMDEVICE_PINSTATE, bytearray([PIN_TYPE.DIGITAL[0], 48+i, ACs[i][0]]))
                 ArduinoProtocol.on_message(self, MESSAGE_TYPE.FROMDEVICE_PINSTATE, bytearray([PIN_TYPE.VIRTUAL[0], i, ACs[i][2]]))
@@ -385,12 +385,12 @@ class ArduinoLegacyController(ArduinoController):
             for i in range(len(lights)):
                 ArduinoProtocol.on_message(self, MESSAGE_TYPE.FROMDEVICE_PINSTATE, bytearray([PIN_TYPE.DIGITAL[0], 37-i, lights[i]]))
             return True
-        except Exception as e:
+        except:
             Log.error("ArduinoLegacyController::on_message() Failed", exception=True)
             return False
 
     def set_port_value(self, port, value):
-        super(ArduinoController, self).set_port_value(port, value)
+        super(ArduinoLegacyController, self).set_port_value(port, value)
         try:
             port_type = port[0]
             port = int(port[1:])

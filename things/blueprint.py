@@ -33,7 +33,6 @@ class Room(object):
                 raise ("Duplicated group id: " + group["id"])
             found_groups[group["id"]] = 1
             for i in range(len(group["things"])):
-                thing = group["things"][i]
                 if len(group["things"][i]) == 0: # empty space - don't load a Thing
                     group["things"][i] = {"category": "empty"}
                 elif len(group["things"][i]) > 1: # ignore the ones with only one key - they are references to other Things

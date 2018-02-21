@@ -11,6 +11,6 @@ if __name__ == '__main__':
     core = Core()
     try:
         core.run()
-    except Exception as e:
-        Log.fatal("Fatal error in program: ", e, exception=True)
+    except:
+        Log.fatal("Fatal error in program: ", exception=True)
     core.cleanup()
