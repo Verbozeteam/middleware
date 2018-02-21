@@ -37,7 +37,7 @@ class HardwareController(Selectible):
         try:
             if self.serial_port != None:
                 self.serial_port.close()
-        except Exception as e:
+        except:
             Log.warning("Failed to safely close serial port communication for device {}".format(self.serial_number), exception=True)
 
         self.hw_manager.deregister_controller(self)

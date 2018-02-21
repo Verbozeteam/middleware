@@ -14,7 +14,7 @@ class TCPHostedSocket(Selectible):
         self.ip = ip
         self.sock = TCPHostedSocket.create_server_socket(self.ip)
         if self.sock == None:
-            raise 1
+            raise Exception(1)
         self.initialize_selectible_fd(self.sock)
 
         self.controller_class = TCPSocketController
@@ -113,7 +113,7 @@ class TCPSocketConnectionManager(ConnectionManager):
         for i in netifaces.interfaces():
             try:
                 ip = netifaces.ifaddresses(i)[netifaces.AF_INET][0]['addr']
-                sip = ip.split('.')
+                # sip = ip.split('.')
                 if i in CONTROLLERS_CONFIG.SOCKET_HOSTING_INTERCACES:
                     ifaces.append((i, ip))
             except: pass
