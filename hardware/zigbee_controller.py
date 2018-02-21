@@ -21,6 +21,7 @@ from hardware.arduino_controller import ArduinoController, ArduinoProtocol
 from logs import Log
 
 import struct
+import time
 
 DELIMITER = 0x7E
 ILLEGAL_CHARACTERS = [0x7E, 0x7D, 0x11, 0x13]
@@ -95,8 +96,10 @@ class ZigbeeController(HardwareController):
         self.m_remoteZigbees = {} # address -> Remote zigbees connected to this zigbee
         self.m_frameNumber = 1
         self.m_readBuffer = bytearray([])
-        Log.hammoud("Zigbee was found!")
         super(ZigbeeController, self).__init__(hw_manager, comport, baud=9600, fake_serial_port=fake_serial_port)
+
+        Log.info("Zigbee attached, starting setup...")
+        self.setupZigbee()
 
         # find target addresses
         things = hw_manager.core.blueprint.get_things()
@@ -106,6 +109,18 @@ class ZigbeeController(HardwareController):
                 port_index = int(p[1:])
                 zigbee_address = int(port_index / 10) + 2
                 self.addRemote(zigbee_address)
+
+    def setupZigbee(self):
+        time.sleep(1.1)                                             # wait for command mode listening to start
+        self.write_to_fd(map(lambda c: ord(c), list('+++')))        # enter command mode
+        time.sleep(1.1)                                             # wait for command mode to activate
+        self.write_to_fd(map(lambda c: ord(c), list('ATMY 1\r')))   # master address is always 1
+        self.write_to_fd(map(lambda c: ord(c), list('ATCH C\r')))   # channel 0xC
+        self.write_to_fd(map(lambda c: ord(c), list('ATID 3332\r')))# PanID 0x3332
+        self.write_to_fd(map(lambda c: ord(c), list('ATAP 2\r')))   # AP mode -> API mode with escaped characters
+        self.write_to_fd(map(lambda c: ord(c), list('ATCN\r')))     # end command mode
+        self.on_read_ready(0)
+        self.m_readBuffer = bytearray([]) # clear buffer
 
     def addRemote(self, addr):
         if addr not in self.m_remoteZigbees:
