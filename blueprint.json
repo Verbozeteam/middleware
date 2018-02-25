@@ -28,6 +28,12 @@
                     },
                     "switch_port": "d37"
                 }, {
+                    "category": "water_fountains",
+                    "name": {
+                        "en": "Water Fountain"
+                    },
+                    "switch_port": "d24"
+                }, {
                     "category": "light_switches",
                     "name": {
                         "en": "Light switch 2"
