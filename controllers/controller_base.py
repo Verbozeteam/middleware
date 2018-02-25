@@ -6,7 +6,8 @@ class Controller(Selectible):
         self.manager = controllers_manager
         self.manager.register_controller(self)
         self.cache = {} # thing_id -> thing state
-        self.things_listening = None # a list of things this Controller listens to (None means all)
+        self.things_listening = [] # a list of things this Controller listens to (None means all)
+        self.things_listening = None # set to [] then to None to fool the linter
         Log.info("Controller connected: {}".format(str(self)))
 
     def destroy_selectible(self):
