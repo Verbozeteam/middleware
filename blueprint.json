@@ -66,6 +66,20 @@
                     },
                     "dimmer_port": "d6"
                 }]
+            }, {
+                "ratio": 3,
+                "name": {
+                    "en": "Curtains",
+                    "ar": "التكaييف"
+                },
+                "things": [{
+                    "category": "curtains",
+                    "name": {
+                        "en": "Curtain 1"
+                    },
+                    "up_port": "d26",
+                    "down_port": "d27"
+                }]
             }]
         }, {
             "ratio": 1,
