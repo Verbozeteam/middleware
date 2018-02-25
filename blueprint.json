@@ -28,12 +28,6 @@
                     },
                     "switch_port": "d37"
                 }, {
-                    "category": "water_fountains",
-                    "name": {
-                        "en": "Water Fountain"
-                    },
-                    "switch_port": "d24"
-                }, {
                     "category": "light_switches",
                     "name": {
                         "en": "Light switch 2"
@@ -111,6 +105,19 @@
                     "do_not_disturb_port": "d29",
                     "room_service_port": "d28",
                     "card_in_state": 0
+                }]
+            }, {
+                "ratio": 1,
+                "name": {
+                    "en": "Water fountains",
+                    "ar": "النوافير"
+                },
+                "things": [{
+                    "category": "water_fountains",
+                    "name": {
+                        "en": "Water Fountain"
+                    },
+                    "switch_port": "d24"
                 }]
             }]
         }],
