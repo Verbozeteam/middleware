@@ -29,11 +29,15 @@ ESCAPE_CHARACTER = 0x7D
 UNESCAPE_CHARACTER = 0x20
 
 class RemoteZigbee(ArduinoController):
-    def __init__(self, master, addr):
+    def __init__(self, master, addr16, addr64):
         self.master = master
-        self.address = addr
+        self.address16 = addr16
+        self.address64 = addr64
         self.hw_manager = master.hw_manager
         self.my_pin_offset = 0#-(addr-2) * 10 # zigbee address 0x2 takes pins 0-9, zigbee address 0x3 tages 10-19, etc...
+        self.max_digital_outputs = 10
+        self.max_analog_outputs = 10
+        self.max_virtual_outputs = 10
 
         self.read_buffer = bytearray([])
         self.half_sync = False
@@ -44,7 +48,7 @@ class RemoteZigbee(ArduinoController):
         self.is_initialized = False
 
     def write_to_fd(self, data):
-        self.master.zigbeeTx(self.address, data)
+        self.master.zigbeeTx(self.address16, self.address64, data)
 
     def update(self, cur_time_s):
         try:
@@ -63,13 +67,14 @@ class RemoteZigbee(ArduinoController):
         return True
 
     def initialize_board(self):
-        ArduinoProtocol.set_pin_ranges(self.my_pin_offset, 10, self.my_pin_offset, 10, self.my_pin_offset, 10)
+        ArduinoProtocol.set_pin_ranges(self.my_pin_offset, self.max_digital_outputs, self.my_pin_offset, self.max_analog_outputs, self.my_pin_offset, self.max_virtual_outputs)
         super(RemoteZigbee, self).initialize_board()
         ArduinoProtocol.set_pin_ranges(0, -1, 0, -1, 0, -1)
+        self.master.clear_cache() # clear master cache to allow messages to pass through to self
 
     def set_port_value(self, port, value):
         if self.is_in_sync():
-            ArduinoProtocol.set_pin_ranges(self.my_pin_offset, 10, self.my_pin_offset, 10, self.my_pin_offset, 10)
+            ArduinoProtocol.set_pin_ranges(self.my_pin_offset, self.max_digital_outputs, self.my_pin_offset, self.max_analog_outputs, self.my_pin_offset, self.max_virtual_outputs)
             self.write_to_fd(ArduinoProtocol.create_set_pin_output(port, value))
             ArduinoProtocol.set_pin_ranges(0, -1, 0, -1, 0, -1)
 
@@ -83,7 +88,7 @@ class RemoteZigbee(ArduinoController):
         return True
 
     def on_message(self, message_type, message):
-        ArduinoProtocol.set_pin_ranges(-self.my_pin_offset, 10, -self.my_pin_offset, 10, -self.my_pin_offset, 10)
+        ArduinoProtocol.set_pin_ranges(self.my_pin_offset, self.max_digital_outputs, self.my_pin_offset, self.max_analog_outputs, self.my_pin_offset, self.max_virtual_outputs)
         ret = super(RemoteZigbee, self).on_message(message_type, message)
         ArduinoProtocol.set_pin_ranges(0, -1, 0, -1, 0, -1)
         return ret
@@ -94,7 +99,10 @@ class RemoteZigbee(ArduinoController):
 class ZigbeeController(HardwareController):
     def __init__(self, hw_manager, comport, fake_serial_port=None):
         self.m_remoteZigbees = {} # address -> Remote zigbees connected to this zigbee
-        self.m_frameNumber = 1
+        self.m_frameNumber = 0
+        self.m_maxRetries = 3
+        self.m_outboundMessages = {0: (0, 0, None)} # frame # -> (addTo16, attemptsLeft, zigbee command) dictionary. Fill 0 with None to make the frame number unselectible
+        self.m_queuedMessages = [] # list of (addr16, addr64, data) tuples that are queued to be sent due to lack of empty frame number
         self.m_readBuffer = bytearray([])
         super(ZigbeeController, self).__init__(hw_manager, comport, baud=9600, fake_serial_port=fake_serial_port)
 
@@ -102,22 +110,11 @@ class ZigbeeController(HardwareController):
         self.is_setup = False
         self.setupZigbee()
 
-        # find target addresses
-        # things = hw_manager.core.blueprint.get_things()
-        # for T in things:
-        #     all_ports = list(T.input_ports.keys()) + list(T.output_ports.keys())
-        #     for p in all_ports:
-        #         port_index = int(p[1:])
-        #         zigbee_address = int(port_index / 10) + 2
-        #         self.addRemote(zigbee_address)
-
     def setupZigbee(self):
         time.sleep(1.1)                                                         # wait for command mode listening to start
         self.write_to_fd(bytearray(map(lambda c: ord(c), list('+++'))))         # enter command mode
         self.on_write_ready(0)                                                  # flush out the command
         time.sleep(1.1)                                                         # wait for command mode to activate
-        self.on_read_ready(0)
-        self.m_readBuffer = bytearray([]) # clear the buffer
         commands = [
             "ATCE 1",           # set as coordinator
             "ATAP 2",           # AP mode -> API mode with escaped characters
@@ -129,38 +126,49 @@ class ZigbeeController(HardwareController):
         for cmd in commands:
             self.write_to_fd(bytearray(map(lambda c: ord(c), list(cmd+'\r'))))
         self.on_write_ready(0) # flush out all above commands
-        expected_buffer = bytearray(map(lambda c: ord(c), list('OK\r' * len(commands))))
-        numAttempts = 5
-        while len(self.m_readBuffer) < len(expected_buffer) and numAttempts > 0:
-            time.sleep(0.1)
+        ok_status = 'OK\r'.encode('utf-8')
+        numAttempts = 10
+        while numAttempts > 0 and len(self.m_readBuffer.split(ok_status))-1 != len(commands)+1:
+            time.sleep(0.2)
             self.on_read_ready(0)
             numAttempts -= 1
 
-        if len(self.m_readBuffer) < len(expected_buffer) or expected_buffer != self.m_readBuffer[:len(expected_buffer)]:
+        if len(self.m_readBuffer.split(ok_status))-1 != len(commands)+1:
             Log.error('Failed to setup zigbee: {}'.format(self.m_readBuffer))
         else:
             Log.info('Zigbee setup complete')
-            self.m_readBuffer = self.m_readBuffer[len(expected_buffer):] # clear buffer
+            self.m_readBuffer = self.m_readBuffer.replace(ok_status, bytearray([])) # remove status from buffer
             self.is_setup = True
 
-    def addRemote(self, addr):
-        if addr not in self.m_remoteZigbees:
-            Log.info("Adding zigbee address {}".format(str(addr)))
-            self.m_remoteZigbees[addr] = RemoteZigbee(self, addr)
+    def addRemote(self, addr16, addr64):
+        if addr16 not in self.m_remoteZigbees:
+            Log.info("Adding zigbee address16 0x%x address64 0x%x" % (addr16, addr64))
+            self.m_remoteZigbees[addr16] = RemoteZigbee(self, addr16, addr64)
+            self.clear_cache() # let cache updates pass through
 
     def initiateDiscovery(self):
-        self.zigbeeTx(0xFFFF, [ord('D')])
+        self.zigbeeTx(0xFFFE, 0x0000FFFF, [ord('D')])
 
-    def zigbeeTx(self, addrTo, data):
-        addrTo = 0xFFFF
+    def zigbeeTx(self, addrTo16, addrTo64, data):
+        addrTo16 = 0xFFFE # this means use the 64 bit address
         # Create an API frame targeting addrTo and escape and stuff
         # [0x10, frameID, broadcastMode, ADDR MSB, ADDR LSB, radius, options, DATA]
         if len(data) > 0:
-            buf = bytearray([0x10, self.m_frameNumber, 0, 0, 0, 0, 0, 0, 0xFF, 0xFF, (addrTo >> 8) & 0xFF, addrTo & 0xFF, 0, 0]) + bytearray(data)
-            self.m_frameNumber += 1
-            if self.m_frameNumber == 256:
-                self.m_frameNumber = 1
+            startNum = self.m_frameNumber
+            self.m_frameNumber = (self.m_frameNumber + 1) % 256
+            while self.m_frameNumber in self.m_outboundMessages:
+                self.m_frameNumber = (self.m_frameNumber + 1) % 256
+                if self.m_frameNumber == startNum: # cannot find a free frame number. queue the message
+                    self.m_queuedMessages.append((addrTo16, addrTo64, data))
+                    return
 
+            buf = bytearray([0x10, self.m_frameNumber,
+                (addrTo64 >> 56) & 0xFF, (addrTo64 >> 48) & 0xFF, (addrTo64 >> 40) & 0xFF, (addrTo64 >> 32) & 0xFF, (addrTo64 >> 24) & 0xFF, (addrTo64 >> 16) & 0xFF, (addrTo64 >> 8) & 0xFF, addrTo64 & 0xFF,
+                (addrTo16 >> 8) & 0xFF, addrTo16 & 0xFF,
+                0, 0]) + bytearray(data)
+            self.m_outboundMessages[self.m_frameNumber] = (addrTo16, self.m_maxRetries, buf)
+
+            Log.hammoud("TXing [{}]: {}".format(buf[1], list(buf)))
             self.zigbeeAPICall(buf)
 
     def zigbeeChecksum(self, data):
@@ -206,10 +214,15 @@ class ZigbeeController(HardwareController):
             to_be_removed = []
             for remote in self.m_remoteZigbees.values():
                 if not remote.update(cur_time_s):
-                    to_be_removed.append(remote.address)
+                    to_be_removed.append(remote.address16)
 
             for remote in to_be_removed:
                 del self.m_remoteZigbees[remote]
+                # delete all outbound and queued messages for that zigbee
+                for frameId in list(self.m_outboundMessages.keys()):
+                    if self.m_outboundMessages[frameId][0] == remote:
+                        del self.m_outboundMessages[frameId]
+
         except:
             Log.error("", exception=True)
 
@@ -227,15 +240,30 @@ class ZigbeeController(HardwareController):
                 discoveryStatus = frame[6]
                 if status != 0:
                     Log.warning("Failed to send message [{}]: ({} attempts) (status={}) (discovery status={})".format(frameId, retryCount, status, discoveryStatus))
+                    if frameId in self.m_outboundMessages:
+                        (_, retries, msg) = self.m_outboundMessages[frameId]
+                        if retries == 0: # too many retries, stop trying
+                            del self.m_outboundMessages
+                        else:
+                            self.m_outboundMessages[frameId][1] = retries - 1
+                            self.zigbeeAPICall(msg)
+                else:
+                    if frameId in self.m_outboundMessages:
+                        del self.m_outboundMessages[frameId]
+                        if len(self.m_queuedMessages) > 0:
+                            (addr16, addr64, data) = self.m_queuedMessages[0]
+                            self.m_queuedMessages = self.m_queuedMessages[1:]
+                            self.zigbeeTx(addr16, addr64, data)
+
             elif cmdID == 0x90 and len(frame) >= 13: # Rx
                 addr64 = 0
                 for i in range(1, 9):
-                    addr64 |= (frame[i] & 0xFF) << ((8-i+1) * 8)
+                    addr64 |= (frame[i] & 0xFF) << ((8-i) * 8)
                 addr16 = ((frame[9] & 0xFF) << 8) | (frame[10] & 0xFF)
                 # options = frame[11]
                 data = frame[12:]
                 if addr16 not in self.m_remoteZigbees:
-                    self.addRemote(addr16)
+                    self.addRemote(addr16, addr64)
                 self.m_remoteZigbees[addr16].on_read_ready(data, cur_time_s)
             else:
                 Log.warning("Unexpected code {}: {}".format(cmdID, list(frame)))

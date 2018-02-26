@@ -3,11 +3,6 @@ from logs import Log
 
 import struct
 
-# 8-byte sequence that represents a sequence sent periodically by the Arduino
-# to sync the communication
-FULL_SYNC_SEQUENCE = bytearray([254, 6, 253, 11, 76, 250, 250, 255])
-SYNC_SEQUENCE = bytearray([254, 6, 252, 11, 76, 250, 250, 255])
-
 class MESSAGE_TYPE:
     SYNC_SEQUENCE                   = 254
 
@@ -53,6 +48,14 @@ class VIRTUAL_PIN_TYPE:
     ISR_LIGHT   = 1
 
 class ArduinoProtocol:
+    # 8-byte sequence that represents a sequence sent periodically by the Arduino
+    # to sync the communication
+    FULL_SYNC_SEQUENCE = bytearray([254, 6, 253, 11, 76, 250, 250, 255])
+    SYNC_SEQUENCE = bytearray([254, 6, 252, 11, 76, 250, 250, 255])
+
+    VALID_MESSAGE_TYPES = list(map(lambda attr: getattr(MESSAGE_TYPE, attr), filter(lambda di: type(getattr(MESSAGE_TYPE, di)) == type(int), dir(MESSAGE_TYPE))))
+    MAX_MESSAGE_LEN = 20 # max length of a legit message. best value should be as tight as possible
+
     pin_offsets = {0: 0, 1: 0, 2: 0} # offset of pins (digital, analog, virtual)
     pin_ranges = {0: -1, 1: -1, 2: -1} # maximum pin index allowed (-1 for no maximum)
 
@@ -168,7 +171,7 @@ class ArduinoController(HardwareController):
                         self.write_to_fd(ArduinoProtocol.create_set_pin_mode(port, thing.output_ports[port]))
         except:
             Log.fatal("Failed to initalize board!", exception=True)
-        self.cache = {} # clear cache so things can be written to the board
+        self.clear_cache() # clear cache so things can be written to the board
         self.is_initialized = True
 
     # Checks or sets the sync state with the controller
@@ -179,6 +182,7 @@ class ArduinoController(HardwareController):
             self.half_sync = set_to
             self.full_sync = set_to
             if set_to == False:
+                self.read_buffer = bytearray([]) # no sync -> empty read buffer
                 self.sync_send_timer = 0
                 self.sync_send_period = 1
                 self.is_initialized = False
@@ -190,19 +194,17 @@ class ArduinoController(HardwareController):
     # Synchronizes the read buffer with the Arduino if its not already in sync.
     # returns True if the buffer is in sync, False otherwise
     def sync_input_buffer(self, cur_time_s):
-        global SYNC_SEQUENCE, FULL_SYNC_SEQUENCE
-
         if cur_time_s >= self.sync_send_timer:
             self.sync_send_timer = cur_time_s + self.sync_send_period
-            self.write_to_fd(FULL_SYNC_SEQUENCE if self.half_sync else SYNC_SEQUENCE)
+            self.write_to_fd(ArduinoProtocol.FULL_SYNC_SEQUENCE if self.half_sync else ArduinoProtocol.SYNC_SEQUENCE)
             Log.hammoud("ArduinoController::sync_input_buffer() wrote a sync sequence {}".format("full" if self.full_sync else ("half" if self.half_sync else "NO SYNC")))
 
-        while not self.full_sync and len(self.read_buffer) >= len(SYNC_SEQUENCE):
+        while not self.full_sync and len(self.read_buffer) >= len(ArduinoProtocol.SYNC_SEQUENCE):
             found_sync = False
-            for sync_start in range(0, len(self.read_buffer) - len(SYNC_SEQUENCE) + 1):
+            for sync_start in range(0, len(self.read_buffer) - len(ArduinoProtocol.SYNC_SEQUENCE) + 1):
                 is_sync_start = True # Whether sync_start is where a sync sequence starts
-                for sync_index in range(len(SYNC_SEQUENCE)):
-                    if self.read_buffer[sync_start+sync_index] != SYNC_SEQUENCE[sync_index] and self.read_buffer[sync_start+sync_index] != FULL_SYNC_SEQUENCE[sync_index]:
+                for sync_index in range(len(ArduinoProtocol.SYNC_SEQUENCE)):
+                    if self.read_buffer[sync_start+sync_index] != ArduinoProtocol.SYNC_SEQUENCE[sync_index] and self.read_buffer[sync_start+sync_index] != ArduinoProtocol.FULL_SYNC_SEQUENCE[sync_index]:
                         is_sync_start = False # Not the right sequence
                         break
                 if is_sync_start:
@@ -210,8 +212,8 @@ class ArduinoController(HardwareController):
                     break
 
             if found_sync:
-                found_full = (self.read_buffer[sync_start:sync_start+len(SYNC_SEQUENCE)]) == FULL_SYNC_SEQUENCE
-                self.read_buffer = self.read_buffer[sync_start+len(SYNC_SEQUENCE):]
+                found_full = (self.read_buffer[sync_start:sync_start+len(ArduinoProtocol.SYNC_SEQUENCE)]) == ArduinoProtocol.FULL_SYNC_SEQUENCE
+                self.read_buffer = self.read_buffer[sync_start+len(ArduinoProtocol.SYNC_SEQUENCE):]
                 if found_full:
                     Log.hammoud("ArduinoController::sync_input_buffer() found FULL sequence")
                     self.is_in_sync(True)
@@ -222,7 +224,7 @@ class ArduinoController(HardwareController):
             else:
                 truncate_size = 0
                 for truncate_size in range(0, len(self.read_buffer)):
-                    if self.read_buffer[truncate_size] == SYNC_SEQUENCE[0]:
+                    if self.read_buffer[truncate_size] == ArduinoProtocol.SYNC_SEQUENCE[0]:
                         break
                 # truncate the beginning of the read buffer
                 self.read_buffer = self.read_buffer[truncate_size:]
@@ -245,6 +247,8 @@ class ArduinoController(HardwareController):
                     # Failed to understand the message, need to sync again
                     self.is_in_sync(False)
                     break
+            elif msg_len > ArduinoProtocol.MAX_MESSAGE_LEN or msg_type not in ArduinoProtocol.VALID_MESSAGE_TYPES:
+                self.is_in_sync(False)
             else:
                 break
         return True
@@ -254,9 +258,8 @@ class ArduinoController(HardwareController):
     # message      The contents of the message
     # returns      True if the message is valid, False otherwise
     def on_message(self, message_type, message):
-        global SYNC_SEQUENCE, FULL_SYNC_SEQUENCE
-        if message_type == SYNC_SEQUENCE[0]: # This message is just a SYNC sequence
-            return message == FULL_SYNC_SEQUENCE[2:]
+        if message_type == MESSAGE_TYPE.SYNC_SEQUENCE: # This message is just a SYNC sequence
+            return message == ArduinoProtocol.FULL_SYNC_SEQUENCE[2:]
         return ArduinoProtocol.on_message(self, message_type, message)
 
     def update(self, cur_time_s):

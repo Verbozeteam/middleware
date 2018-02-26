@@ -31,6 +31,10 @@ class HardwareController(Selectible):
 
         Log.info("Device attached: {}".format(self.serial_number))
 
+    # Clears the cache on this device
+    def clear_cache(self):
+        self.cache = {}
+
     # called when the device is detached, before the manager destroys it
     def destroy_selectible(self):
         super(HardwareController, self).destroy_selectible()
