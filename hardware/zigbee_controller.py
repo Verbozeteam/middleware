@@ -23,10 +23,11 @@ from logs import Log
 import struct
 import time
 
-DELIMITER = 0x7E
-ILLEGAL_CHARACTERS = [0x7E, 0x7D, 0x11, 0x13]
-ESCAPE_CHARACTER = 0x7D
-UNESCAPE_CHARACTER = 0x20
+class ZigbeeProtocol:
+    DELIMITER = 0x7E
+    ILLEGAL_CHARACTERS = [0x7E, 0x7D, 0x11, 0x13]
+    ESCAPE_CHARACTER = 0x7D
+    UNESCAPE_CHARACTER = 0x20
 
 class RemoteZigbee(ArduinoController):
     def __init__(self, master, addr16, addr64):
@@ -183,22 +184,20 @@ class ZigbeeController(HardwareController):
         return s == 0xFF
 
     def zigbeeEscape(self, arr):
-        global ILLEGAL_CHARACTERS, UNESCAPE_CHARACTER
         newarr = []
         for b in arr:
-            if b in ILLEGAL_CHARACTERS:
-                newarr += [0x7D, b ^ UNESCAPE_CHARACTER]
+            if b in ZigbeeProtocol.ILLEGAL_CHARACTERS:
+                newarr += [0x7D, b ^ ZigbeeProtocol.UNESCAPE_CHARACTER]
             else:
                 newarr += [b]
         return bytearray(newarr)
 
     def zigbeeAPICall(self, cmd):
-        global DELIMITER
         msb = (len(cmd) >> 8) & 0xFF
         lsb = (len(cmd)     ) & 0xFF
         checksum = self.zigbeeChecksum(cmd)
 
-        self.write_to_fd(bytearray([DELIMITER]) + self.zigbeeEscape([msb, lsb] + list(cmd) + [checksum]))
+        self.write_to_fd(bytearray([ZigbeeProtocol..DELIMITER]) + self.zigbeeEscape([msb, lsb] + list(cmd) + [checksum]))
 
     def update(self, cur_time_s):
         if not self.is_setup:
@@ -271,7 +270,6 @@ class ZigbeeController(HardwareController):
             Log.warning("Checksum failed!")
 
     def process_read_buffer(self, cur_time_s):
-        global ESCAPE_CHARACTER, UNESCAPE_CHARACTER
         # find zigbee frames in self.m_readBuffer and interpret them
         # send zigbee-specific stuff to the respective self.m_remoteZigbees
         while len(self.m_readBuffer) > 0:
@@ -286,8 +284,8 @@ class ZigbeeController(HardwareController):
                 cur_pos += 1
                 if cur_pos >= len(self.m_readBuffer):
                     break
-                if len_msb == ESCAPE_CHARACTER:
-                    len_msb = self.m_readBuffer[cur_pos] ^ UNESCAPE_CHARACTER
+                if len_msb == ZigbeeProtocol.ESCAPE_CHARACTER:
+                    len_msb = self.m_readBuffer[cur_pos] ^ ZigbeeProtocol.UNESCAPE_CHARACTER
                     cur_pos += 1
                 if cur_pos >= len(self.m_readBuffer):
                     break
@@ -296,8 +294,8 @@ class ZigbeeController(HardwareController):
                 cur_pos += 1
                 if cur_pos >= len(self.m_readBuffer):
                     break
-                if len_lsb == ESCAPE_CHARACTER:
-                    len_lsb = self.m_readBuffer[cur_pos] ^ UNESCAPE_CHARACTER
+                if len_lsb == ZigbeeProtocol.ESCAPE_CHARACTER:
+                    len_lsb = self.m_readBuffer[cur_pos] ^ ZigbeeProtocol.UNESCAPE_CHARACTER
                     cur_pos += 1
                 if cur_pos >= len(self.m_readBuffer):
                     break
@@ -312,10 +310,10 @@ class ZigbeeController(HardwareController):
                         break
                     content_and_checksum.append(self.m_readBuffer[cur_pos])
                     cur_pos += 1
-                    if content_and_checksum[-1] == ESCAPE_CHARACTER:
+                    if content_and_checksum[-1] == ZigbeeProtocol.ESCAPE_CHARACTER:
                         if cur_pos >= len(self.m_readBuffer):
                             break
-                        content_and_checksum[-1] = self.m_readBuffer[cur_pos] ^ UNESCAPE_CHARACTER
+                        content_and_checksum[-1] = self.m_readBuffer[cur_pos] ^ ZigbeeProtocol.UNESCAPE_CHARACTER
                         cur_pos += 1
                     i += 1
                 if i != content_len + 1:
