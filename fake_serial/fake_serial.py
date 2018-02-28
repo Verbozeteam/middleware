@@ -2,8 +2,9 @@ import socket
 import select
 
 from config.general_config import GENERAL_CONFIG
+from config.hardware_config import HARDWARE_CONFIG
 
-class Serial(object):
+class FakeSerial(object):
     def __init__(self):
         self.sock = None
         self.buffered_bytes = bytearray([])
@@ -48,11 +49,40 @@ class Serial(object):
             return super(Serial, self).__getattribute__(name)
 
 class FakeComPort:
-    def __init__(self):
-        self.serial_number = "123456789"
-        self.vendor = GENERAL_CONFIG.SIMULATED_BOARD_NAME
-        self.device = GENERAL_CONFIG.SIMULATED_BOARD_NAME
+    def __init__(self, serial, vendor, device):
+        self.serial_number = serial
+        self.vendor = vendor
+        self.device = device
 
-def comports():
-    return [FakeComPort()]
+def fake_comports():
+    return [FakeComPort("123456789", GENERAL_CONFIG.SIMULATED_BOARD_NAME, GENERAL_CONFIG.SIMULATED_BOARD_NAME)]
 
+if GENERAL_CONFIG.SIMULATE_ARDUINO:
+    Serial = FakeSerial
+    comports = fake_comports
+else:
+    from serial.tools.list_ports import comports
+    from serial import Serial
+
+EXTRA_FAKE_PORTS = []
+
+if HARDWARE_CONFIG.SERIAL_PORTS:
+    ports = HARDWARE_CONFIG.SERIAL_PORTS.split(',')
+    for port in ports:
+        (vendor, device) = port.split(':')
+        vendor = vendor.strip()
+        device = device.strip()
+        EXTRA_FAKE_PORTS.append(FakeComPort('fake-'+device, vendor, device))
+
+original_comports = comports
+def override_comports():
+    ports = original_comports()
+    reserved_devices = list(map(lambda fcp: fcp.device, EXTRA_FAKE_PORTS))
+    filtered = []
+    for p in ports:
+        if p.device not in reserved_devices:
+            filtered.append(p)
+
+    return filtered + EXTRA_FAKE_PORTS
+
+comports = override_comports

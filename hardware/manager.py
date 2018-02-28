@@ -33,6 +33,7 @@ class HardwareManager(object):
             try:
                 self.update_timer = cur_time_s + HARDWARE_CONFIG.UPDATE_INTERVAL
                 com_ports = dict(map(lambda com_port: (com_port.serial_number, com_port), fake_serial.comports()))
+                print (com_ports)
                 registered_serials = list(self.connected_controllers.keys())
                 all_identified_serials = []
                 for controller_type in self.controller_types:
