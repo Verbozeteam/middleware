@@ -84,8 +84,6 @@ class ArduinoProtocol:
         pin_index = int(pin[1:]) + ArduinoProtocol.pin_offsets[pin_type]
         if pin_index < 0 or (pin_index >= ArduinoProtocol.pin_ranges[pin_type] and ArduinoProtocol.pin_ranges[pin_type] != -1):
             return bytearray([])
-        print ("=====mode=======", pin, mode)
-        print (list(struct.pack('BBBBB', 1, 3, pin_type, pin_index, mode)))
         return struct.pack('BBBBB', 1, 3, pin_type, pin_index, mode)
 
     @staticmethod
@@ -102,8 +100,6 @@ class ArduinoProtocol:
         pin_index = int(pin[1:]) + ArduinoProtocol.pin_offsets[pin_type]
         if pin_index < 0 or (pin_index >= ArduinoProtocol.pin_ranges[pin_type] and ArduinoProtocol.pin_ranges[pin_type] != -1):
             return bytearray([])
-        print ("============", pin, output)
-        print (list(struct.pack('BBBBB', 3, 3, pin_type, pin_index, output)))
         return struct.pack('BBBBB', 3, 3, pin_type, pin_index, output)
 
     @staticmethod
