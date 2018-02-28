@@ -18,6 +18,7 @@
 
 from hardware.controller_base import HardwareController
 from hardware.arduino_controller import ArduinoController, ArduinoProtocol
+from things.blueprint import RemoteBoard
 from logs import Log
 
 import struct
@@ -30,15 +31,12 @@ class ZigbeeProtocol:
     UNESCAPE_CHARACTER = 0x20
 
 class RemoteZigbee(ArduinoController):
-    def __init__(self, master, addr16, addr64):
+    def __init__(self, master, addr16, addr64, remoteBoardDefintion):
         self.master = master
         self.address16 = addr16
         self.address64 = addr64
         self.hw_manager = master.hw_manager
-        self.my_pin_offset = 0#-(addr-2) * 10 # zigbee address 0x2 takes pins 0-9, zigbee address 0x3 tages 10-19, etc...
-        self.max_digital_outputs = 10
-        self.max_analog_outputs = 10
-        self.max_virtual_outputs = 10
+        self.definition = remoteBoardDefintion
 
         self.read_buffer = bytearray([])
         self.half_sync = False
@@ -68,14 +66,20 @@ class RemoteZigbee(ArduinoController):
         return True
 
     def initialize_board(self):
-        ArduinoProtocol.set_pin_ranges(self.my_pin_offset, self.max_digital_outputs, self.my_pin_offset, self.max_analog_outputs, self.my_pin_offset, self.max_virtual_outputs)
+        ArduinoProtocol.set_pin_ranges(
+            -self.definition.digital_port_start_range, self.definition.num_digital_ports,
+            -self.definition.analog_port_start_range, self.definition.num_analog_ports,
+            -self.definition.virtual_port_start_range, self.definition.num_virtual_ports)
         super(RemoteZigbee, self).initialize_board()
         ArduinoProtocol.set_pin_ranges(0, -1, 0, -1, 0, -1)
         self.master.clear_cache() # clear master cache to allow messages to pass through to self
 
     def set_port_value(self, port, value):
         if self.is_in_sync():
-            ArduinoProtocol.set_pin_ranges(self.my_pin_offset, self.max_digital_outputs, self.my_pin_offset, self.max_analog_outputs, self.my_pin_offset, self.max_virtual_outputs)
+            ArduinoProtocol.set_pin_ranges(
+                -self.definition.digital_port_start_range, self.definition.num_digital_ports,
+                -self.definition.analog_port_start_range, self.definition.num_analog_ports,
+                -self.definition.virtual_port_start_range, self.definition.num_virtual_ports)
             self.write_to_fd(ArduinoProtocol.create_set_pin_output(port, value))
             ArduinoProtocol.set_pin_ranges(0, -1, 0, -1, 0, -1)
 
@@ -89,7 +93,10 @@ class RemoteZigbee(ArduinoController):
         return True
 
     def on_message(self, message_type, message):
-        ArduinoProtocol.set_pin_ranges(self.my_pin_offset, self.max_digital_outputs, self.my_pin_offset, self.max_analog_outputs, self.my_pin_offset, self.max_virtual_outputs)
+        ArduinoProtocol.set_pin_ranges(
+            -self.definition.digital_port_start_range, self.definition.num_digital_ports,
+            -self.definition.analog_port_start_range, self.definition.num_analog_ports,
+            -self.definition.virtual_port_start_range, self.definition.num_virtual_ports)
         ret = super(RemoteZigbee, self).on_message(message_type, message)
         ArduinoProtocol.set_pin_ranges(0, -1, 0, -1, 0, -1)
         return ret
@@ -143,9 +150,14 @@ class ZigbeeController(HardwareController):
 
     def addRemote(self, addr16, addr64):
         if addr16 not in self.m_remoteZigbees:
-            Log.info("Adding zigbee address16 0x%x address64 0x%x" % (addr16, addr64))
-            self.m_remoteZigbees[addr16] = RemoteZigbee(self, addr16, addr64)
+            boardDefinition = self.hw_manager.core.blueprint.get_remote_board(addr64)
+            if not boardDefinition:
+                Log.warning("Zigbee [0x%x:0x%x] trying to connect but has no board definition" % (addr16, addr64))
+                return False
+            Log.info("Adding zigbee [0x%x:0x%x]" % (addr16, addr64))
+            self.m_remoteZigbees[addr16] = RemoteZigbee(self, addr16, addr64, boardDefinition)
             self.clear_cache() # let cache updates pass through
+        return True
 
     def initiateDiscovery(self):
         self.zigbeeTx(0xFFFE, 0x0000FFFF, [ord('D')])
@@ -197,7 +209,7 @@ class ZigbeeController(HardwareController):
         lsb = (len(cmd)     ) & 0xFF
         checksum = self.zigbeeChecksum(cmd)
 
-        self.write_to_fd(bytearray([ZigbeeProtocol..DELIMITER]) + self.zigbeeEscape([msb, lsb] + list(cmd) + [checksum]))
+        self.write_to_fd(bytearray([ZigbeeProtocol.DELIMITER]) + self.zigbeeEscape([msb, lsb] + list(cmd) + [checksum]))
 
     def update(self, cur_time_s):
         if not self.is_setup:
@@ -240,11 +252,11 @@ class ZigbeeController(HardwareController):
                 if status != 0:
                     Log.warning("Failed to send message [{}]: ({} attempts) (status={}) (discovery status={})".format(frameId, retryCount, status, discoveryStatus))
                     if frameId in self.m_outboundMessages:
-                        (_, retries, msg) = self.m_outboundMessages[frameId]
+                        (a, retries, msg) = self.m_outboundMessages[frameId]
                         if retries == 0: # too many retries, stop trying
-                            del self.m_outboundMessages
+                            del self.m_outboundMessages[frameId]
                         else:
-                            self.m_outboundMessages[frameId][1] = retries - 1
+                            self.m_outboundMessages[frameId] = (a, retries - 1, msg)
                             self.zigbeeAPICall(msg)
                 else:
                     if frameId in self.m_outboundMessages:
@@ -263,7 +275,8 @@ class ZigbeeController(HardwareController):
                 data = frame[12:]
                 if addr16 not in self.m_remoteZigbees:
                     self.addRemote(addr16, addr64)
-                self.m_remoteZigbees[addr16].on_read_ready(data, cur_time_s)
+                if addr16 in self.m_remoteZigbees:
+                    self.m_remoteZigbees[addr16].on_read_ready(data, cur_time_s)
             else:
                 Log.warning("Unexpected code {}: {}".format(cmdID, list(frame)))
         else:

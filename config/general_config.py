@@ -4,6 +4,7 @@ class GENERAL_CONFIG:
     SIMULATED_BOARD_NAME = "arduino" # "FT231X USB UART" #"arduino"
     BLUEPRINT_FILENAME = "blueprint.json"
     LOG_VERBOZITY = 3
+    LOG_COLORS = False
     LOG_REGEX = None
     LOG_NUM_RUNS = 5 # will store logs for the last LOG_NUM_RUNS runs
     LOG_NUM_FILES = 5

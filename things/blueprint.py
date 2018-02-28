@@ -8,6 +8,16 @@ from config.general_config import GENERAL_CONFIG
 
 import json
 
+class RemoteBoard(object):
+    def __init__(self, address, board_json):
+        self.address = address
+        self.digital_port_start_range = board_json.get("digital_port_start_range", 0)
+        self.num_digital_ports = board_json.get("num_digital_ports", 53)
+        self.analog_port_start_range = board_json.get("analog_port_start_range", 0)
+        self.num_analog_ports = board_json.get("num_analog_ports", 16)
+        self.virtual_port_start_range = board_json.get("virtual_port_start_range", 0)
+        self.num_virtual_ports = board_json.get("num_virtual_ports", 8)
+
 class Room(object):
     def __init__(self, blueprint, room_json):
         self.things = {} # Thing id -> Thing dictionary
@@ -91,6 +101,10 @@ class Blueprint(object):
                 raise ("Dumplicate room id" + R.config["id"])
             found_room_ids[R.config["id"]] = 1
             R.load_references(self)
+        remote_boards_data = J.get("remote_boards", {"": {}})
+        self.remote_boards = {}
+        for key in remote_boards_data.keys():
+            self.remote_boards[key] = RemoteBoard(key, remote_boards_data[key])
 
     # Load a thing from a JSON config and append to to the given room
     # thing_json  JSON of the Thing config
@@ -163,3 +177,12 @@ class Blueprint(object):
                 if port in thing.input_ports or port in thing.output_ports:
                     listeners.append(thing)
         return listeners
+
+    # Retrieves a RemoteBoard object for a given board address
+    # address  64 bit address of a Zigbee (number)
+    # returns  A RemoteBoard object corresponding to that address, or None if not defined
+    def get_remote_board(self, address):
+        address = "%x" % address
+        if address in self.remote_boards:
+            return self.remote_boards[address]
+        return None

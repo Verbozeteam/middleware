@@ -13,8 +13,8 @@ class HardwareManager(object):
     def __init__(self, core):
         self.core = core
         self.connected_controllers = {} # dictionary of serial number -> hardware controller
-        self.controller_types = [
-            #ArduinoLegacyController if HARDWARE_CONFIG.LEGACY_MODE else ArduinoController,
+        self.controller_types = [] if HARDWARE_CONFIG.DISABLE_HARDWARE else [
+            ArduinoLegacyController if HARDWARE_CONFIG.LEGACY_MODE else ArduinoController,
             ZigbeeController,
         ]
 
