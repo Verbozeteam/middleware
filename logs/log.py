@@ -32,6 +32,16 @@ class VERBOZITY:
 # Singleton class to facilitate logging
 #
 class Log(object):
+    COLORS = {
+        0: 101, # background red
+        1: 31, # red
+        2: 33, # yellow
+        3: 34, # blue
+        4: 37, # light gray
+        5: 90, # dark gray
+        6: 90, # dark gray
+    }
+
     @staticmethod
     def log(log_level, *args, **kwargs):
         print_dump = kwargs.get("exception", False)
@@ -48,7 +58,14 @@ class Log(object):
                         break
                 if not found:
                     return
-            print(*args, **kwargs)
+            if GENERAL_CONFIG.LOG_COLORS:
+                code = Log.COLORS.get(log_level, 0)
+                formatted_args = []
+                for a in args:
+                    formatted_args.append("\033[{}m{}\033[0m".format(code, a))
+                print(*formatted_args, **kwargs)
+            else:
+                print(*args, **kwargs)
 
     @staticmethod
     def fatal(*args, **kwargs):

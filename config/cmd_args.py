@@ -14,6 +14,8 @@ if not hasattr(sys, '_called_from_test'):
     parser.add_argument("-s", "--simulate", action='store_true', required=False, help="Use fake serial communication to talk to arduino on socket (localhost, 9911)")
     parser.add_argument("-r", "--regex", required=False, type=str, help="Only print logging messages that match this regex")
     parser.add_argument("-i", "--interfaces", required=False, nargs='+', help="List of network interfaces to host sockets on")
+    parser.add_argument("-c", "--colors", required=False, action='store_true', help="enable printing colored logs")
+    parser.add_argument("-d", "--disable", required=False, action='store_true', help="Disables connecting to hardware")
     cmd_args = parser.parse_args()
 
     if cmd_args.verbozity: config.GENERAL_CONFIG.LOG_VERBOZITY = cmd_args.verbozity
@@ -22,5 +24,7 @@ if not hasattr(sys, '_called_from_test'):
     if cmd_args.address: config.CONTROLLERS_CONFIG.SOCKET_SERVER_BIND_IP = cmd_args.address
     if cmd_args.port: config.CONTROLLERS_CONFIG.SOCKET_SERVER_BIND_PORT = cmd_args.port
     if cmd_args.interfaces: config.CONTROLLERS_CONFIG.SOCKET_HOSTING_INTERCACES = list(cmd_args.interfaces)
+    if cmd_args.colors: config.GENERAL_CONFIG.LOG_COLORS = True
+    if cmd_args.disable: config.HARDWARE_CONFIG.DISABLE_HARDWARE = True
 
     if cmd_args.simulate: config.GENERAL_CONFIG.SIMULATE_ARDUINO = True
