@@ -181,7 +181,7 @@ class ZigbeeController(HardwareController):
                 0, 0]) + bytearray(data)
             self.m_outboundMessages[self.m_frameNumber] = (addrTo16, self.m_maxRetries, buf)
 
-            Log.hammoud("TXing [{}]: {}".format(buf[1], list(buf)))
+            Log.hammoud("TXing [{}][To {}]: {}".format(buf[1], "0x%x:0x%x" % (addrTo16, addrTo64), list(buf)))
             self.zigbeeAPICall(buf)
 
     def zigbeeChecksum(self, data):

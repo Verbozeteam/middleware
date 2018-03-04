@@ -15,19 +15,23 @@
             }, {
                 "category": "light_switches",
                 "name": "Light switch 1",
-                "switch_port": "d8"
+                "switch_port": "d10"
             }, {
                 "category": "light_switches",
                 "name": "Light switch 2",
-                "switch_port": "d9"
+                "switch_port": "d11"
             }, {
                 "category": "light_switches",
                 "name": "Light switch 3",
-                "switch_port": "d12"
+                "switch_port": "d21"
             }, {
                 "category": "light_switches",
-                "name": "Light switch 3",
-                "switch_port": "d13"
+                "name": "Light switch 4",
+                "switch_port": "d22"
+            }, {
+                "category": "light_switches",
+                "name": "Light switch 5",
+                "switch_port": "d23"
             }]
         }]
     }],
@@ -56,19 +60,19 @@
     "remote_boards": {
         "13a2004172fb7e": {
             "digital_port_start_range": 0,
-            "num_digital_ports": 10,
+            "num_digital_ports": 12,
             "analog_port_start_range": 0,
-            "num_analog_ports": 10,
+            "num_analog_ports": 12,
             "virtual_port_start_range": 0,
-            "num_virtual_ports": 10
+            "num_virtual_ports": 12
         },
         "13a20041514473": {
-            "digital_port_start_range": 10,
-            "num_digital_ports": 10,
-            "analog_port_start_range": 10,
-            "num_analog_ports": 10,
-            "virtual_port_start_range": 10,
-            "num_virtual_ports": 10
+            "digital_port_start_range": 12,
+            "num_digital_ports": 12,
+            "analog_port_start_range": 12,
+            "num_analog_ports": 12,
+            "virtual_port_start_range": 12,
+            "num_virtual_ports": 12
         }
     }
 }
