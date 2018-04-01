@@ -45,8 +45,10 @@ class Thing(object):
 
     # perform any Thing-specific logic
     # cur_time_s  Current time in seconds
+    # returns     returns whether or not another updated is required ASAP after a
+    #             select cycle
     def update(self, cur_time_s):
-        pass
+        return False
 
     # Called by the blueprint when hardware has an updated value on a port
     # port     Port that has updated its value

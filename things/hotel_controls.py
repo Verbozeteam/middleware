@@ -72,6 +72,7 @@ class HotelControls(Thing):
             things = self.blueprint.get_things()
             for thing in things:
                 thing.sleep()
+        return False
 
     def get_state(self):
         return {

@@ -22,8 +22,9 @@
                 "switch_port": "d11"
             }, {
                 "category": "light_switches",
+                "id": "ls4",
                 "name": "Light switch 3",
-                "switch_port": "d21"
+                "switch_port": "d52"
             }, {
                 "category": "light_switches",
                 "name": "Light switch 4",
@@ -32,6 +33,12 @@
                 "category": "light_switches",
                 "name": "Light switch 5",
                 "switch_port": "d23"
+            }, {
+                "category": "soft_switches",
+                "name": "LS4",
+                "switch_port": "d24",
+                "light_id": "ls4",
+                "pressed_state": 0
             }]
         }]
     }],
@@ -55,24 +62,6 @@
         "Room Service": {
             "en": "Room Service",
             "ar": "خدمات الغرفة"
-        }
-    },
-    "remote_boards": {
-        "13a2004172fb7e": {
-            "digital_port_start_range": 0,
-            "num_digital_ports": 12,
-            "analog_port_start_range": 0,
-            "num_analog_ports": 12,
-            "virtual_port_start_range": 0,
-            "num_virtual_ports": 12
-        },
-        "13a20041514473": {
-            "digital_port_start_range": 12,
-            "num_digital_ports": 12,
-            "analog_port_start_range": 12,
-            "num_analog_ports": 12,
-            "virtual_port_start_range": 12,
-            "num_virtual_ports": 12
         }
     }
 }

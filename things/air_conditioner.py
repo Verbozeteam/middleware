@@ -131,6 +131,7 @@ class CentralAC(Thing):
                         self.is_temp_rising = True
                     else:
                         self.digital_valve_output = 1
+        return False
 
     def get_state(self):
         return {
