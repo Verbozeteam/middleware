@@ -77,6 +77,7 @@ class KitchenControls(Thing):
         L = len(self.orders)
         self.orders = list(filter(lambda o: o["timeout"] < 0 or o["timeout"] > cur_time_s, self.orders))
         self.dirty = self.dirty or L != len(self.orders)
+        return False
 
     def get_state(self):
         return {

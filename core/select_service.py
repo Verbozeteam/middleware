@@ -1,4 +1,3 @@
-from config.general_config import GENERAL_CONFIG
 from logs import Log
 
 import sys
@@ -49,6 +48,8 @@ class SelectService(object):
 	# a dictionary of selectible-string -> selectible
 	selectibles = {}
 
+	select_timeout = 0
+
 	# Registers a selectible
 	# selectible  A Selectible object
 	@staticmethod
@@ -85,7 +86,7 @@ class SelectService(object):
 			return # nothing to select
 
 		try:
-			(ready_read_descriptors, ready_write_descriptors, _) = select.select(read_descriptors, write_descriptors, [], GENERAL_CONFIG.SELECT_TIMEOUT)
+			(ready_read_descriptors, ready_write_descriptors, _) = select.select(read_descriptors, write_descriptors, [], SelectService.select_timeout)
 			for D in ready_write_descriptors:
 				fd = D.fileno()
 				try:

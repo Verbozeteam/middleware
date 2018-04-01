@@ -53,7 +53,7 @@ class ArduinoProtocol:
     FULL_SYNC_SEQUENCE = bytearray([254, 6, 253, 11, 76, 250, 250, 255])
     SYNC_SEQUENCE = bytearray([254, 6, 252, 11, 76, 250, 250, 255])
 
-    VALID_MESSAGE_TYPES = list(map(lambda attr: getattr(MESSAGE_TYPE, attr), filter(lambda di: type(getattr(MESSAGE_TYPE, di)) == type(int), dir(MESSAGE_TYPE))))
+    VALID_MESSAGE_TYPES = list(map(lambda attr: getattr(MESSAGE_TYPE, attr), filter(lambda di: type(getattr(MESSAGE_TYPE, di)) == type(0), dir(MESSAGE_TYPE))))
     MAX_MESSAGE_LEN = 20 # max length of a legit message. best value should be as tight as possible
 
     pin_offsets = {0: 0, 1: 0, 2: 0} # offset of pins (digital, analog, virtual)
@@ -245,9 +245,11 @@ class ArduinoController(HardwareController):
                 self.read_buffer = self.read_buffer[2+msg_len:]
                 if not self.on_message(msg_type, msg):
                     # Failed to understand the message, need to sync again
+                    Log.error("ArduinoController:process_read_buffer() read wrong message (type={}, length={}): {}".format(msg_type, msg_len, msg))
                     self.is_in_sync(False)
                     break
             elif msg_len > ArduinoProtocol.MAX_MESSAGE_LEN or msg_type not in ArduinoProtocol.VALID_MESSAGE_TYPES:
+                Log.error("ArduinoController:process_read_buffer() wrong message type ({}) or length ({}). Read buffer: {}".format(msg_type, msg_len, str(list(self.read_buffer))))
                 self.is_in_sync(False)
             else:
                 break
