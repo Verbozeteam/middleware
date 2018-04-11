@@ -3,7 +3,7 @@ from things.curtain import Curtain
 from things.air_conditioner import SplitAC, CentralAC
 from things.hotel_controls import HotelControls
 from things.kitchen_controls import KitchenControls
-from things.soft_switch import SoftSwitch
+from things.soft_switch import SoftSwitch, TwoWaySwitch
 from logs import Log
 from config.general_config import GENERAL_CONFIG
 
@@ -79,6 +79,7 @@ class Blueprint(object):
             HotelControls,
             KitchenControls,
             SoftSwitch,
+            TwoWaySwitch,
         ]))
 
         filename = GENERAL_CONFIG.BLUEPRINT_FILENAME
