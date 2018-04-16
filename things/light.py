@@ -59,7 +59,12 @@ class LightSwitch(Thing):
 class Dimmer(Thing):
     def __init__(self, blueprint, dimmer_json):
         super(Dimmer, self).__init__(blueprint, dimmer_json)
-        self.output_ports[self.dimmer_port] = 2 # pwm output
+        if hasattr(self, "dimmer_port"):
+            self.dimmer_ports = [self.dimmer_port]
+        else:
+            self.dimmer_port = self.dimmer_ports[0]
+        for port in self.dimmer_ports:
+            self.output_ports[port] = 2 # pwm output
         self.is_isr_dimmer = "v" in self.dimmer_port # if dimmer_port is a virtual port then this is an ISR light
         self.id = dimmer_json.get("id", "dimmer-" + self.dimmer_port)
         self.intensity = 0
@@ -110,19 +115,19 @@ class Dimmer(Thing):
         }
 
     def get_hardware_state(self):
+        light_power = int(self.intensity * 2.55)
+
         if self.is_isr_dimmer:
             light_power = int(min(max(100.0 - (float(self.intensity) * (self.max_output_percentage/100.0)), 100.0-self.max_output_percentage), 100.0))
             if light_power > 85 and light_power < 97:
                 light_power = 85
             elif light_power >= 97:
                 light_power = 105 # so that zero-crossing has no way of nakba
-            return {
-                self.dimmer_port: int(light_power),
-            }
-        else:
-            return {
-                self.dimmer_port: int(self.intensity * 2.55),
-            }
+
+        state = {}
+        for port in self.dimmer_ports:
+            state[port] = int(light_power)
+        return state
 
     def get_metadata(self):
         return {
