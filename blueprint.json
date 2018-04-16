@@ -148,8 +148,8 @@
             "things": [{
                 "category": "dimmers",
                 "name": "dim dim",
-                "dimmer_port": "v1",
-                "virtual_port_data": [[1, 60, 1, 4]],
+                "dimmer_ports": ["v1", "v2", "v3"],
+                "virtual_port_data": [[1, 60, 1, 4], [2, 60, 1, 5], [2, 60, 1, 6]],
                 "default_wakeup_value": 100,
                 "max_output_percentage": 50,
                 "has_switch": 1
