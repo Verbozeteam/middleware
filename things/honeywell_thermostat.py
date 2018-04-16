@@ -10,7 +10,7 @@ class HoneywellThermostatT7560(Thing):
             self.output_ports[p] = 1
         self.id = thermostat_json.get("id", "honeywell-thermostat")
         self.current_temperature = 25
-        self.fan_speeds = ["Off", "Low", "Medium", "High", "Auto"]
+        self.fan_speeds = ["Off", "Low", "Med", "High", "Auto"]
         self.set_set_point(25)
         self.set_fan_speed(1)
 
