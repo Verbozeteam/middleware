@@ -1,93 +1,14 @@
 {
-    "id": "1",
+    "id": 1,
     "rooms": [{
         "id": "room-1",
-        "name": "QSTP Room",
+        "name": "Hyatt Demo",
         "groups": [{
-            "id": "group-1",
-            "name": "Lights",
-            "things": [{
-                "category": "dimmers",
-                "name": "dim dim",
-                "dimmer_ports": ["v1", "v2", "v3"],
-                "virtual_port_data": [[1, 60, 1, 4], [2, 60, 1, 5], [2, 60, 1, 6]],
-                "default_wakeup_value": 100,
-                "max_output_percentage": 50,
-                "has_switch": 1
-            }, {
-                "category": "light_switches",
-                "name": "Light switch 1",
-                "switch_port": "d37"
-            }, {
-                "category": "light_switches",
-                "name": "Light switch 2",
-                "switch_port": "d36"
-            }]
-        }, {
-            "id": "group-1.5",
-            "name": "Curtains",
-            "things": [{
-                "category": "curtains",
-                "name": "Curtain 1",
-                "up_port": "d22",
-                "down_port": "d23"
-            }, {
-                "category": "curtains",
-                "name": "Curtain 2",
-                "up_port": "d24",
-                "down_port": "d25"
-            }]
-        }, {
-            "id": "group-2",
-            "name": "Bathroom",
-            "things": [{
-                "category": "light_switches",
-                "name": "Bathroom switch 1",
-                "switch_port": "d33"
-            }, {
-                "category": "light_switches",
-                "name": "Bathroom switch 2",
-                "switch_port": "d32"
-            }, {
-            }, {
-                "category": "light_switches",
-                "name": "Bathroom switch 3",
-                "switch_port": "d31"
-            }, {
-                "category": "dimmers",
-                "name": "Dimmer 3",
-                "dimmer_port": "v2",
-                "virtual_port_data": [[1, 60, 1, 5]],
-                "default_wakeup_value": 100,
-                "max_output_percentage": 50,
-                "has_switch": 1
-            }]
-        }, {
-            "id": "group-3",
+            "id": "group-4",
             "name": "Thermostat",
             "things": [{
-                "category": "central_acs",
-                "name": "Air conditioner",
-                "temperature_port": "v0",
-                "fan_low_port": "d48",
-                "fan_medium_port": "d49",
-                "fan_high_port": "d50",
-                "valve_port": "d8",
-                "smoke_detector_port": "d22",
-                "virtual_port_data": [[0, 0]]
-            }]
-        }, {
-            "id": "group-4",
-            "name": "Room Service",
-            "things": [{
-                "category": "hotel_controls",
-                "name": "Room Service",
-                "power_port": "d42",
-                "hotel_card": "d11",
-                "room_check_button": "d10",
-                "do_not_disturb_port": "d29",
-                "room_service_port": "d28",
-                "card_in_state": 0
+                "category": "honeywell_thermostat_t7560",
+                "name": "Thermostat"
             }]
         }]
     }],
@@ -110,4 +31,3 @@
         }
     }
 }
-
