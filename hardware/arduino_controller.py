@@ -44,8 +44,10 @@ class PIN_MODE:
     INPUT_PULLUP = 3
 
 class VIRTUAL_PIN_TYPE:
-    CENTRAL_AC  = 0
-    ISR_LIGHT   = 1
+    CENTRAL_AC    = 0
+    ISR_LIGHT     = 1
+    ISR_LIGHT2    = 2
+    MULTIPLEX_PIN = 3
 
 class ArduinoProtocol:
     # 8-byte sequence that represents a sequence sent periodically by the Arduino

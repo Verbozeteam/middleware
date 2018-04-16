@@ -5,6 +5,7 @@ from things.hotel_controls import HotelControls
 from things.kitchen_controls import KitchenControls
 from things.water_fountain import WaterFountain
 from things.soft_switch import SoftSwitch, TwoWaySwitch
+from things.honeywell_thermostat import HoneywellThermostatT7560
 from logs import Log
 from config.general_config import GENERAL_CONFIG
 
@@ -82,6 +83,7 @@ class Blueprint(object):
             WaterFountain,
             SoftSwitch,
             TwoWaySwitch,
+            HoneywellThermostatT7560,
         ]))
 
         filename = GENERAL_CONFIG.BLUEPRINT_FILENAME
