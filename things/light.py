@@ -119,10 +119,11 @@ class Dimmer(Thing):
 
         if self.is_isr_dimmer:
             light_power = int(min(max(100.0 - (float(self.intensity) * (self.max_output_percentage/100.0)), 100.0-self.max_output_percentage), 100.0))
-            if light_power > 85 and light_power < 97:
-                light_power = 85
-            elif light_power >= 97:
-                light_power = 105 # so that zero-crossing has no way of nakba
+            if self.virtual_port_data[0][0] == 1: # old ISR needs some regulation
+                if light_power > 85 and light_power < 97:
+                    light_power = 85
+                elif light_power >= 97:
+                    light_power = 105 # so that zero-crossing has no way of nakba
 
         state = {}
         for port in self.dimmer_ports:

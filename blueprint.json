@@ -9,6 +9,13 @@
             "things": [{
                 "category": "honeywell_thermostat_t7560",
                 "name": "Thermostat"
+            }, {
+                "category": "dimmers",
+                "name": "Master",
+                "dimmer_ports": ["v1", "v2", "v3"],
+                "virtual_port_data": [[2, 50, 0, 22], [2, 50, 0, 26], [2, 50, 0, 30]],
+                "max_output_percentage": 80,
+                "has_switch": 1
             }]
         }]
     }],
