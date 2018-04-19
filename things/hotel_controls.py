@@ -14,6 +14,8 @@ class HotelControls(Thing):
         self.output_ports[self.room_service_port] = 1 # digital output
         if hasattr(self, "room_check_button"):
             self.input_ports[self.room_check_button] = {"read_interval": 0, "is_pullup": True}
+        if hasattr(self, "bell_port"):
+            self.output_ports[self.bell_port] = 1 # digital output (bell will be disabled when DND is on)
         self.id = hotel_json.get("id", "hotel-controls-" + self.power_port)
         self.card_in = 1
         self.do_not_disturb = 0
@@ -92,8 +94,14 @@ class HotelControls(Thing):
                 dnd = self.on_state
             else:
                 rs = self.on_state
-        return {
+        state = {
             self.power_port: self.power if self.on_state == 1 else 1 - self.power,
             self.do_not_disturb_port: dnd,
             self.room_service_port: rs,
         }
+
+        # ACTIVATE bell relay if DND is on (on ACTIVE it should cut the bell circuit)
+        if hasattr(self, "bell_port"):
+            state[self.bell_port] = 1 - self.on_state if self.do_not_disturb == 1 else self.on_state
+
+        return state
