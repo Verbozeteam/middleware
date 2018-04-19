@@ -16,6 +16,26 @@
                 "virtual_port_data": [[2, 50, 0, 22], [2, 50, 0, 26], [2, 50, 0, 30]],
                 "max_output_percentage": 80,
                 "has_switch": 1
+            }, {
+                "category": "hotel_controls",
+                "name": "Room Service",
+                "power_port": "d39",
+                "hotel_card": "d35",
+                "do_not_disturb_port": "d38",
+                "room_service_port": "d40",
+                "card_in_state": 1,
+                "on_state": 0,
+                "nocard_power_timeout": 30
+            }, {
+                "category": "dnd_soft_switches",
+                "name": "DND SS",
+                "switch_port": "d50",
+                "pressed_state": 0
+            }, {
+                "category": "rs_soft_switches",
+                "name": "RS SS",
+                "switch_port": "d51",
+                "pressed_state": 0
             }]
         }]
     }],

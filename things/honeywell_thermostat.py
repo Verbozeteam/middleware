@@ -52,7 +52,7 @@ class HoneywellThermostatT7560(Thing):
 
     def set_hardware_state(self, port, value):
         super(HoneywellThermostatT7560, self).set_hardware_state(port, value)
-        if port == self.temperature_port:
+        if hasattr(self, "temperature_port") and port == self.temperature_port:
             self.current_temperature = float(value) / 4.0
         return False
 
