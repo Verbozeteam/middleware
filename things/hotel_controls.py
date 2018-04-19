@@ -6,9 +6,9 @@ class HotelControls(Thing):
     def __init__(self, blueprint, hotel_json):
         super(HotelControls, self).__init__(blueprint, hotel_json)
         self.input_ports[self.hotel_card] = {
-            "read_interval": 0,
+            "read_interval": 0, # 0 means read on-change
             "is_pullup": True,
-        } # 0 means read on-change
+        }
         self.output_ports[self.power_port] = 1 # digital output
         self.output_ports[self.do_not_disturb_port] = 1 # digital output
         self.output_ports[self.room_service_port] = 1 # digital output
@@ -35,7 +35,7 @@ class HotelControls(Thing):
 
     def sleep(self):
         super(HotelControls, self).sleep()
-        self.do_not_disturb = 0 # turn off DND on sleep
+        #self.do_not_disturb = 0 # turn off DND on sleep
 
     def set_hardware_state(self, port, value):
         super(HotelControls, self).set_hardware_state(port, value)
@@ -47,10 +47,11 @@ class HotelControls(Thing):
 
     def set_state(self, data, token_from="system"):
         super(HotelControls, self).set_state(data, token_from)
-        if "do_not_disturb" in data:
-            self.do_not_disturb = int(data["do_not_disturb"])
-        if "room_service" in data:
-            self.room_service = int(data["room_service"])
+        if self.card_in == 1: # only respond to these if the card is inserted (so if guest leaves one on before he removes card it stays - e.g. DND)
+            if "do_not_disturb" in data:
+                self.do_not_disturb = int(data["do_not_disturb"])
+            if "room_service" in data:
+                self.room_service = int(data["room_service"])
         return False
 
     def update(self, cur_time_s):
