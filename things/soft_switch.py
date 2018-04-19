@@ -79,7 +79,7 @@ class DNDSoftSwitch(SoftSwitch):
             thing = list(filter(lambda t: t.get_blueprint_tag() == "hotel_controls", self.blueprint.get_things()))
             if len(thing) > 0:
                 thing = thing[0]
-                thing.set_state({"do_not_disturb": 1 - thing.do_not_disturb})
+                thing.set_state({"do_not_disturb": 1 - thing.do_not_disturb, "room_service": 0})
 
 class RSSoftSwitch(SoftSwitch):
     def __init__(self, blueprint, switch_json):
@@ -96,4 +96,4 @@ class RSSoftSwitch(SoftSwitch):
             thing = list(filter(lambda t: t.get_blueprint_tag() == "hotel_controls", self.blueprint.get_things()))
             if len(thing) > 0:
                 thing = thing[0]
-                thing.set_state({"room_service": 1 - thing.room_service})
+                thing.set_state({"room_service": 1 - thing.room_service, "do_not_disturb": 0})
