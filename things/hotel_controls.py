@@ -102,6 +102,6 @@ class HotelControls(Thing):
 
         # ACTIVATE bell relay if DND is on (on ACTIVE it should cut the bell circuit)
         if hasattr(self, "bell_port"):
-            state[self.bell_port] = self.on_state if self.do_not_disturb == 1 else 1 - self.on_state
+            state[self.bell_port] = 1 - self.on_state if self.do_not_disturb == 1 else self.on_state
 
         return state
