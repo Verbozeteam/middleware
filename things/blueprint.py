@@ -214,7 +214,7 @@ class Blueprint(object):
                 for old_room in old_rooms:
                     translations[old_room["name"]["en"]] = old_room["name"]
                     translated_room = {
-                        "id": "room-{}".format(i),
+                        "id": old_room.get("id", "room-{}".format(i)),
                         "name": old_room["name"]["en"],
                         "groups": [],
                     }
