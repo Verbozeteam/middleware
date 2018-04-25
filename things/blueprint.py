@@ -3,12 +3,8 @@ from things.curtain import Curtain
 from things.air_conditioner import SplitAC, CentralAC
 from things.hotel_controls import HotelControls
 from things.kitchen_controls import KitchenControls
-<<<<<<< HEAD
 from things.water_fountain import WaterFountain
-from things.soft_switch import SoftSwitch, TwoWaySwitch
-=======
 from things.soft_switch import SoftSwitch, TwoWaySwitch, DNDSoftSwitch, RSSoftSwitch
->>>>>>> Implemented soft switches for DND and room service
 from things.honeywell_thermostat import HoneywellThermostatT7560
 from logs import Log
 from config.general_config import GENERAL_CONFIG
@@ -99,7 +95,7 @@ class Blueprint(object):
             Log.fatal("Cannot find blueprint file {}".format(filename))
             return
         try:
-            J = json.load(F)
+            J = self.translate_blueprint_if_old(json.load(F))
             F.close()
         except Exception as e:
             Log.fatal("Invalid blueprint: {}".format(str(e)))
@@ -199,3 +195,51 @@ class Blueprint(object):
         if address in self.remote_boards:
             return self.remote_boards[address]
         return None
+
+    # Converts a blueprint to the currently supported format if it is using any older format
+    # bp_json  JSON blueprint in the most recent format or any older format
+    # returns  JSON blueprint (translated if needed) in the most recent format
+    def translate_blueprint_if_old(self, bp_json):
+        is_old_format = True
+        try:
+            is_old_format = not reduce(lambda a,b: a or b, map(lambda room: "groups" in room, bp_json["rooms"]))
+        except: pass
+        if is_old_format:
+            Log.info("Old blueprint format detected - will attempt to translate it to the new format...")
+            try:
+                translations = {}
+                old_rooms = bp_json["rooms"]
+                bp_json["rooms"] = []
+                i = 1
+                for old_room in old_rooms:
+                    translations[old_room["name"]["en"]] = old_room["name"]
+                    translated_room = {
+                        "id": "room-{}".format(i),
+                        "name": old_room["name"]["en"],
+                        "groups": [],
+                    }
+                    i += 1
+                    gid = 1
+                    for G in old_room["grid"]:
+                        for panel in G["panels"]:
+                            translations[panel["name"]["en"]] = panel["name"]
+                            group = {
+                                "id": "group-{}".format(gid),
+                                "name": panel["name"]["en"],
+                                "things": [],
+                            }
+                            gid += 1
+                            for old_thing in panel["things"]:
+                                thing = json.loads(json.dumps(old_thing))
+                                if "name" in thing:
+                                    translations[old_thing["name"]["en"]] = old_thing["name"]
+                                    thing["name"] = thing["name"]["en"]
+                                group["things"].append(thing)
+                            translated_room["groups"].append(group)
+                    bp_json["rooms"].append(translated_room)
+                bp_json["translations"] = translations
+            except:
+                Log.error("Failed to translate blueprint - unsupported format", exception=True)
+                return {}
+        return bp_json
+
