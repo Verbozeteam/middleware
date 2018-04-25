@@ -205,7 +205,7 @@ class Blueprint(object):
             is_old_format = not reduce(lambda a,b: a or b, map(lambda room: "groups" in room, bp_json["rooms"]))
         except: pass
         if is_old_format:
-            Log.info("Old blueprint format detected - will attempt to translate it to the new format...")
+            Log.warning("Old blueprint format detected - will attempt to translate it to the new format...")
             try:
                 translations = {}
                 old_rooms = bp_json["rooms"]
