@@ -11,9 +11,13 @@ class HoneywellThermostatT7560(Thing):
         for p in self.port_array:
             self.output_ports[p] = 1
         self.id = thermostat_json.get("id", "honeywell-thermostat")
-        self.current_temperature = 25
+        if not hasattr(self, "min_temperature"):
+            self.min_temperature = 19
+        if not hasattr(self, "max_temperature"):
+            self.max_temperature = 27
+        self.current_temperature = int((self.max_temperature+self.min_temperature)/2)
         self.fan_speeds = ["Off", "Low", "Med", "High", "Auto"]
-        self.set_set_point(25)
+        self.set_set_point(self.current_temperature)
         self.set_fan_speed(1)
 
     # Should return the key in the blueprint that this Thing captures
@@ -67,5 +71,6 @@ class HoneywellThermostatT7560(Thing):
     def get_metadata(self):
         return {
             "fan_speeds": self.fan_speeds,
+            "temp_range": [self.min_temperature, self.max_temperature],
         }
 

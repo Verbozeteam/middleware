@@ -33,8 +33,12 @@ class CentralAC(Thing):
         if hasattr(self, "smoke_detector_port"): # smoke detector - when detected, stop fan
             self.input_ports[self.smoke_detector_port] = {"read_interval": 0, "is_pullup": True}
         self.id = ac_json.get("id", "central-ac-" + self.temperature_port)
-        self.current_set_point = 25
-        self.current_temperature = 25
+        if not hasattr(self, "min_temperature"):
+            self.min_temperature = 12
+        if not hasattr(self, "max_temperature"):
+            self.max_temperature = 30
+        self.current_set_point = int((self.max_temperature+self.min_temperature)/2)
+        self.current_temperature = self.current_set_point
         self.current_fan_speed = 1
         self.homeostasis = 0.24 # can be actually double that in the worst case (because of temperature rounding)
         self.current_airflow = 0
@@ -54,7 +58,7 @@ class CentralAC(Thing):
         self.current_fan_speed = int(min(max(speed, 0), len(self.fan_speeds)))
 
     def set_set_point(self, set_pt):
-        self.current_set_point = float(min(max(set_pt, 0.0), 50.0))
+        self.current_set_point = float(min(max(set_pt, self.min_temperature), self.max_temperature))
 
     def sleep(self):
         super(CentralAC, self).sleep()
@@ -155,4 +159,5 @@ class CentralAC(Thing):
     def get_metadata(self):
         return {
             "fan_speeds": self.fan_speeds,
+            "temp_range": [self.min_temperature, self.max_temperature],
         }

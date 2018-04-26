@@ -100,6 +100,7 @@
                     "fan_high_port": "d50",
                     "valve_port": "d8",
                     "smoke_detector_port": "d22",
+                    "min_temperature": 20,
                     "virtual_port_data": [[0, 0]]
                 }]
             }, {
