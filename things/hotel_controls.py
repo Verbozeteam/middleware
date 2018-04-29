@@ -5,10 +5,11 @@ import json
 class HotelControls(Thing):
     def __init__(self, blueprint, hotel_json):
         super(HotelControls, self).__init__(blueprint, hotel_json)
-        self.input_ports[self.hotel_card] = {
-            "read_interval": 0, # 0 means read on-change
-            "is_pullup": True,
-        }
+        if hasattr(self, "hotel_card"):
+            self.input_ports[self.hotel_card] = {
+                "read_interval": 0, # 0 means read on-change
+                "is_pullup": True,
+            }
         self.output_ports[self.power_port] = 1 # digital output
         self.output_ports[self.do_not_disturb_port] = 1 # digital output
         self.output_ports[self.room_service_port] = 1 # digital output
@@ -41,7 +42,7 @@ class HotelControls(Thing):
 
     def set_hardware_state(self, port, value):
         super(HotelControls, self).set_hardware_state(port, value)
-        if port == self.hotel_card:
+        if hasattr(self, "hotel_card") and port == self.hotel_card:
             self.card_in = 1 if value == self.card_in_state else 0
         elif hasattr(self, "room_check_button") and port == self.room_check_button:
             self.room_check_status = value
