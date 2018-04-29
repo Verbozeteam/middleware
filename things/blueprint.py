@@ -10,6 +10,7 @@ from logs import Log
 from config.general_config import GENERAL_CONFIG
 
 import json
+from functools import reduce
 
 class RemoteBoard(object):
     def __init__(self, address, board_json):
