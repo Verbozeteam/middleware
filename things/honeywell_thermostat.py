@@ -16,7 +16,7 @@ class HoneywellThermostatT7560(Thing):
         if not hasattr(self, "max_temperature"):
             self.max_temperature = 27
         self.current_temperature = int((self.max_temperature+self.min_temperature)/2)
-        self.fan_speeds = ["Off", "Low", "Med", "High", "Auto"]
+        self.fan_speeds = ["Low", "Med", "High", "Auto"]
         self.set_set_point(self.current_temperature)
         self.set_fan_speed(1)
 
@@ -26,7 +26,7 @@ class HoneywellThermostatT7560(Thing):
         return "honeywell_thermostat_t7560"
 
     def set_fan_speed(self, speed):
-        self.current_fan_speed = int(min(max(speed, 0), len(self.fan_speeds)-1))
+        self.current_fan_speed = int(min(max(speed, 0), len(self.fan_speeds)))
 
     def set_set_point(self, set_pt):
         self.current_set_point = float(min(max(set_pt, 12.0), 30.0))
