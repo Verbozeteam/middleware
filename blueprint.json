@@ -22,6 +22,14 @@
                     "max_output_percentage": 70,
                     "has_switch": 1
                 }, {
+                    "category": "dimmers",
+                    "name": {
+                        "en": "Dimmer 2"
+                    },
+                    "dimmer_port": "d1",
+                    "max_output_percentage": 70,
+                    "has_switch": 1
+                }, {
                     "category": "light_switches",
                     "name": {
                         "en": "Light switch 1"
@@ -133,6 +141,28 @@
                         "en": "Water Fountain"
                     },
                     "switch_port": "d24"
+                }]
+            }, {
+                "ratio": 1,
+                "name": {
+                    "en": "Penthouse",
+                    "ar": "خدمات الغرفة"
+                },
+                "things": [{
+                    "category": "penthouse_disco",
+                    "name": {
+                        "en": "Penthouse"
+                    },
+                    "open_contactor_1": "d8",
+                    "open_contactor_2": "d9",
+                    "close_contactor_1": "d10",
+                    "close_contactor_2": "d11",
+                    "open_motor": "d12",
+                    "close_motor": "d13",
+                    "fog_output": "d14",
+                    "lights_output": "d15",
+                    "output_on_state": 1,
+                    "input_on_state": 0
                 }]
             }]
         }],
