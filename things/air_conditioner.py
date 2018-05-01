@@ -20,8 +20,8 @@ class CentralAC(Thing):
         if hasattr(self, "fan_low_port"):
             self.output_ports[self.fan_low_port] = 1 # digital output
             self.fan_speeds.append("Low")
-        if hasattr(self, "fan_medium_port"):
-            self.output_ports[self.fan_medium_port] = 1 # digital output
+        if hasattr(self, "fan_med_port"):
+            self.output_ports[self.fan_med_port] = 1 # digital output
             self.fan_speeds.append("Med")
         if hasattr(self, "fan_high_port"):
             self.output_ports[self.fan_high_port] = 1 # digital output

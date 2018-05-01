@@ -19,6 +19,8 @@ class PenthouseDisco(Thing):
 
         if hasattr(self, "fog_output"):
             self.output_ports[self.fog_output] = 1
+        if hasattr(self, "exhaust_output"):
+            self.output_ports[self.exhaust_output] = 1
         if hasattr(self, "lights_output"):
             self.output_ports[self.lights_output] = 1
 
@@ -27,6 +29,7 @@ class PenthouseDisco(Thing):
         self.is_opening = False
         self.is_closing = False
         self.is_fogging = False
+        self.is_exhausting = False
         self.is_lighting = False
 
     # Should return the key in the blueprint that this Thing captures
@@ -49,6 +52,7 @@ class PenthouseDisco(Thing):
     def get_state(self):
         return {
             "lights": 1 if self.is_lighting else 0,
+            "exhaust": 1 if self.is_exhausting else 0,
             "fog": 1 if self.is_fogging else 0,
             "motor": 0 if (not self.is_opening and not self.is_closing) else (1 if self.is_opening else 2),
         }
@@ -59,6 +63,7 @@ class PenthouseDisco(Thing):
             self.close_motor: self.output_on_state if self.is_closing else 1 - self.output_on_state,
         }
         if hasattr(self, "fog_output"): state[self.fog_output] = self.output_on_state if self.is_fogging else 1 - self.output_on_state
+        if hasattr(self, "exhaust_output"): state[self.exhaust_output] = self.output_on_state if self.is_exhausting else 1 - self.output_on_state
         if hasattr(self, "lights_output"): state[self.lights_output] = self.output_on_state if self.is_lighting else 1 - self.output_on_state
         return state
 
@@ -76,6 +81,8 @@ class PenthouseDisco(Thing):
                 self.is_closing = True
         if "fog" in data:
             self.is_fogging = bool(data["fog"])
+        if "exhaust" in data:
+            self.is_exhausting = bool(data["exhaust"])
         if "lights" in data:
             self.is_lighting = bool(data["lights"])
         return False
@@ -90,6 +97,7 @@ class PenthouseDisco(Thing):
     def get_metadata(self):
         return {
             "has_fog": hasattr(self, "fog_output"),
+            "has_exhaust": hasattr(self, "exhaust_output"),
             "has_lights": hasattr(self, "lights_output"),
         }
 
