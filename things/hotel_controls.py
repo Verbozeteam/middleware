@@ -136,7 +136,7 @@ class HotelControls(Thing):
             state[self.bell_port] = dnd
 
         # if welcome light output is present, set it
-        if hasattr(self, "welcome_light_output"):
+        if hasattr(self, "welcome_output_port"):
             state[self.welcome_output_port] = self.welcome_light if self.on_state == 1 else 1 - self.welcome_light
 
         return state

@@ -127,7 +127,10 @@
                     "room_check_button": "d10",
                     "do_not_disturb_port": "d29",
                     "room_service_port": "d28",
-                    "card_in_state": 0
+                    "card_in_state": 0,
+                    "welcome_light_duration": 2,
+                    "welcome_input_port": "d44",
+                    "welcome_output_port": "d45"
                 }]
             }, {
                 "ratio": 1,
