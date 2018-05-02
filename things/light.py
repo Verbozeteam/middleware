@@ -25,20 +25,24 @@ class LightSwitch(Thing):
     def set_intensity(self, intensity):
         self.intensity = int(min(max(intensity, 0), 1))
 
-    def sleep(self):
-        super(LightSwitch, self).sleep()
+    def sleep(self, source=None):
+        super(LightSwitch, self).sleep(source)
         if not hasattr(self, "saved_wakeup_value"):
             self.saved_wakeup_value = self.intensity
 
         if self.intensity == 1:
             self.set_intensity(0)
 
-    def wake_up(self):
-        super(LightSwitch, self).wake_up()
-        if hasattr(self, "default_wakeup_value"):
-            self.set_intensity(self.default_wakeup_value)
-        elif hasattr(self, "saved_wakeup_value"):
-            self.set_intensity(self.saved_wakeup_value)
+    def wake_up(self, source=None):
+        super(LightSwitch, self).wake_up(source)
+        should_turn_on = True
+        if source and hasattr(source, "is_room_dark") and source.is_room_dark() == False:
+            should_turn_on = False
+        if should_turn_on:
+            if hasattr(self, "default_wakeup_value"):
+                self.set_intensity(self.default_wakeup_value)
+            elif hasattr(self, "saved_wakeup_value"):
+                self.set_intensity(self.saved_wakeup_value)
 
         if hasattr(self, "saved_wakeup_value"):
             delattr(self, "saved_wakeup_value")
@@ -94,7 +98,7 @@ class Dimmer(Thing):
         self.intensity = int(min(max(intensity, 0), 100))
 
     def sleep(self, source=None):
-        super(Dimmer, self).sleep()
+        super(Dimmer, self).sleep(source)
         if not hasattr(self, "saved_wakeup_value"):
             self.saved_wakeup_value = self.intensity
 
@@ -102,7 +106,7 @@ class Dimmer(Thing):
             self.set_intensity(0)
 
     def wake_up(self, source=None):
-        super(Dimmer, self).wake_up()
+        super(Dimmer, self).wake_up(source)
         should_turn_on = True
         if source and hasattr(source, "is_room_dark") and source.is_room_dark() == False:
             should_turn_on = False

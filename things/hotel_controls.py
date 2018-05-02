@@ -63,7 +63,7 @@ class HotelControls(Thing):
         elif hasattr(self, "room_check_button") and port == self.room_check_button:
             self.room_check_status = value
         elif hasattr(self, "welcome_input_port") and port == self.welcome_input_port:
-            self.door_open = 1 if value == self.card_in_state else 0
+            self.door_open = 0 if value == self.card_in_state else 1
         elif hasattr(self, "light_sensor_port") and port == self.light_sensor_port:
             self.light_sensor = value
         return False
@@ -94,7 +94,7 @@ class HotelControls(Thing):
             if self.power == 0: # just turned on, wake Things up
                 things = self.blueprint.get_things()
                 for thing in things:
-                    thing.wake_up()
+                    thing.wake_up(self)
             self.card_out_start = -1
             self.power = 1 # turn on power
             # logic for door & welcome light
@@ -105,7 +105,7 @@ class HotelControls(Thing):
             self.welcome_light = 0
             things = self.blueprint.get_things()
             for thing in things:
-                thing.sleep()
+                thing.sleep(self)
         return False
 
     def get_state(self):
