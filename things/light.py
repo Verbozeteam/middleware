@@ -5,7 +5,11 @@ import json
 class LightSwitch(Thing):
     def __init__(self, blueprint, light_json):
         super(LightSwitch, self).__init__(blueprint, light_json)
-        self.output_ports[self.switch_port] = 1 # digital output
+        if type(self.switch_port) == type(""):
+            self.output_ports[self.switch_port] = 1 # digital output
+        else: # array of output ports
+            for sp in self.switch_port:
+                self.output_ports[sp] = 1 # digital output
         self.id = light_json.get("id", "lightswitch-" + self.switch_port)
         self.intensity = 0
         if not hasattr(self, "on_state"):
@@ -52,9 +56,14 @@ class LightSwitch(Thing):
         }
 
     def get_hardware_state(self):
-        return {
-            self.switch_port: self.intensity if self.on_state == 1 else 1 - self.intensity,
-        }
+        state = {}
+        if type(self.switch_port) == type(""):
+            state[self.switch_port] = self.intensity if self.on_state == 1 else 1 - self.intensity
+        else: # array of output ports
+            for sp in self.switch_port:
+                state[sp] = self.intensity if self.on_state == 1 else 1 - self.intensity
+
+        return state
 
 class Dimmer(Thing):
     def __init__(self, blueprint, dimmer_json):

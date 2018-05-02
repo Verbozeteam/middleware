@@ -53,7 +53,7 @@
                     "name": {
                         "en": "Bathroom light switch 1"
                     },
-                    "switch_port": "d33"
+                    "switch_port": ["d33", "d1"]
                 }, {
                     "category": "light_switches",
                     "name": {
