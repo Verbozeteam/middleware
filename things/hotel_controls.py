@@ -13,11 +13,15 @@ class HotelControls(Thing):
             self.on_state = 1
         if not hasattr(self, "welcome_light_duration"):
             self.welcome_light_duration = 30
+        if not hasattr(self, "light_sensor_dark_threshold"):
+            self.light_sensor_dark_threshold = 0
         if hasattr(self, "hotel_card"):
             self.input_ports[self.hotel_card] = {
                 "read_interval": 0, # 0 means read on-change
                 "is_pullup": self.card_in_state == 0,
             }
+        if hasattr(self, "light_sensor_port"):
+            self.input_ports[self.light_sensor_port] = 5000 # read every 5 seconds
         self.output_ports[self.power_port] = 1 # digital output
         self.output_ports[self.do_not_disturb_port] = 1 # digital output
         self.output_ports[self.room_service_port] = 1 # digital output
@@ -41,14 +45,15 @@ class HotelControls(Thing):
         self.room_check_status = 1 - self.card_in_state
         self.door_open = 0
         self.welcome_light_start_time = 0
+        self.light_sensor = 0
 
     # Should return the key in the blueprint that this Thing captures
     @staticmethod
     def get_blueprint_tag():
         return "hotel_controls"
 
-    def sleep(self):
-        super(HotelControls, self).sleep()
+    def sleep(self, source=None):
+        super(HotelControls, self).sleep(source)
         #self.do_not_disturb = 0 # turn off DND on sleep
 
     def set_hardware_state(self, port, value):
@@ -59,6 +64,8 @@ class HotelControls(Thing):
             self.room_check_status = value
         elif hasattr(self, "welcome_input_port") and port == self.welcome_input_port:
             self.door_open = 1 if value == self.card_in_state else 0
+        elif hasattr(self, "light_sensor_port") and port == self.light_sensor_port:
+            self.light_sensor = value
         return False
 
     def set_state(self, data, token_from="system"):
@@ -133,3 +140,7 @@ class HotelControls(Thing):
             state[self.welcome_output_port] = self.welcome_light if self.on_state == 1 else 1 - self.welcome_light
 
         return state
+
+    # Used to Things (lights) when they wake-up to see if they should turn on (if room is dark)
+    def is_room_dark(self):
+        return self.light_sensor >= self.light_sensor_dark_threshold
