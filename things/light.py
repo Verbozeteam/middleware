@@ -6,11 +6,13 @@ class LightSwitch(Thing):
     def __init__(self, blueprint, light_json):
         super(LightSwitch, self).__init__(blueprint, light_json)
         if type(self.switch_port) == type(""):
+            switch_port_str = self.switch_port
             self.output_ports[self.switch_port] = 1 # digital output
         else: # array of output ports
+            switch_port_str = self.switch_port[0]
             for sp in self.switch_port:
                 self.output_ports[sp] = 1 # digital output
-        self.id = light_json.get("id", "lightswitch-" + self.switch_port)
+        self.id = light_json.get("id", "lightswitch-" + switch_port_str)
         self.intensity = 0
         if not hasattr(self, "on_state"):
             self.on_state = 1
