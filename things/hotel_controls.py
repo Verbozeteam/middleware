@@ -143,4 +143,4 @@ class HotelControls(Thing):
 
     # Used to Things (lights) when they wake-up to see if they should turn on (if room is dark)
     def is_room_dark(self):
-        return self.light_sensor >= self.light_sensor_dark_threshold
+        return self.light_sensor <= self.light_sensor_dark_threshold
