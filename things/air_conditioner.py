@@ -30,8 +30,11 @@ class CentralAC(Thing):
             self.output_ports[self.valve_port] = 2 # pwm output
         if hasattr(self, "digital_valve_port"):
             self.output_ports[self.digital_valve_port] = 1 # digital OPEN/CLOSE valve
+        is_using_pullup = True
+        if hasattr(self, "use_pullup"):
+            is_using_pullup = self.use_pullup        
         if hasattr(self, "smoke_detector_port"): # smoke detector - when detected, stop fan
-            self.input_ports[self.smoke_detector_port] = {"read_interval": 0, "is_pullup": True}
+            self.input_ports[self.smoke_detector_port] = {"read_interval": 0, "is_pullup": is_using_pullup}
         self.id = ac_json.get("id", "central-ac-" + self.temperature_port)
         if not hasattr(self, "min_temperature"):
             self.min_temperature = 12

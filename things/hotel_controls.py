@@ -15,10 +15,13 @@ class HotelControls(Thing):
             self.welcome_light_duration = 30
         if not hasattr(self, "light_sensor_dark_threshold"):
             self.light_sensor_dark_threshold = 0
+        is_using_pullup = self.card_in_state == 0
+        if hasattr(self, "use_pullup"):
+            is_using_pullup = self.use_pullup
         if hasattr(self, "hotel_card"):
             self.input_ports[self.hotel_card] = {
                 "read_interval": 0, # 0 means read on-change
-                "is_pullup": self.card_in_state == 0,
+                "is_pullup": is_using_pullup,
             }
         if hasattr(self, "light_sensor_port"):
             self.input_ports[self.light_sensor_port] = 5000 # read every 5 seconds
@@ -26,13 +29,13 @@ class HotelControls(Thing):
         self.output_ports[self.do_not_disturb_port] = 1 # digital output
         self.output_ports[self.room_service_port] = 1 # digital output
         if hasattr(self, "room_check_button"):
-            self.input_ports[self.room_check_button] = {"read_interval": 0, "is_pullup": True}
+            self.input_ports[self.room_check_button] = {"read_interval": 0, "is_pullup": is_using_pullup}
         if hasattr(self, "bell_port"):
             self.output_ports[self.bell_port] = 1 # digital output (bell will be disabled when DND is on)
         if hasattr(self, "welcome_input_port") and hasattr(self, "welcome_output_port"):
             self.input_ports[self.welcome_input_port] = {
                 "read_interval": 0, # 0 means on-change
-                "is_pullup": self.card_in_state == 0
+                "is_pullup": is_using_pullup
             }
             self.output_ports[self.welcome_output_port] = 1 # digital output
         self.id = hotel_json.get("id", "hotel-controls-" + self.power_port)

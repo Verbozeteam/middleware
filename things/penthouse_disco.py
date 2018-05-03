@@ -10,10 +10,13 @@ class PenthouseDisco(Thing):
             self.input_on_state = 1
         if not hasattr(self, "output_on_state"):
             self.output_on_state = 1
-        self.input_ports[self.open_contactor_1] = {"is_pullup": self.input_on_state == 0, "read_interval": 0}
-        self.input_ports[self.close_contactor_1] = {"is_pullup": self.input_on_state == 0, "read_interval": 0}
-        self.input_ports[self.open_contactor_2] = {"is_pullup": self.input_on_state == 0, "read_interval": 0}
-        self.input_ports[self.close_contactor_2] = {"is_pullup": self.input_on_state == 0, "read_interval": 0}
+        is_using_pullup = self.input_on_state == 0
+        if hasattr(self, "use_pullup"):
+            is_using_pullup = self.use_pullup
+        self.input_ports[self.open_contactor_1] = {"is_pullup": is_using_pullup, "read_interval": 0}
+        self.input_ports[self.close_contactor_1] = {"is_pullup": is_using_pullup, "read_interval": 0}
+        self.input_ports[self.open_contactor_2] = {"is_pullup": is_using_pullup, "read_interval": 0}
+        self.input_ports[self.close_contactor_2] = {"is_pullup": is_using_pullup, "read_interval": 0}
         self.output_ports[self.open_motor] = 1
         self.output_ports[self.close_motor] = 1
 

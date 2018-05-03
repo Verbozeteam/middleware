@@ -9,9 +9,12 @@ class SoftSwitch(Thing):
         self.id = switch_json.get("id", "softswitch-" + self.switch_port)
         if not hasattr(self, "pressed_state"):
             self.pressed_state = 1
+        is_using_pullup = self.pressed_state == 0
+        if hasattr(self, "use_pullup"):
+            is_using_pullup = self.use_pullup
         self.input_ports[self.switch_port] = {
             "read_interval": 0,
-            "is_pullup": self.pressed_state == 0,
+            "is_pullup": is_using_pullup,
         }
         self.debounce_timeout = -1
         self.last_read_value = 1 - self.pressed_state
