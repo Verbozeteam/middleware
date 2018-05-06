@@ -81,6 +81,13 @@ class HotelControls(Thing):
         return False
 
     def update(self, cur_time_s):
+        # logic for door & welcome light
+        if self.door_open == 1: # if door is open and no card, turn on welcome light
+            self.welcome_light = 1
+            self.welcome_light_start_time = cur_time_s
+        elif cur_time_s - self.welcome_light_start_time >= self.welcome_light_duration:
+            self.welcome_light = 0
+
         if self.card_in == 0:
             # logic for sleep
             if self.card_out_start == -1:
@@ -88,10 +95,6 @@ class HotelControls(Thing):
             elif cur_time_s - self.card_out_start > self.nocard_power_timeout:
                 self.card_out_start = cur_time_s # prevents spam commands
                 self.power = 0 # turn off power
-            # logic for door & welcome light
-            if self.door_open == 1: # if door is open and no card, turn on welcome light
-                self.welcome_light = 1
-                self.welcome_light_start_time = cur_time_s
         else:
             # logic for wake-up
             if self.power == 0: # just turned on, wake Things up
@@ -100,12 +103,8 @@ class HotelControls(Thing):
                     thing.wake_up(self)
             self.card_out_start = -1
             self.power = 1 # turn on power
-            # logic for door & welcome light
-            if cur_time_s - self.welcome_light_start_time >= self.welcome_light_duration:
-                self.welcome_light = 0
 
         if self.power == 0: # force sleep everything, every update...
-            self.welcome_light = 0
             things = self.blueprint.get_things()
             for thing in things:
                 thing.sleep(self)
