@@ -23,6 +23,8 @@ class HotelControls(Thing):
                 "read_interval": 0, # 0 means read on-change
                 "is_pullup": is_using_pullup,
             }
+        if hasattr(self, "hotel_card_output"):
+            self.output_ports[self.hotel_card_output] = 1 # digital output, 1 if keycard is in, 0 if not
         if hasattr(self, "light_sensor_port"):
             self.input_ports[self.light_sensor_port] = 5000 # read every 5 seconds
         self.output_ports[self.power_port] = 1 # digital output
@@ -140,6 +142,9 @@ class HotelControls(Thing):
         # if welcome light output is present, set it
         if hasattr(self, "welcome_output_port"):
             state[self.welcome_output_port] = self.welcome_light if self.on_state == 1 else 1 - self.welcome_light
+
+        if hasattr(self, "hotel_card_output"):
+            state[self.hotel_card_output] = self.card_in
 
         return state
 
