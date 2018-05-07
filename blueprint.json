@@ -53,7 +53,8 @@
                     "name": {
                         "en": "Bathroom light switch 1"
                     },
-                    "switch_port": "d33"
+                    "default_wakeup_value": 1,
+                    "switch_port": ["d33", "d2"]
                 }, {
                     "category": "light_switches",
                     "name": {
@@ -127,7 +128,13 @@
                     "room_check_button": "d10",
                     "do_not_disturb_port": "d29",
                     "room_service_port": "d28",
-                    "card_in_state": 0
+                    "card_in_state": 0,
+                    "welcome_light_duration": 2,
+                    "welcome_input_port": "d44",
+                    "welcome_output_port": "d45",
+                    "light_sensor_dark_threshold": 230,
+                    "light_sensor_port": "a4",
+                    "nocard_power_timeout": 3
                 }]
             }, {
                 "ratio": 1,

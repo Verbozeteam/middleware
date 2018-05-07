@@ -60,8 +60,8 @@ class CentralAC(Thing):
     def set_set_point(self, set_pt):
         self.current_set_point = float(min(max(set_pt, self.min_temperature), self.max_temperature))
 
-    def sleep(self):
-        super(CentralAC, self).sleep()
+    def sleep(self, source=None):
+        super(CentralAC, self).sleep(source)
         if not hasattr(self, "saved_wakeup_temperature"):
             self.saved_wakeup_temperature = self.current_set_point
             self.saved_wakeup_fan = self.current_fan_speed
@@ -73,8 +73,8 @@ class CentralAC(Thing):
             self.set_set_point(25.0)
             self.set_fan_speed(1) # fan must be on
 
-    def wake_up(self):
-        super(CentralAC, self).wake_up()
+    def wake_up(self, source=None):
+        super(CentralAC, self).wake_up(source)
         if hasattr(self, "default_wakeup_temperature"):
             self.set_set_point(self.default_wakeup_temperature)
             self.set_fan_speed(1) # fan must be on

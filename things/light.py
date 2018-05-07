@@ -5,8 +5,14 @@ import json
 class LightSwitch(Thing):
     def __init__(self, blueprint, light_json):
         super(LightSwitch, self).__init__(blueprint, light_json)
-        self.output_ports[self.switch_port] = 1 # digital output
-        self.id = light_json.get("id", "lightswitch-" + self.switch_port)
+        if type(self.switch_port) == type(""):
+            switch_port_str = self.switch_port
+            self.output_ports[self.switch_port] = 1 # digital output
+        else: # array of output ports
+            switch_port_str = self.switch_port[0]
+            for sp in self.switch_port:
+                self.output_ports[sp] = 1 # digital output
+        self.id = light_json.get("id", "lightswitch-" + switch_port_str)
         self.intensity = 0
         if not hasattr(self, "on_state"):
             self.on_state = 1
@@ -19,20 +25,24 @@ class LightSwitch(Thing):
     def set_intensity(self, intensity):
         self.intensity = int(min(max(intensity, 0), 1))
 
-    def sleep(self):
-        super(LightSwitch, self).sleep()
+    def sleep(self, source=None):
+        super(LightSwitch, self).sleep(source)
         if not hasattr(self, "saved_wakeup_value"):
             self.saved_wakeup_value = self.intensity
 
         if self.intensity == 1:
             self.set_intensity(0)
 
-    def wake_up(self):
-        super(LightSwitch, self).wake_up()
-        if hasattr(self, "default_wakeup_value"):
-            self.set_intensity(self.default_wakeup_value)
-        elif hasattr(self, "saved_wakeup_value"):
-            self.set_intensity(self.saved_wakeup_value)
+    def wake_up(self, source=None):
+        super(LightSwitch, self).wake_up(source)
+        should_turn_on = True
+        if source and hasattr(source, "is_room_dark") and source.is_room_dark() == False:
+            should_turn_on = False
+        if should_turn_on:
+            if hasattr(self, "default_wakeup_value"):
+                self.set_intensity(self.default_wakeup_value)
+            elif hasattr(self, "saved_wakeup_value"):
+                self.set_intensity(self.saved_wakeup_value)
 
         if hasattr(self, "saved_wakeup_value"):
             delattr(self, "saved_wakeup_value")
@@ -52,9 +62,14 @@ class LightSwitch(Thing):
         }
 
     def get_hardware_state(self):
-        return {
-            self.switch_port: self.intensity if self.on_state == 1 else 1 - self.intensity,
-        }
+        state = {}
+        if type(self.switch_port) == type(""):
+            state[self.switch_port] = self.intensity if self.on_state == 1 else 1 - self.intensity
+        else: # array of output ports
+            for sp in self.switch_port:
+                state[sp] = self.intensity if self.on_state == 1 else 1 - self.intensity
+
+        return state
 
 class Dimmer(Thing):
     def __init__(self, blueprint, dimmer_json):
@@ -82,20 +97,24 @@ class Dimmer(Thing):
     def set_intensity(self, intensity):
         self.intensity = int(min(max(intensity, 0), 100))
 
-    def sleep(self):
-        super(Dimmer, self).sleep()
+    def sleep(self, source=None):
+        super(Dimmer, self).sleep(source)
         if not hasattr(self, "saved_wakeup_value"):
             self.saved_wakeup_value = self.intensity
 
         if self.intensity > 0:
             self.set_intensity(0)
 
-    def wake_up(self):
-        super(Dimmer, self).wake_up()
-        if hasattr(self, "default_wakeup_value"):
-            self.set_intensity(self.default_wakeup_value)
-        elif hasattr(self, "saved_wakeup_value"):
-            self.set_intensity(self.saved_wakeup_value)
+    def wake_up(self, source=None):
+        super(Dimmer, self).wake_up(source)
+        should_turn_on = True
+        if source and hasattr(source, "is_room_dark") and source.is_room_dark() == False:
+            should_turn_on = False
+        if should_turn_on:
+            if hasattr(self, "default_wakeup_value"):
+                self.set_intensity(self.default_wakeup_value)
+            elif hasattr(self, "saved_wakeup_value"):
+                self.set_intensity(self.saved_wakeup_value)
 
         if hasattr(self, "saved_wakeup_value"):
             delattr(self, "saved_wakeup_value")

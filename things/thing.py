@@ -34,12 +34,14 @@ class Thing(object):
         return {}
 
     # Should be implemented to order this Thing to go to sleep (usually turn off)
-    def sleep(self):
+    # source  The Thing that caused the sleep to happen. Could be None to indicate "system"
+    def sleep(self, source=None):
         self.last_change_token = "system"
         pass
 
     # Should be implemented to order this Thing wake up (usually turn on)
-    def wake_up(self):
+    # source  The Thing that caused the wake-up to happen. Could be None to indicate "system"
+    def wake_up(self, source=None):
         self.last_change_token = "system"
         pass
 
