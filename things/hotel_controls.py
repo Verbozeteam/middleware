@@ -10,6 +10,7 @@ class HotelControls(Thing):
             ParamSpec("nocard_power_timeout", 20), # Timeout to sleep after card is removed in seconds
             ParamSpec("welcome_light_duration", 30), # Duration to keep the welcome light on after door is opened
             ParamSpec("light_sensor_dark_threshold", 255), # Reading from the light sensor (0-255) below which the room is considered "dark"
+            ParamSpec("display_nocard_warning", True), # Tells the tablets to display a warning when the key card is not inserted
 
             InputPortSpec("hotel_card", 0), # Hotel card input port (digital)
             InputPortSpec("light_sensor_port", 5000), # Light sensor input port (analog)
@@ -108,6 +109,11 @@ class HotelControls(Thing):
             "room_service": self.room_service,
             "do_not_disturb": self.do_not_disturb,
             "power": self.power,
+        }
+        
+    def get_metadata(self):
+        return {
+            "display_nocard_warning": self.params.get("display_nocard_warning"),
         }
 
     def get_hardware_state(self):
