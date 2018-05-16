@@ -105,15 +105,10 @@ class HotelControls(Thing):
 
     def get_state(self):
         return {
-            "card": self.card_in,
+            "card": self.card_in if self.params.get("display_nocard_warning") else True,
             "room_service": self.room_service,
             "do_not_disturb": self.do_not_disturb,
             "power": self.power,
-        }
-        
-    def get_metadata(self):
-        return {
-            "display_nocard_warning": self.params.get("display_nocard_warning"),
         }
 
     def get_hardware_state(self):
