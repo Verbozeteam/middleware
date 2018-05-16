@@ -1,53 +1,43 @@
-from things.thing import Thing
+from things.thing import Thing, ParamSpec, InputPortSpec, OutputPortSpec, GlobalSubParamSpec, ThingParams
 from logs import Log
 import json
 
 class HotelControls(Thing):
-    def __init__(self, blueprint, hotel_json):
-        super(HotelControls, self).__init__(blueprint, hotel_json)
-        if not hasattr(self, "nocard_power_timeout"):
-            self.nocard_power_timeout = 20
-        if not hasattr(self, "card_in_state"): # card state/value that means "card is in"
-            self.card_in_state = 1
-        if not hasattr(self, "on_state"):
-            self.on_state = 1
-        if not hasattr(self, "welcome_light_duration"):
-            self.welcome_light_duration = 30
-        if not hasattr(self, "light_sensor_dark_threshold"):
-            self.light_sensor_dark_threshold = 0
-        is_using_pullup = self.card_in_state == 0
-        if hasattr(self, "use_pullup"):
-            is_using_pullup = self.use_pullup
-        if hasattr(self, "hotel_card"):
-            self.input_ports[self.hotel_card] = {
-                "read_interval": 0, # 0 means read on-change
-                "is_pullup": is_using_pullup,
-            }
-        if hasattr(self, "hotel_card_output"):
-            self.output_ports[self.hotel_card_output] = 1 # digital output, 1 if keycard is in, 0 if not
-        if hasattr(self, "light_sensor_port"):
-            self.input_ports[self.light_sensor_port] = 5000 # read every 5 seconds
-        self.output_ports[self.power_port] = 1 # digital output
-        self.output_ports[self.do_not_disturb_port] = 1 # digital output
-        self.output_ports[self.room_service_port] = 1 # digital output
-        if hasattr(self, "room_check_button"):
-            self.input_ports[self.room_check_button] = {"read_interval": 0, "is_pullup": is_using_pullup}
-        if hasattr(self, "bell_port"):
-            self.output_ports[self.bell_port] = 1 # digital output (bell will be disabled when DND is on)
-        if hasattr(self, "welcome_input_port") and hasattr(self, "welcome_output_port"):
-            self.input_ports[self.welcome_input_port] = {
-                "read_interval": 0, # 0 means on-change
-                "is_pullup": is_using_pullup
-            }
-            self.output_ports[self.welcome_output_port] = 1 # digital output
-        self.id = hotel_json.get("id", "hotel-controls-" + self.power_port)
+    def __init__(self, blueprint, J):
+        super(HotelControls, self).__init__(blueprint, J)
+        self.params = ThingParams(J, [
+            ParamSpec("card_in_state", 1), # voltage reading (0: low, 1: high) when the key card is in the holder
+            ParamSpec("nocard_power_timeout", 20), # Timeout to sleep after card is removed in seconds
+            ParamSpec("welcome_light_duration", 30), # Duration to keep the welcome light on after door is opened
+            ParamSpec("light_sensor_dark_threshold", 255), # Reading from the light sensor (0-255) below which the room is considered "dark"
+
+            InputPortSpec("hotel_card", 0), # Hotel card input port (digital)
+            InputPortSpec("light_sensor_port", 5000), # Light sensor input port (analog)
+            InputPortSpec("room_check_button", 0), # Room status check button inpurt port (digital)
+            InputPortSpec("welcome_input_port", 0, lambda params: bool(params.get("welcome_output_port"))), # Door sensor input port (digital)
+
+            OutputPortSpec("hotel_card_output"), # Hotel card state output port (digital)
+            OutputPortSpec("power_port"), # Port to indicate whether room power should be on or off (digital)
+            OutputPortSpec("do_not_disturb_port"), # DND LED output port (digital)
+            OutputPortSpec("room_service_port"), # RS LED output port (digital)
+            OutputPortSpec("bell_port"), # Bell activation output port (digital)
+            OutputPortSpec("welcome_output_port", False, lambda params: bool(params.get("welcome_input_port"))), # Door welcome lights output port (digital)
+
+            GlobalSubParamSpec("on_state", 1), # Default on-state for all ports: on-state is the state when the port is considered ACTIVE (1 means HIGH when active, 0 means LOW when active)
+            GlobalSubParamSpec("use_pullup", lambda params: params.get("card_in_state") == 0) # whether or not to use pull up resistor of all pin by default
+        ])
+        self.id = J.get("id", "hotel-controls")
+
+        self.input_ports = self.params.get_input_ports()
+        self.output_ports = self.params.get_output_ports()
+
         self.card_in = 1
         self.do_not_disturb = 0
         self.room_service = 0
         self.welcome_light = 0
         self.power = 1
         self.card_out_start = -1
-        self.room_check_status = 1 - self.card_in_state
+        self.room_check_status = 1 - self.params.get("card_in_state")
         self.door_open = 0
         self.welcome_light_start_time = 0
         self.light_sensor = 0
@@ -63,13 +53,13 @@ class HotelControls(Thing):
 
     def set_hardware_state(self, port, value):
         super(HotelControls, self).set_hardware_state(port, value)
-        if hasattr(self, "hotel_card") and port == self.hotel_card:
-            self.card_in = 1 if value == self.card_in_state else 0
-        elif hasattr(self, "room_check_button") and port == self.room_check_button:
+        if port == self.params.get("hotel_card"):
+            self.card_in = 1 if value == self.params.get("card_in_state") else 0
+        elif port == self.params.get("room_check_button"):
             self.room_check_status = value
-        elif hasattr(self, "welcome_input_port") and port == self.welcome_input_port:
-            self.door_open = 0 if value == self.card_in_state else 1
-        elif hasattr(self, "light_sensor_port") and port == self.light_sensor_port:
+        elif port == self.params.get("welcome_input_port"):
+            self.door_open = 0 if value == self.params.get("card_in_state") else 1
+        elif port == self.params.get("light_sensor_port"):
             self.light_sensor = value
         return False
 
@@ -87,14 +77,14 @@ class HotelControls(Thing):
         if self.door_open == 1: # if door is open and no card, turn on welcome light
             self.welcome_light = 1
             self.welcome_light_start_time = cur_time_s
-        elif cur_time_s - self.welcome_light_start_time >= self.welcome_light_duration:
+        elif cur_time_s - self.welcome_light_start_time >= self.params.get("welcome_light_duration"):
             self.welcome_light = 0
 
         if self.card_in == 0:
             # logic for sleep
             if self.card_out_start == -1:
                 self.card_out_start = cur_time_s
-            elif cur_time_s - self.card_out_start > self.nocard_power_timeout:
+            elif cur_time_s - self.card_out_start > self.params.get("nocard_power_timeout"):
                 self.card_out_start = cur_time_s # prevents spam commands
                 self.power = 0 # turn off power
         else:
@@ -121,33 +111,40 @@ class HotelControls(Thing):
         }
 
     def get_hardware_state(self):
-        dnd = self.do_not_disturb if self.on_state == 1 else 1 - self.do_not_disturb
-        rs = self.room_service if self.on_state == 1 else 1 - self.room_service
-        if self.room_check_status == self.card_in_state:
-            dnd = rs = 1 - self.on_state
+        state = {}
+
+        dnd = self.do_not_disturb
+        rs = self.room_service
+        if self.room_check_status == self.params.get("card_in_state"):
+            dnd = 1 - self.params.get("do_not_disturb_port", "on_state")
+            rs = 1 - self.params.get("room_service_port", "on_state")
             if self.card_in:
-                dnd = self.on_state
+                dnd = self.params.get("do_not_disturb_port", "on_state")
             else:
-                rs = self.on_state
-        state = {
-            self.power_port: self.power if self.on_state == 1 else 1 - self.power,
-            self.do_not_disturb_port: dnd,
-            self.room_service_port: rs,
-        }
+                rs = self.params.get("room_service_port", "on_state")
+
+        if self.params.get("do_not_disturb_port"):
+            state[self.params.get("do_not_disturb_port")] = dnd if self.params.get("do_not_disturb_port", "on_state") == 1 else 1 - dnd
+
+        if self.params.get("room_service_port"):
+            state[self.params.get("room_service_port")] = rs if self.params.get("room_service_port", "on_state") == 1 else 1 - rs
+
+        if self.params.get("power_port"):
+            state[self.params.get("power_port")] = self.power if self.params.get("power_port", "on_state") == 1 else 1 - self.power
 
         # ACTIVATE bell relay if DND is on (on ACTIVE it should cut the bell circuit)
-        if hasattr(self, "bell_port"):
-            state[self.bell_port] = dnd
+        if self.params.get("bell_port"):
+            state[self.params.get("bell_port")] = self.do_not_disturb if self.params.get("bell_port", "on_state") == 1 else 1 - self.do_not_disturb
 
         # if welcome light output is present, set it
-        if hasattr(self, "welcome_output_port"):
-            state[self.welcome_output_port] = self.welcome_light if self.on_state == 1 else 1 - self.welcome_light
+        if self.params.get("welcome_output_port"):
+            state[self.params.get("welcome_output_port")] = self.welcome_light if self.params.get("welcome_output_port", "on_state") == 1 else 1 - self.welcome_light
 
-        if hasattr(self, "hotel_card_output"):
-            state[self.hotel_card_output] = self.card_in
+        if self.params.get("hotel_card_output"):
+            state[self.params.get("hotel_card_output")] = self.card_in if self.params.get("hotel_card_output", "on_state") == 1 else 1 - self.card_in
 
         return state
 
     # Used to Things (lights) when they wake-up to see if they should turn on (if room is dark)
     def is_room_dark(self):
-        return self.light_sensor <= self.light_sensor_dark_threshold
+        return self.light_sensor <= self.params.get("light_sensor_dark_threshold")

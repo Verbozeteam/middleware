@@ -1,19 +1,25 @@
-from things.thing import Thing
+from things.thing import Thing, ParamSpec, InputPortSpec, OutputPortSpec, GlobalSubParamSpec, ThingParams
 from logs import Log
 import json
 
 class Curtain(Thing):
-    def __init__(self, blueprint, curtain_json):
-        super(Curtain, self).__init__(blueprint, curtain_json)
-        self.output_ports[self.up_port] = 1 # digital output
-        self.output_ports[self.down_port] = 1 # digital output
-        self.id = curtain_json.get("id", "curtain-" + self.up_port + "-" + self.down_port)
+    def __init__(self, blueprint, J):
+        super(Curtain, self).__init__(blueprint, J)
+        self.params = ThingParams(J, [
+            ParamSpec("max_move_time", 10000), # Maximum time required to fully open/close a curtain
+
+            OutputPortSpec("up_port", is_required=True), # Curtain DOWN output port
+            OutputPortSpec("down_port", is_required=True), # Curtain UP output port
+
+            GlobalSubParamSpec("on_state", 1), # Default on-state for all ports: on-state is the state when the port is considered ACTIVE (1 means HIGH when active, 0 means LOW when active)
+        ])
+        self.id = J.get("id", "curtain-" + self.params.get("up_port") + "-" + self.params.get("down_port"))
+
+        self.input_ports = self.params.get_input_ports()
+        self.output_ports = self.params.get_output_ports()
+
         self.up_output = 0
         self.down_output = 0
-        if not hasattr(self, "on_state"):
-            self.on_state = 1
-        if not hasattr(self, "max_move_time"):
-            self.max_move_time = 10000
 
     # Should return the key in the blueprint that this Thing captures
     @staticmethod
@@ -41,12 +47,12 @@ class Curtain(Thing):
 
     def get_hardware_state(self):
         return {
-            self.up_port: self.up_output if self.on_state == 1 else 1 - self.up_output,
-            self.down_port: self.down_output if self.on_state == 1 else 1 - self.down_output,
+            self.params.get("up_port"): self.up_output if self.params.get("up_port", "on_state") == 1 else 1 - self.up_output,
+            self.params.get("down_port"): self.down_output if self.params.get("down_port", "on_state") == 1 else 1 - self.down_output,
         }
 
     def get_metadata(self):
         return {
-            "max_move_time": self.max_move_time
+            "max_move_time": self.params.get("max_move_time")
         }
 

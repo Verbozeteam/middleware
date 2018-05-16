@@ -19,9 +19,10 @@ class AlarmItem(object):
         }
 
 class AlarmSystem(Thing):
-    def __init__(self, blueprint, alarm_system_json):
-        super(AlarmSystem, self).__init__(blueprint, alarm_system_json)
-        self.id = alarm_system_json.get("id", "alarm")
+    def __init__(self, blueprint, J):
+        super(AlarmSystem, self).__init__(blueprint, J)
+        self.id = J.get("id", "alarm")
+
         self.alarms = []
 
     @staticmethod

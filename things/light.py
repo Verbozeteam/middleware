@@ -1,21 +1,23 @@
-from things.thing import Thing
+from things.thing import Thing, ParamSpec, InputPortSpec, OutputPortSpec, GlobalSubParamSpec, ThingParams
 from logs import Log
 import json
 
 class LightSwitch(Thing):
-    def __init__(self, blueprint, light_json):
-        super(LightSwitch, self).__init__(blueprint, light_json)
-        if type(self.switch_port) == type(""):
-            switch_port_str = self.switch_port
-            self.output_ports[self.switch_port] = 1 # digital output
-        else: # array of output ports
-            switch_port_str = self.switch_port[0]
-            for sp in self.switch_port:
-                self.output_ports[sp] = 1 # digital output
-        self.id = light_json.get("id", "lightswitch-" + switch_port_str)
+    def __init__(self, blueprint, J):
+        super(LightSwitch, self).__init__(blueprint, J)
+        self.params = ThingParams(J, [
+            ParamSpec("default_wakeup_value"), # Default value when awoken
+
+            OutputPortSpec("switch_port", is_required=True), # Switch outport port
+
+            GlobalSubParamSpec("on_state", 1), # Default on-state for all ports: on-state is the state when the port is considered ACTIVE (1 means HIGH when active, 0 means LOW when active)
+        ])
+        self.id = J.get("id", "lightswitch-" + str(self.params.get("switch_port")))
+
+        self.input_ports = self.params.get_input_ports()
+        self.output_ports = self.params.get_output_ports()
+
         self.intensity = 0
-        if not hasattr(self, "on_state"):
-            self.on_state = 1
 
     # Should return the key in the blueprint that this Thing captures
     @staticmethod
@@ -39,8 +41,8 @@ class LightSwitch(Thing):
         if source and hasattr(source, "is_room_dark") and source.is_room_dark() == False:
             should_turn_on = False
         if should_turn_on:
-            if hasattr(self, "default_wakeup_value"):
-                self.set_intensity(self.default_wakeup_value)
+            if self.params.get("default_wakeup_value") != None:
+                self.set_intensity(self.params.get("default_wakeup_value"))
             elif hasattr(self, "saved_wakeup_value"):
                 self.set_intensity(self.saved_wakeup_value)
 
@@ -63,31 +65,35 @@ class LightSwitch(Thing):
 
     def get_hardware_state(self):
         state = {}
-        if type(self.switch_port) == type(""):
-            state[self.switch_port] = self.intensity if self.on_state == 1 else 1 - self.intensity
+        if type(self.params.get("switch_port")) != type([]):
+            state[self.params.get("switch_port")] = self.intensity if self.params.get("switch_port", "on_state") == 1 else 1 - self.intensity
         else: # array of output ports
-            for sp in self.switch_port:
-                state[sp] = self.intensity if self.on_state == 1 else 1 - self.intensity
+            for sp in self.params.get("switch_port"):
+                state[sp] = self.intensity if self.params.get("switch_port", "on_state") == 1 else 1 - self.intensity
 
         return state
 
 class Dimmer(Thing):
-    def __init__(self, blueprint, dimmer_json):
-        super(Dimmer, self).__init__(blueprint, dimmer_json)
-        if hasattr(self, "dimmer_port"):
-            self.dimmer_ports = [self.dimmer_port]
-        else:
-            self.dimmer_port = self.dimmer_ports[0]
-        for port in self.dimmer_ports:
-            self.output_ports[port] = 2 # pwm output
-        self.is_isr_dimmer = "v" in self.dimmer_port # if dimmer_port is a virtual port then this is an ISR light
-        self.id = dimmer_json.get("id", "dimmer-" + self.dimmer_port)
-        self.intensity = 0
+    def __init__(self, blueprint, J):
+        super(Dimmer, self).__init__(blueprint, J)
+        self.params = ThingParams(J, [
+            ParamSpec("default_wakeup_value"), # Default value when awoken
+            ParamSpec("max_output_percentage", 80), # Maxmimum output percentage
+            ParamSpec("has_switch", 0), # 0 if the dimmer has no switch button, 1 otherwise
 
-        if not hasattr(self, "max_output_percentage"):
-            self.max_output_percentage = 80
-        if not hasattr(self, "has_switch"):
-            self.has_switch = 0
+            OutputPortSpec(["dimmer_port", "dimmer_ports"], is_pwm=True, is_required=True), # Dimmer outport port
+
+            GlobalSubParamSpec("on_state", 1), # Default on-state for all ports: on-state is the state when the port is considered ACTIVE (1 means HIGH when active, 0 means LOW when active)
+        ])
+        self.id = J.get("id", "dimmer-" + str(self.params.get("dimmer_port")))
+
+        self.input_ports = self.params.get_input_ports()
+        self.output_ports = self.params.get_output_ports()
+
+        check_isr_ports = self.params.get("dimmer_port")
+        if type(check_isr_ports) == type([]): check_isr_ports = check_isr_ports[0]
+        self.is_isr_dimmer = "v" in check_isr_ports # if dimmer_port is a virtual port then this is an ISR light
+        self.intensity = 0
 
     # Should return the key in the blueprint that this Thing captures
     @staticmethod
@@ -111,8 +117,8 @@ class Dimmer(Thing):
         if source and hasattr(source, "is_room_dark") and source.is_room_dark() == False:
             should_turn_on = False
         if should_turn_on:
-            if hasattr(self, "default_wakeup_value"):
-                self.set_intensity(self.default_wakeup_value)
+            if self.params.get("default_wakeup_value") != None:
+                self.set_intensity(self.params.get("default_wakeup_value"))
             elif hasattr(self, "saved_wakeup_value"):
                 self.set_intensity(self.saved_wakeup_value)
 
@@ -135,9 +141,12 @@ class Dimmer(Thing):
 
     def get_hardware_state(self):
         light_power = int(self.intensity * 2.55)
+        ports = self.params.get("dimmer_port")
+        if type(ports) != type([]):
+            ports = [ports]
 
         if self.is_isr_dimmer:
-            light_power = int(min(max(100.0 - (float(self.intensity) * (self.max_output_percentage/100.0)), 100.0-self.max_output_percentage), 100.0))
+            light_power = int(min(max(100.0 - (float(self.intensity) * (self.params.get("max_output_percentage")/100.0)), 100.0-self.params.get("max_output_percentage")), 100.0))
             if self.virtual_port_data[0][0] == 1: # old ISR needs some regulation
                 if light_power > 85 and light_power < 97:
                     light_power = 85
@@ -145,12 +154,12 @@ class Dimmer(Thing):
                     light_power = 105 # so that zero-crossing has no way of nakba
 
         state = {}
-        for port in self.dimmer_ports:
+        for port in ports:
             state[port] = int(light_power)
         return state
 
     def get_metadata(self):
         return {
-            "has_switch": self.has_switch,
+            "has_switch": self.params.get("has_switch"),
         }
 

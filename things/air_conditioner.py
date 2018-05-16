@@ -1,11 +1,11 @@
-from things.thing import Thing
+from things.thing import Thing, ParamSpec, InputPortSpec, OutputPortSpec, GlobalSubParamSpec, ThingParams
 from logs import Log
 import json
 
 class SplitAC(Thing):
     def __init__(self, blueprint, ac_json):
         super(SplitAC, self).__init__(blueprint, ac_json)
-        self.id = ac_json.get("id", "split-ac-" + self.pwm_port)
+        self.id = ac_json.get("id", "split-ac-unimplemented")
 
     # Should return the key in the blueprint that this Thing captures
     @staticmethod
@@ -13,34 +13,40 @@ class SplitAC(Thing):
         return "split_acs"
 
 class CentralAC(Thing):
-    def __init__(self, blueprint, ac_json):
-        super(CentralAC, self).__init__(blueprint, ac_json)
-        self.input_ports[self.temperature_port] = 5000 # read temperature every 5 seconds
+    def __init__(self, blueprint, J):
+        super(CentralAC, self).__init__(blueprint, J)
+        self.params = ThingParams(J, [
+            ParamSpec("min_temperature", 12), # Minimum temperature
+            ParamSpec("max_temperature", 30), # Maximum temperature
+            ParamSpec("default_sleep_temperature", 25), # Default temperasture when asleep
+            ParamSpec("default_wakeup_temperature", 25), # Default temperature when awoken
+
+            InputPortSpec("temperature_port", 5000, is_required=True), # Temperature reading port
+            InputPortSpec("smoke_detector_port", 0), # Smoke detector reading port (when on, AC fan turns off)
+
+            OutputPortSpec("fan_low_port"), # Fan LOW port
+            OutputPortSpec("fan_med_port"), # Fan MEDIUM port
+            OutputPortSpec("fan_high_port"), # Fan HIGH port
+            OutputPortSpec("valve_port", True), # Modulating valve output port (PWM output)
+            OutputPortSpec("digital_valve_port"), # Digital valve output port
+
+            GlobalSubParamSpec("on_state", 1), # Default on-state for all ports: on-state is the state when the port is considered ACTIVE (1 means HIGH when active, 0 means LOW when active)
+            GlobalSubParamSpec("use_pullup", lambda params: params.get("on_state") == 0), # whether or not to use pull up resistor of all pin by default
+        ])
+        self.id = J.get("id", "central-ac-" + self.params.get("temperature_port"))
+
+        self.input_ports = self.params.get_input_ports()
+        self.output_ports = self.params.get_output_ports()
+
         self.fan_speeds = []
-        if hasattr(self, "fan_low_port"):
-            self.output_ports[self.fan_low_port] = 1 # digital output
+        if self.params.get("fan_low_port"):
             self.fan_speeds.append("Low")
-        if hasattr(self, "fan_med_port"):
-            self.output_ports[self.fan_med_port] = 1 # digital output
+        if self.params.get("fan_med_port"):
             self.fan_speeds.append("Med")
-        if hasattr(self, "fan_high_port"):
-            self.output_ports[self.fan_high_port] = 1 # digital output
+        if self.params.get("fan_high_port"):
             self.fan_speeds.append("High")
-        if hasattr(self, "valve_port"):
-            self.output_ports[self.valve_port] = 2 # pwm output
-        if hasattr(self, "digital_valve_port"):
-            self.output_ports[self.digital_valve_port] = 1 # digital OPEN/CLOSE valve
-        is_using_pullup = True
-        if hasattr(self, "use_pullup"):
-            is_using_pullup = self.use_pullup        
-        if hasattr(self, "smoke_detector_port"): # smoke detector - when detected, stop fan
-            self.input_ports[self.smoke_detector_port] = {"read_interval": 0, "is_pullup": is_using_pullup}
-        self.id = ac_json.get("id", "central-ac-" + self.temperature_port)
-        if not hasattr(self, "min_temperature"):
-            self.min_temperature = 12
-        if not hasattr(self, "max_temperature"):
-            self.max_temperature = 30
-        self.current_set_point = int((self.max_temperature+self.min_temperature)/2)
+
+        self.current_set_point = int((self.params.get("max_temperature")+self.params.get("min_temperature"))/2)
         self.current_temperature = self.current_set_point
         self.current_fan_speed = 1
         self.homeostasis = 0.24 # can be actually double that in the worst case (because of temperature rounding)
@@ -48,9 +54,7 @@ class CentralAC(Thing):
         self.next_valve_update = 0
         self.is_temp_rising = False
         self.digital_valve_output = 0
-        if not hasattr(self, "on_state"):
-            self.on_state = 1
-        self.smoke_detector_value = 1 - self.on_state
+        self.smoke_detector_value = 1 - self.params.get("smoke_detector_port", "on_state")
 
     # Should return the key in the blueprint that this Thing captures
     @staticmethod
@@ -61,7 +65,7 @@ class CentralAC(Thing):
         self.current_fan_speed = int(min(max(speed, 0), len(self.fan_speeds)))
 
     def set_set_point(self, set_pt):
-        self.current_set_point = float(min(max(set_pt, self.min_temperature), self.max_temperature))
+        self.current_set_point = float(min(max(set_pt, self.params.get("min_temperature")), self.params.get("max_temperature")))
 
     def sleep(self, source=None):
         super(CentralAC, self).sleep(source)
@@ -69,8 +73,8 @@ class CentralAC(Thing):
             self.saved_wakeup_temperature = self.current_set_point
             self.saved_wakeup_fan = self.current_fan_speed
 
-        if hasattr(self, "default_sleep_temperature"):
-            self.set_set_point(self.default_sleep_temperature)
+        if self.params.get("default_sleep_temperature") != None:
+            self.set_set_point(self.params.get("default_sleep_temperature"))
             self.set_fan_speed(1) # fan must be on
         else:
             self.set_set_point(25.0)
@@ -78,8 +82,8 @@ class CentralAC(Thing):
 
     def wake_up(self, source=None):
         super(CentralAC, self).wake_up(source)
-        if hasattr(self, "default_wakeup_temperature"):
-            self.set_set_point(self.default_wakeup_temperature)
+        if self.params.get("default_wakeup_temperature") != None:
+            self.set_set_point(self.params.get("default_wakeup_temperature"))
             self.set_fan_speed(1) # fan must be on
         elif hasattr(self, "saved_wakeup_temperature"):
             self.set_set_point(self.saved_wakeup_temperature)
@@ -92,17 +96,14 @@ class CentralAC(Thing):
 
     def set_hardware_state(self, port, value):
         super(CentralAC, self).set_hardware_state(port, value)
-        if port == self.temperature_port:
+        if port == self.params.get("temperature_port"):
             self.current_temperature = float(value) / 4.0
-        elif hasattr(self, "smoke_detector_port") and port == self.smoke_detector_port:
+        elif port == self.params.get("smoke_detector_port"):
             self.smoke_detector_value = int(value)
         return False
 
     def set_state(self, data, token_from="system"):
         super(CentralAC, self).set_state(data, token_from)
-        if "sleep_temp" in data:
-            self.default_sleep_temperature = float(data["sleep_temp"])
-
         if hasattr(self, "saved_wakeup_temperature"):
             return # block updates while sleeping
 
@@ -113,7 +114,7 @@ class CentralAC(Thing):
         return False
 
     def update(self, cur_time_s):
-        if hasattr(self, "smoke_detector_port") and self.smoke_detector_value == self.on_state:
+        if self.params.get("smoke_detector_port") and self.smoke_detector_value == self.params.get("smoke_detector_port", "on_state"):
             self.current_fan_speed = 0
 
         if cur_time_s >= self.next_valve_update:
@@ -121,7 +122,7 @@ class CentralAC(Thing):
 
             target_temperature = self.current_set_point if self.current_fan_speed > 0 else 50.0
 
-            if hasattr(self, "valve_port"):
+            if self.params.get("valve_port"):
                 temp_diff = self.current_temperature - target_temperature
                 coeff = (min(max(temp_diff, -10), 10)) / 10; # [-1, 1]
                 self.current_airflow = min(max(self.current_airflow + self.homeostasis * coeff, 0.0), 255.0)
@@ -151,16 +152,17 @@ class CentralAC(Thing):
         state = {}
         i = 1
         for speed in self.fan_speeds:
-            state[getattr(self, "fan_"+speed.lower()+"_port")] = (self.on_state) if i == self.current_fan_speed else (1-self.on_state)
+            f_on_state = self.params.get("fan_"+speed.lower()+"_port", "on_state")
+            state[self.params.get("fan_"+speed.lower()+"_port")] = f_on_state if i == self.current_fan_speed else 1- f_on_state
             i += 1
-        if hasattr(self, "valve_port"):
-            state[self.valve_port] = int(self.current_airflow)
-        if hasattr(self, "digital_valve_port"):
-            state[self.digital_valve_port] = int(self.digital_valve_output) if self.on_state == 1 else 1 - int(self.digital_valve_output)
+        if self.params.get("valve_port"):
+            state[self.params.get("valve_port")] = int(self.current_airflow)
+        if self.params.get("digital_valve_port"):
+            state[self.params.get("digital_valve_port")] = int(self.digital_valve_output) if self.params.get("digital_valve_port", "on_state") == 1 else 1 - int(self.digital_valve_output)
         return state
 
     def get_metadata(self):
         return {
             "fan_speeds": self.fan_speeds,
-            "temp_range": [self.min_temperature, self.max_temperature],
+            "temp_range": [self.params.get("min_temperature"), self.params.get("max_temperature")],
         }

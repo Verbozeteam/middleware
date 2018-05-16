@@ -1,21 +1,26 @@
-from things.thing import Thing
+from things.thing import Thing, ParamSpec, InputPortSpec, OutputPortSpec, GlobalSubParamSpec, ThingParams
 from logs import Log
 import json
 
 class HoneywellThermostatT7560(Thing):
-    def __init__(self, blueprint, thermostat_json):
-        super(HoneywellThermostatT7560, self).__init__(blueprint, thermostat_json)
-        self.port_array = ["d41", "d45", "d49", "d51", "d47", "d43", "a14", "a15"]
-        if hasattr(self, "temperature_port"):
-            self.input_ports[self.temperature_port] = 5000 # read temperature every 5 seconds
-        for p in self.port_array:
+    def __init__(self, blueprint, J):
+        super(HoneywellThermostatT7560, self).__init__(blueprint, J)
+        self.params = ThingParams(J, [
+            ParamSpec("min_temperature", 19), # Minimum temperature
+            ParamSpec("max_temperature", 27), # Maximum temperature
+            ParamSpec("port_array", ["d41", "d45", "d49", "d51", "d47", "d43", "a14", "a15"]), # Port array for the pins of the TLC
+
+            InputPortSpec("temperature_port", 5000, is_required=True), # Temperature reading port
+        ])
+        self.id = J.get("id", "honeywell-thermostat")
+
+        self.input_ports = self.params.get_input_ports()
+        self.output_ports = self.params.get_output_ports()
+
+        for p in self.params.get("port_array"):
             self.output_ports[p] = 1
-        self.id = thermostat_json.get("id", "honeywell-thermostat")
-        if not hasattr(self, "min_temperature"):
-            self.min_temperature = 19
-        if not hasattr(self, "max_temperature"):
-            self.max_temperature = 27
-        self.current_temperature = int((self.max_temperature+self.min_temperature)/2)
+
+        self.current_temperature = int((self.params.get("max_temperature")+self.params.get("min_temperature"))/2)
         self.fan_speeds = ["Low", "Med", "High", "Auto"]
         self.set_set_point(self.current_temperature)
         self.set_fan_speed(1)
@@ -33,7 +38,7 @@ class HoneywellThermostatT7560(Thing):
 
     def set_hardware_state(self, port, value):
         super(HoneywellThermostatT7560, self).set_hardware_state(port, value)
-        if hasattr(self, "temperature_port") and port == self.temperature_port:
+        if port == self.params.get("temperature_port"):
             self.current_temperature = float(value) / 4.0
         return False
 
@@ -49,16 +54,10 @@ class HoneywellThermostatT7560(Thing):
         iset_point = int(self.current_set_point) - 12
         # 5 bits for set pt, 3 for fan speed
         for i in range(0, 5):
-            state[self.port_array[i]] = (iset_point >> i) & 0x1
+            state[self.params.get("port_array")[i]] = (iset_point >> i) & 0x1
         for i in range(0, 3):
-            state[self.port_array[5+i]] = (self.current_fan_speed >> i) & 0x1
+            state[self.params.get("port_array")[5+i]] = (self.current_fan_speed >> i) & 0x1
         return state
-
-    def set_hardware_state(self, port, value):
-        super(HoneywellThermostatT7560, self).set_hardware_state(port, value)
-        if hasattr(self, "temperature_port") and port == self.temperature_port:
-            self.current_temperature = float(value) / 4.0
-        return False
 
     def set_state(self, data, token_from="system"):
         super(HoneywellThermostatT7560, self).set_state(data, token_from)
@@ -71,6 +70,6 @@ class HoneywellThermostatT7560(Thing):
     def get_metadata(self):
         return {
             "fan_speeds": self.fan_speeds,
-            "temp_range": [self.min_temperature, self.max_temperature],
+            "temp_range": [self.params.get("min_temperature"), self.params.get("max_temperature")],
         }
 

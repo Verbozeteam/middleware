@@ -1,31 +1,29 @@
-from things.thing import Thing
+from things.thing import Thing, ParamSpec, InputPortSpec, OutputPortSpec, GlobalSubParamSpec, ThingParams
 from logs import Log
 import json
 
 class PenthouseDisco(Thing):
-    def __init__(self, blueprint, pd_json):
-        super(PenthouseDisco, self).__init__(blueprint, pd_json)
-        self.id = pd_json.get("id", "penthouse-disco")
-        if not hasattr(self, "input_on_state"):
-            self.input_on_state = 1
-        if not hasattr(self, "output_on_state"):
-            self.output_on_state = 1
-        is_using_pullup = self.input_on_state == 0
-        if hasattr(self, "use_pullup"):
-            is_using_pullup = self.use_pullup
-        self.input_ports[self.open_contactor_1] = {"is_pullup": is_using_pullup, "read_interval": 0}
-        self.input_ports[self.close_contactor_1] = {"is_pullup": is_using_pullup, "read_interval": 0}
-        self.input_ports[self.open_contactor_2] = {"is_pullup": is_using_pullup, "read_interval": 0}
-        self.input_ports[self.close_contactor_2] = {"is_pullup": is_using_pullup, "read_interval": 0}
-        self.output_ports[self.open_motor] = 1
-        self.output_ports[self.close_motor] = 1
+    def __init__(self, blueprint, J):
+        super(PenthouseDisco, self).__init__(blueprint, J)
+        self.params = ThingParams(J, [
+            InputPortSpec("open_contactor_1", 0, is_required=True), # First open contactor input
+            InputPortSpec("close_contactor_1", 0, is_required=True), # First close contactor input
+            InputPortSpec("open_contactor_2", 0, is_required=True), # Second open contactor input
+            InputPortSpec("close_contactor_2", 0, is_required=True), # Second close contactor input
 
-        if hasattr(self, "fog_output"):
-            self.output_ports[self.fog_output] = 1
-        if hasattr(self, "exhaust_output"):
-            self.output_ports[self.exhaust_output] = 1
-        if hasattr(self, "lights_output"):
-            self.output_ports[self.lights_output] = 1
+            OutputPortSpec("fog_output", is_required=True), # Fog outport port
+            OutputPortSpec("exhaust_output", is_required=True), # Exhaust outport port
+            OutputPortSpec("lights_output", is_required=True), # Lights outport port
+            OutputPortSpec("open_motor", is_required=True), # Open motor outport port
+            OutputPortSpec("close_motor", is_required=True), # Close motor outport port
+
+            GlobalSubParamSpec("on_state", 1), # Default on-state for all ports: on-state is the state when the port is considered ACTIVE (1 means HIGH when active, 0 means LOW when active)
+            GlobalSubParamSpec("use_pullup", False), # whether or not to use pull up resistor of all pin by default
+        ])
+        self.id = J.get("id", "penthouse-disco")
+
+        self.input_ports = self.params.get_input_ports()
+        self.output_ports = self.params.get_output_ports()
 
         self.open_contactors = [False, False]
         self.close_contactors = [False, False]
@@ -42,14 +40,14 @@ class PenthouseDisco(Thing):
 
     def set_hardware_state(self, port, value):
         super(PenthouseDisco, self).set_hardware_state(port, value)
-        if port == self.open_contactor_1:
-            self.open_contactors[0] = value == self.input_on_state
-        if port == self.open_contactor_2:
-            self.open_contactors[1] = value == self.input_on_state
-        if port == self.close_contactor_1:
-            self.close_contactors[0] = value == self.input_on_state
-        if port == self.close_contactor_2:
-            self.close_contactors[1] = value == self.input_on_state
+        if port == self.params.get("open_contactor_1"):
+            self.open_contactors[0] = value == self.params.get("open_contactor_1", "on_state")
+        if port == self.params.get("open_contactor_2"):
+            self.open_contactors[1] = value == self.params.get("open_contactor_2", "on_state")
+        if port == self.params.get("close_contactor_1"):
+            self.close_contactors[0] = value == self.params.get("close_contactor_1", "on_state")
+        if port == self.params.get("close_contactor_2"):
+            self.close_contactors[1] = self.params.get("close_contactor_2", "on_state")
         return False
 
     def get_state(self):
@@ -62,12 +60,12 @@ class PenthouseDisco(Thing):
 
     def get_hardware_state(self):
         state = {
-            self.open_motor: self.output_on_state if self.is_opening else 1 - self.output_on_state,
-            self.close_motor: self.output_on_state if self.is_closing else 1 - self.output_on_state,
+            self.params.get("open_motor"): self.params.get("open_motor", "on_state") if self.is_opening else 1 - self.params.get("open_motor", "on_state"),
+            self.params.get("close_motor"): self.params.get("close_motor", "on_state") if self.is_closing else 1 - self.params.get("close_motor", "on_state"),
         }
-        if hasattr(self, "fog_output"): state[self.fog_output] = self.output_on_state if self.is_fogging else 1 - self.output_on_state
-        if hasattr(self, "exhaust_output"): state[self.exhaust_output] = self.output_on_state if self.is_exhausting else 1 - self.output_on_state
-        if hasattr(self, "lights_output"): state[self.lights_output] = self.output_on_state if self.is_lighting else 1 - self.output_on_state
+        if self.params.get("fog_output"): state[self.params.get("fog_output")] = self.params.get("fog_output", "on_state") if self.is_fogging else 1 - self.params.get("fog_output", "on_state")
+        if self.params.get("exhaust_output"): state[self.params.get("exhaust_output")] = self.params.get("exhaust_output", "on_state") if self.is_exhausting else 1 - self.params.get("exhaust_output", "on_state")
+        if self.params.get("lights_output"): state[self.params.get("lights_output")] = self.params.get("lights_output", "on_state") if self.is_lighting else 1 - self.params.get("lights_output", "on_state")
         return state
 
     def set_state(self, data, token_from="system"):
@@ -99,9 +97,9 @@ class PenthouseDisco(Thing):
 
     def get_metadata(self):
         return {
-            "has_fog": hasattr(self, "fog_output"),
-            "has_exhaust": hasattr(self, "exhaust_output"),
-            "has_lights": hasattr(self, "lights_output"),
+            "has_fog": self.params.get("fog_output"),
+            "has_exhaust": self.params.get("exhaust_output"),
+            "has_lights": self.params.get("lights_output"),
         }
 
 

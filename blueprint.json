@@ -1,184 +1,69 @@
 {
     "id": "1",
     "rooms": [{
-        "name": {
-            "en": "Hasan's Room",
-            "ar": "غرفة حسن"
-        },
-        "grid": [{
-            "ratio": 2,
-            "panels": [{
-                "ratio": 5,
-                "name": {
-                    "en": "Room Lights",
-                    "ar": "إضائة الغرفة"
-                },
-                "things": [{
-                    "category": "dimmers",
-                    "name": {
-                        "en": "Dimmer 1"
-                    },
-                    "dimmer_port": "d4",
-                    "max_output_percentage": 70,
-                    "has_switch": 1
-                }, {
-                    "category": "dimmers",
-                    "name": {
-                        "en": "Dimmer 2"
-                    },
-                    "dimmer_port": "d1",
-                    "max_output_percentage": 70,
-                    "has_switch": 1
-                }, {
-                    "category": "light_switches",
-                    "name": {
-                        "en": "Light switch 1"
-                    },
-                    "switch_port": "d37"
-                }, {
-                    "category": "light_switches",
-                    "name": {
-                        "en": "Light switch 2"
-                    },
-                    "switch_port": "d36"
-                }]
+        "id": "room-1",
+        "name": "{{BLUEPRINT_NAME}}",
+        "groups": [{
+            "id": "group-4",
+            "name": "Room Service",
+            "things": [{
+                "category": "hotel_controls",
+                "name": "Room Service",
+                "power_port": "d49",
+                "hotel_card": "d44",
+                "hotel_card_use_pullup": "d44",
+                "room_check_button": "d46",
+                "do_not_disturb_port": "d38",
+                "room_service_port": "d40",
+                "card_in_state": 0,
+                "on_state": 0
             }, {
-                "ratio": 3,
-                "name": {
-                    "en": "Bathroom Lights",
-                    "ar": "إضائة الحمام"
-                },
-                "things": [{
-                    "category": "light_switches",
-                    "name": {
-                        "en": "Bathroom light switch 1"
-                    },
-                    "default_wakeup_value": 1,
-                    "switch_port": ["d33", "d2"]
-                }, {
-                    "category": "light_switches",
-                    "name": {
-                        "en": "Bathroom light switch 2"
-                    },
-                    "switch_port": "d32"
-                }, {
-                }, {
-                    "category": "light_switches",
-                    "name": {
-                        "en": "Bathroom light switch 3"
-                    },
-                    "switch_port": "d31"
-                }, {
-                    "category": "dimmers",
-                    "name": {
-                        "en": "Dimmer 3"
-                    },
-                    "dimmer_port": "d6"
-                }]
-            }, {
-                "ratio": 3,
-                "name": {
-                    "en": "Curtains",
-                    "ar": "التكaييف"
-                },
-                "things": [{
-                    "category": "curtains",
-                    "name": {
-                        "en": "Curtain 1"
-                    },
-                    "up_port": "d26",
-                    "down_port": "d27"
-                }]
+                "category": "central_acs",
+                "name": "AC",
+                "temperature_port": "v0",
+                "fan_low_port": "d37",
+                "fan_med_port": "d35",
+                "fan_high_port": "d33",
+                "digital_valve_port": "d31",
+                "virtual_port_data": [[0, 0]],
+                "default_sleep_temperature": 25.0,
+                "on_state": 0,
+                "smoke_detector_port": "d42"
             }]
-        }, {
-            "ratio": 1,
-            "panels": [{
-                "ratio": 1,
-                "name": {
-                    "en": "Air Conditioning",
-                    "ar": "التكييف"
-                },
-                "things": [{
-                    "category": "central_acs",
-                    "name": {
-                        "en": "Air conditioner"
-                    },
-                    "temperature_port": "v0",
-                    "fan_low_port": "d48",
-                    "fan_medium_port": "d49",
-                    "fan_high_port": "d50",
-                    "valve_port": "d8",
-                    "smoke_detector_port": "d22",
-                    "min_temperature": 20,
-                    "virtual_port_data": [[0, 0]]
-                }]
-            }, {
-                "ratio": 1,
-                "name": {
-                    "en": "Room Service",
-                    "ar": "خدمات الغرفة"
-                },
-                "things": [{
-                    "category": "hotel_controls",
-                    "name": {
-                        "en": "Millennium"
-                    },
-                    "power_port": "d42",
-                    "hotel_card": "d11",
-                    "room_check_button": "d10",
-                    "do_not_disturb_port": "d29",
-                    "room_service_port": "d28",
-                    "card_in_state": 0,
-                    "welcome_light_duration": 2,
-                    "welcome_input_port": "d44",
-                    "welcome_output_port": "d45",
-                    "light_sensor_dark_threshold": 230,
-                    "light_sensor_port": "a4",
-                    "nocard_power_timeout": 3
-                }]
-            }, {
-                "ratio": 1,
-                "name": {
-                    "en": "Water fountains",
-                    "ar": "النوافير"
-                },
-                "things": [{
-                    "category": "water_fountains",
-                    "name": {
-                        "en": "Water Fountain"
-                    },
-                    "switch_port": "d24"
-                }]
-            }, {
-                "ratio": 1,
-                "name": {
-                    "en": "Penthouse",
-                    "ar": "خدمات الغرفة"
-                },
-                "things": [{
-                    "category": "penthouse_disco",
-                    "name": {
-                        "en": "Penthouse"
-                    },
-                    "open_contactor_1": "d8",
-                    "open_contactor_2": "d9",
-                    "close_contactor_1": "d10",
-                    "close_contactor_2": "d11",
-                    "open_motor": "d12",
-                    "close_motor": "d13",
-                    "fog_output": "d14",
-                    "lights_output": "d15",
-                    "output_on_state": 1,
-                    "input_on_state": 0
-                }]
-            }]
-        }],
-        "detail": {
-            "ratio": 4,
-            "side": "right"
+        }]
+    }],
+    "translations": {
+        "Lighting": {
+            "en": "Lighting",
+            "ar": "إضاءة الغرفة"
         },
-        "layout": {
-            "margin": 5
+        "Ceiling": {
+            "en": "Ceiling",
+            "ar": "السقف"
+        },
+        "Bedside": {
+            "en": "Bedside",
+            "ar": "جانب السرير"
+        },
+        "Entrance": {
+            "en": "Entrance",
+            "ar": "المدخل"
+        },
+        "Bathroom": {
+            "en": "Bathroom",
+            "ar": "إضاءة الحمام"
+        },
+        "Mirror": {
+            "en": "Mirror",
+            "ar": "المرآة"
+        },
+        "AC": {
+            "en": "AC",
+            "ar": "التكييف"
+        },
+        "Room Service": {
+            "en": "Room Service",
+            "ar": "خدمات الغرفة"
         }
-    }]
+    }
 }

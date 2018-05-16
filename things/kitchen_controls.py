@@ -1,4 +1,4 @@
-from things.thing import Thing
+from things.thing import Thing, ParamSpec, InputPortSpec, OutputPortSpec, GlobalSubParamSpec, ThingParams
 from logs import Log
 import json
 from functools import reduce
@@ -24,12 +24,17 @@ from functools import reduce
 #
 
 class KitchenControls(Thing):
-    def __init__(self, blueprint, kitchen_json):
-        super(KitchenControls, self).__init__(blueprint, kitchen_json)
-        self.id = kitchen_json.get("id", "kitchen")
+    def __init__(self, blueprint, J):
+        super(KitchenControls, self).__init__(blueprint, J)
+        self.params = ThingParams(J, [
+            ParamSpec("menu", [], is_required=True), # Menu of possible orders (strings)
+        ])
+        self.id = J.get("id", "kitchen")
+
+        self.input_ports = self.params.get_input_ports()
+        self.output_ports = self.params.get_output_ports()
+
         self.orders = []
-        if not hasattr(self, "menu"):
-            self.menu = []
         self.id_generator = 1
 
     # Should return the key in the blueprint that this Thing captures
@@ -80,7 +85,7 @@ class KitchenControls(Thing):
 
     def get_state(self):
         return {
-            "orders": self.orders,
-            "menu": self.menu,
+            "orders": json.loads(json.dumps(self.orders)),
+            "menu": self.params.get("menu"),
         }
 
