@@ -1,69 +1,164 @@
 {
-    "id": "1",
+    "id": 1,
     "rooms": [{
         "id": "room-1",
-        "name": "{{BLUEPRINT_NAME}}",
+        "name": "Hyatt Demo",
         "groups": [{
+            "id": "group-1",
+            "name": "Room Lights",
+            "things": [{
+                "category": "dimmers",
+                "name": "Master Light",
+                "dimmer_ports": ["v1"],
+                "virtual_port_data": [[1, 60, 0, 22]],
+                "max_output_percentage": 80,
+                "has_switch": 1,
+                "id": "master_light",
+                "default_wakeup_value": 100
+            }, {
+                "category": "light_switches",
+                "name": "Left Reading Light",
+                "switch_port": "d46",
+                "on_state": 0,
+                "default_wakeup_value": 0
+            }, {
+                "category": "light_switches",
+                "name": "Right Reading Light",
+                "switch_port": "d48",
+                "on_state": 0,
+                "default_wakeup_value": 0
+            }, {
+                "name": "ss_master",
+                "category": "soft_switches",
+                "switch_port": "d29",
+                "light_id": "master_light",
+                "pressed_state": 0,
+                "use_pullup": true
+            }]
+        }, {
+            "id": "group-2",
+            "name": "Bathroom Lights",
+            "things": [{
+                "category": "light_switches",
+                "name": "Master Light",
+                "switch_port": "d52",
+                "id": "brl1",
+                "on_state": 0,
+                "default_wakeup_value": 0
+            }, {
+                "category": "light_switches",
+                "name": "Mirror Light",
+                "switch_port": ["d50", "d34"],
+                "id": "brl2",
+                "on_state": 0,
+                "default_wakeup_value": 0
+            }, {
+                "name": "ss1",
+                "category": "soft_switches",
+                "switch_port": "d29",
+                "light_id": "brl1",
+                "pressed_state": 0,
+                "use_pullup": true
+            }, {
+                "name": "ss2",
+                "category": "soft_switches",
+                "switch_port": "d27",
+                "light_id": "brl2",
+                "pressed_state": 0,
+                "use_pullup": true
+            }]
+        }, {
+            "id": "group-3",
+            "name": "Thermostat",
+            "things": [{
+                "category": "honeywell_thermostat_t7560",
+                "name": "Thermostat",
+                "temperature_port": "v0",
+                "virtual_port_data": [[0, 0]]
+            }]
+        }, {
             "id": "group-4",
             "name": "Room Service",
             "things": [{
                 "category": "hotel_controls",
                 "name": "Room Service",
-                "power_port": "d49",
-                "hotel_card": "d44",
-                "hotel_card_use_pullup": "d44",
-                "room_check_button": "d46",
+                "power_port": "d39",
+                "hotel_card": "d25",
+                "hotel_card_output": "d37",
+                "hotel_card_output_on_state": 1,
                 "do_not_disturb_port": "d38",
                 "room_service_port": "d40",
-                "card_in_state": 0,
-                "on_state": 0
-            }, {
-                "category": "central_acs",
-                "name": "AC",
-                "temperature_port": "v0",
-                "fan_low_port": "d37",
-                "fan_med_port": "d35",
-                "fan_high_port": "d33",
-                "digital_valve_port": "d31",
-                "virtual_port_data": [[0, 0]],
-                "default_sleep_temperature": 25.0,
                 "on_state": 0,
-                "smoke_detector_port": "d42"
+                "nocard_power_timeout": 30,
+                "bell_port": "d44",
+                "welcome_input_port": "d31",
+                "welcome_output_port": "d36",
+                "light_sensor_port": "a4",
+                "light_sensor_port_use_pullup": false,
+                "light_sensor_dark_threshold": 254,
+                "welcome_light_duration": 30,
+                "use_pullup": true
+            }, {
+                "category": "dnd_soft_switches",
+                "name": "DND SS",
+                "switch_port": "d23",
+                "pressed_state": 0,
+                "use_pullup": true
             }]
         }]
     }],
     "translations": {
-        "Lighting": {
-            "en": "Lighting",
-            "ar": "إضاءة الغرفة"
+        "Room Lights": {
+            "en": "Room Lights",
+            "ar": "إضائة الغرفة"
         },
-        "Ceiling": {
-            "en": "Ceiling",
-            "ar": "السقف"
+        "Bathroom Lights": {
+            "en": "Bathroom Lights",
+            "ar": "إضائة الحمام"
         },
-        "Bedside": {
-            "en": "Bedside",
-            "ar": "جانب السرير"
-        },
-        "Entrance": {
-            "en": "Entrance",
-            "ar": "المدخل"
-        },
-        "Bathroom": {
-            "en": "Bathroom",
-            "ar": "إضاءة الحمام"
-        },
-        "Mirror": {
-            "en": "Mirror",
-            "ar": "المرآة"
-        },
-        "AC": {
-            "en": "AC",
+        "Master Light": {
+            "en": "Master Light",
+            "ar": "الضوء الرئيسي"
+         },
+        "Right Reading Light": {
+            "en": "Right Reading Light",
+            "ar": "ظوء القراءة الأيمن"
+         },
+        "Left Reading Light": {
+            "en": "Left Reading Light",
+            "ar": "ظوء القراءة الأيسر"
+         },
+        "Mirror Light": {
+            "en": "Mirror Light",
+            "ar": "ضوء المرآة"
+         },
+        "Thermostat": {
+            "en": "Thermostat",
             "ar": "التكييف"
         },
         "Room Service": {
             "en": "Room Service",
             "ar": "خدمات الغرفة"
-        }
+        },
+        "Off": {
+            "en": "Off",
+            "ar": "مطفأ"
+         },
+        "Low": {
+            "en": "Low",
+            "ar": "منخفض"
+         },
+        "Med": {
+            "en": "Med",
+            "ar": "وسط"
+         },
+        "High": {
+            "en": "High",
+            "ar": "عالي"
+         },
+        "Auto": {
+            "en": "Auto",
+            "ar": "تلقائي"
+         }
     }
 }

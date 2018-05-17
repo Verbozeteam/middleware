@@ -120,6 +120,15 @@ class Blueprint(object):
         for key in remote_boards_data.keys():
             self.remote_boards[key] = RemoteBoard(key, remote_boards_data[key])
 
+        for r in self.rooms:
+            for t in r.things.values():
+                ips = json.loads(json.dumps(t.input_ports))
+                for k in ips.keys():
+                    if type(ips[k]) == type(0):
+                        ips[k] = {"read_interval": ips[k], "is_pullup": False}
+                print ("{:<30}\n\t{}\n\t{}\n\t{}".format(t.get_blueprint_tag(), ips, t.output_ports, t.get_hardware_state()))
+        asdasdas=dasdasdasd
+
     # Load a thing from a JSON config and append to to the given room
     # thing_json  JSON of the Thing config
     # returns     Newly loaded Thing

@@ -6,7 +6,7 @@ class HotelControls(Thing):
     def __init__(self, blueprint, J):
         super(HotelControls, self).__init__(blueprint, J)
         self.params = ThingParams(J, [
-            ParamSpec("card_in_state", 1), # voltage reading (0: low, 1: high) when the key card is in the holder
+            #ParamSpec("card_in_state", 1), # voltage reading (0: low, 1: high) when the key card is in the holder
             ParamSpec("nocard_power_timeout", 20), # Timeout to sleep after card is removed in seconds
             ParamSpec("welcome_light_duration", 30), # Duration to keep the welcome light on after door is opened
             ParamSpec("light_sensor_dark_threshold", 255), # Reading from the light sensor (0-255) below which the room is considered "dark"
@@ -16,6 +16,7 @@ class HotelControls(Thing):
             InputPortSpec("light_sensor_port", 5000), # Light sensor input port (analog)
             InputPortSpec("room_check_button", 0), # Room status check button inpurt port (digital)
             InputPortSpec("welcome_input_port", 0, lambda params: bool(params.get("welcome_output_port"))), # Door sensor input port (digital)
+            InputPortSpec("bell_input_port", 0), # Optional switch to controls bell_port (and is disabled while in DND)
 
             OutputPortSpec("hotel_card_output"), # Hotel card state output port (digital)
             OutputPortSpec("power_port"), # Port to indicate whether room power should be on or off (digital)
@@ -25,7 +26,7 @@ class HotelControls(Thing):
             OutputPortSpec("welcome_output_port", False, lambda params: bool(params.get("welcome_input_port"))), # Door welcome lights output port (digital)
 
             GlobalSubParamSpec("on_state", 1), # Default on-state for all ports: on-state is the state when the port is considered ACTIVE (1 means HIGH when active, 0 means LOW when active)
-            GlobalSubParamSpec("use_pullup", lambda params: params.get("card_in_state") == 0) # whether or not to use pull up resistor of all pin by default
+            GlobalSubParamSpec("use_pullup", lambda params: params.get("on_state") == 0) # whether or not to use pull up resistor of all pin by default
         ])
         self.id = J.get("id", "hotel-controls")
 
@@ -38,10 +39,11 @@ class HotelControls(Thing):
         self.welcome_light = 0
         self.power = 1
         self.card_out_start = -1
-        self.room_check_status = 1 - self.params.get("card_in_state")
+        self.room_check_status = 0
         self.door_open = 0
         self.welcome_light_start_time = 0
         self.light_sensor = 0
+        self.is_bell_ringing = True if self.params.get("bell_input_port") == None else False # always 'ringing' if bell has no switch, otherwise controlled by switch
 
     # Should return the key in the blueprint that this Thing captures
     @staticmethod
@@ -55,13 +57,15 @@ class HotelControls(Thing):
     def set_hardware_state(self, port, value):
         super(HotelControls, self).set_hardware_state(port, value)
         if port == self.params.get("hotel_card"):
-            self.card_in = 1 if value == self.params.get("card_in_state") else 0
+            self.card_in = 1 if value == self.params.get("hotel_card", "on_state") else 0
         elif port == self.params.get("room_check_button"):
-            self.room_check_status = value
+            self.room_check_status = 1 if value == self.params.get("room_check_button", "on_state") else 0
         elif port == self.params.get("welcome_input_port"):
-            self.door_open = 0 if value == self.params.get("card_in_state") else 1
+            self.door_open = 1 if value == self.params.get("welcome_input_port", "on_state") else 0
         elif port == self.params.get("light_sensor_port"):
             self.light_sensor = value
+        elif port == self.params.get("bell_input_port"):
+            self.is_bell_ringing = 1 if value == self.params.get("bell_input_port", "on_state") else 0
         return False
 
     def set_state(self, data, token_from="system"):
@@ -116,7 +120,7 @@ class HotelControls(Thing):
 
         dnd = self.do_not_disturb
         rs = self.room_service
-        if self.room_check_status == self.params.get("card_in_state"):
+        if self.room_check_status:
             dnd = 1 - self.params.get("do_not_disturb_port", "on_state")
             rs = 1 - self.params.get("room_service_port", "on_state")
             if self.card_in:
@@ -135,7 +139,8 @@ class HotelControls(Thing):
 
         # ACTIVATE bell relay if DND is on (on ACTIVE it should cut the bell circuit)
         if self.params.get("bell_port"):
-            state[self.params.get("bell_port")] = self.do_not_disturb if self.params.get("bell_port", "on_state") == 1 else 1 - self.do_not_disturb
+            onstate = self.params.get("bell_port", "on_state")
+            state[self.params.get("bell_port")] = onstate if self.is_bell_ringing and not self.do_not_disturb else 1 - onstate
 
         # if welcome light output is present, set it
         if self.params.get("welcome_output_port"):
