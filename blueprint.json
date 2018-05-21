@@ -91,7 +91,10 @@
                 "on_state": 0,
                 "nocard_power_timeout": 30,
                 "bell_port": "d44",
+                "bell_port_on_state": 1,
+                "bell_input_port": "d33",
                 "welcome_input_port": "d31",
+                "welcome_input_port_on_state": 1,
                 "welcome_output_port": "d36",
                 "light_sensor_port": "a4",
                 "light_sensor_port_use_pullup": false,
@@ -104,6 +107,10 @@
                 "switch_port": "d23",
                 "pressed_state": 0,
                 "use_pullup": true
+            }, {
+                "category": "bells",
+                "name": "Bell",
+                "bell_port": "d52"
             }]
         }]
     }],

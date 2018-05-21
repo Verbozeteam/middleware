@@ -16,13 +16,11 @@ class HotelControls(Thing):
             InputPortSpec("light_sensor_port", 5000), # Light sensor input port (analog)
             InputPortSpec("room_check_button", 0), # Room status check button inpurt port (digital)
             InputPortSpec("welcome_input_port", 0, lambda params: bool(params.get("welcome_output_port"))), # Door sensor input port (digital)
-            InputPortSpec("bell_input_port", 0), # Optional switch to controls bell_port (and is disabled while in DND)
 
             OutputPortSpec("hotel_card_output"), # Hotel card state output port (digital)
             OutputPortSpec("power_port"), # Port to indicate whether room power should be on or off (digital)
             OutputPortSpec("do_not_disturb_port"), # DND LED output port (digital)
             OutputPortSpec("room_service_port"), # RS LED output port (digital)
-            OutputPortSpec("bell_port"), # Bell activation output port (digital)
             OutputPortSpec("welcome_output_port", False, lambda params: bool(params.get("welcome_input_port"))), # Door welcome lights output port (digital)
 
             GlobalSubParamSpec("on_state", 1), # Default on-state for all ports: on-state is the state when the port is considered ACTIVE (1 means HIGH when active, 0 means LOW when active)
@@ -43,7 +41,6 @@ class HotelControls(Thing):
         self.door_open = 0
         self.welcome_light_start_time = 0
         self.light_sensor = 0
-        self.is_bell_ringing = True if self.params.get("bell_input_port") == None else False # always 'ringing' if bell has no switch, otherwise controlled by switch
 
     # Should return the key in the blueprint that this Thing captures
     @staticmethod
@@ -64,8 +61,6 @@ class HotelControls(Thing):
             self.door_open = 1 if value == self.params.get("welcome_input_port", "on_state") else 0
         elif port == self.params.get("light_sensor_port"):
             self.light_sensor = value
-        elif port == self.params.get("bell_input_port"):
-            self.is_bell_ringing = 1 if value == self.params.get("bell_input_port", "on_state") else 0
         return False
 
     def set_state(self, data, token_from="system"):
@@ -136,11 +131,6 @@ class HotelControls(Thing):
 
         if self.params.get("power_port"):
             state[self.params.get("power_port")] = self.power if self.params.get("power_port", "on_state") == 1 else 1 - self.power
-
-        # ACTIVATE bell relay if DND is on (on ACTIVE it should cut the bell circuit)
-        if self.params.get("bell_port"):
-            onstate = self.params.get("bell_port", "on_state")
-            state[self.params.get("bell_port")] = onstate if self.is_bell_ringing and not self.do_not_disturb else 1 - onstate
 
         # if welcome light output is present, set it
         if self.params.get("welcome_output_port"):

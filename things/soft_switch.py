@@ -1,5 +1,6 @@
 from things.thing import Thing, ParamSpec, InputPortSpec, OutputPortSpec, GlobalSubParamSpec, ThingParams
 from things.light import LightSwitch
+from things.hotel_controls import HotelControls
 from logs import Log
 import json
 
@@ -82,7 +83,7 @@ class DNDSoftSwitch(SoftSwitch):
 
     def on_state_changed(self, old_state, new_state):
         if new_state == self.params.get("switch_port", "pressed_state"):
-            thing = list(filter(lambda t: t.get_blueprint_tag() == "hotel_controls", self.blueprint.get_things()))
+            thing = list(filter(lambda t: isinstance(t, HotelControls), self.blueprint.get_things()))
             if len(thing) > 0:
                 thing = thing[0]
                 thing.set_state({"do_not_disturb": 1 - thing.do_not_disturb, "room_service": 0})
@@ -99,7 +100,7 @@ class RSSoftSwitch(SoftSwitch):
 
     def on_state_changed(self, old_state, new_state):
         if new_state == self.params.get("switch_port", "pressed_state"):
-            thing = list(filter(lambda t: t.get_blueprint_tag() == "hotel_controls", self.blueprint.get_things()))
+            thing = list(filter(lambda t: isinstance(t, HotelControls), self.blueprint.get_things()))
             if len(thing) > 0:
                 thing = thing[0]
                 thing.set_state({"room_service": 1 - thing.room_service, "do_not_disturb": 0})
