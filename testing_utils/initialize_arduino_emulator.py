@@ -13,7 +13,7 @@ rpc_port_1 = 5001
 rpc_port_2 = 5002
 
 serial_port_1 = 9911
-serial_port_2 = 9912
+serial_port_2 = 9920
 
 time_multiplier_1 = 2.0
 time_multiplier_2 = 5.0

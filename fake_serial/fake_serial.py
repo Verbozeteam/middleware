@@ -57,12 +57,11 @@ class FakeComPort:
 def fake_comports():
     return [FakeComPort("123456789", GENERAL_CONFIG.SIMULATED_BOARD_NAME, GENERAL_CONFIG.SIMULATED_BOARD_NAME)]
 
+from serial.tools.list_ports import comports
+from serial import *
 if GENERAL_CONFIG.SIMULATE_ARDUINO:
     Serial = FakeSerial
     comports = fake_comports
-else:
-    from serial.tools.list_ports import comports
-    from serial import Serial
 
 EXTRA_FAKE_PORTS = []
 
