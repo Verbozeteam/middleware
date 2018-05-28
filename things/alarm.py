@@ -11,11 +11,13 @@ class AlarmItem(object):
         AlarmItem.CURRENT_ID += 1
         # example input format for time: 'Jun 1 2005  1:33PM'
         self.time = datetime.datetime.strptime(data["time"], AlarmItem.TIME_FORMAT)
+        self.is_ringing = False
 
     def get_json(self):
         return {
             "id": self.id,
-            "time": self.time.strftime(AlarmItem.TIME_FORMAT)
+            "time": self.time.strftime(AlarmItem.TIME_FORMAT),
+            "is_ringing": self.is_ringing
         }
 
 class AlarmSystem(Thing):
@@ -44,5 +46,13 @@ class AlarmSystem(Thing):
                 Log.warning("Attempt to set alarm with invalid parameters", exception=True)
         if "remove_alarms" in data:
             self.alarms = list(filter(lambda a: a.id not in data["remove_alarms"], self.alarms))
+        if "ring_alarm" in data:
+            id = data["ring_alarm"]
+            # remove any already ringing alarms
+            self.alarms = list(filter(lambda a: not a.is_ringing or a.id == id, self.alarms))
+            # ring the given alarm
+            for i in range(0, len(self.alarms)):
+                if self.alarms[i].id == id:
+                    self.alarms[i].is_ringing = True
 
         return True
