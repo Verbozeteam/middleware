@@ -135,6 +135,7 @@ class ArduinoController(HardwareController):
         self.sync_send_timer = 0
         self.sync_send_period = 1
         self.receive_timeout = -1
+        self.num_allowed_halves = 0
         self.is_initialized = False
         super(ArduinoController, self).__init__(hw_manager, comport, baud=9600, fake_serial_port=fake_serial_port)
 
@@ -190,6 +191,7 @@ class ArduinoController(HardwareController):
                 self.is_initialized = False
             elif set_to == True:
                 self.sync_send_period = 10
+                self.num_allowed_halves = 1
 
         return self.full_sync
 
@@ -263,7 +265,12 @@ class ArduinoController(HardwareController):
     # returns      True if the message is valid, False otherwise
     def on_message(self, message_type, message):
         if message_type == MESSAGE_TYPE.SYNC_SEQUENCE: # This message is just a SYNC sequence
-            return message == ArduinoProtocol.FULL_SYNC_SEQUENCE[2:]
+            if message == ArduinoProtocol.FULL_SYNC_SEQUENCE[2:]:
+                return True
+            elif message == ArduinoProtocol.SYNC_SEQUENCE[2:]:
+                self.num_allowed_halves -= 1
+                return self.num_allowed_halves >= 0
+            return False
         return ArduinoProtocol.on_message(self, message_type, message)
 
     def update(self, cur_time_s):
@@ -331,7 +338,7 @@ class ArduinoLegacyController(ArduinoController):
         self.read_buffer = bytearray([])
         self.BEGINNING_BYTE = 254
         self.ENDING_BYTE = 255
-        super(ArduinoLegacyController, self).__init__(hw_manager, comport, fake_serial_port=9912)
+        super(ArduinoLegacyController, self).__init__(hw_manager, comport, fake_serial_port=9920)
 
     def is_in_sync(self, set_to=None):
         return True
