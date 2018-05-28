@@ -126,7 +126,7 @@ class CentralAC(Thing):
                 temp_diff = self.current_temperature - target_temperature
                 coeff = (min(max(temp_diff, -10), 10)) / 10; # [-1, 1]
                 self.current_airflow = min(max(self.current_airflow + self.homeostasis * coeff, 0.0), 255.0)
-            if hasattr(self, "digital_valve_port"):
+            if self.params.get("digital_valve_port"):
                 if self.is_temp_rising:
                     if self.current_temperature > target_temperature + self.homeostasis:
                         self.digital_valve_output = 1
