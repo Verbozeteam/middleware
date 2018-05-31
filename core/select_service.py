@@ -2,6 +2,7 @@ from logs import Log
 
 import sys
 import select
+from functools import reduce
 
 #
 # Base class for a "selectible" object, which can read/write using the SelectService
@@ -13,6 +14,8 @@ class Selectible(object):
 		self.pending_write_to_fd = bytearray([])
 		self.fd = fd
 		self.write_function = "write" if "write" in dir(fd) else "send" # some have .write, some have .send
+		self.max_bytes_per_second = 0
+		self.recent_sent_history = [] # list of (num_sent, timestamp)
 		SelectService.register_selectible(self)
 
 	def destroy_selectible(self):
@@ -24,18 +27,35 @@ class Selectible(object):
 	def on_read_ready(self, cur_time_s):
 		pass
 
+	def get_max_send_size(self, cur_time_s):
+		if self.max_bytes_per_second > 0:
+			while len(self.recent_sent_history) > 0 and cur_time_s - self.recent_sent_history[0][1] > 1:
+				# too old, remove from history list
+				self.recent_sent_history = self.recent_sent_history[1:]
+			total_sent_in_last_sec = reduce(lambda a,b: a + b, map(lambda rsh: rsh[0], self.recent_sent_history), 0)
+			return min(max(self.max_bytes_per_second - total_sent_in_last_sec, 0), len(self.pending_write_to_fd))
+		return len(self.pending_write_to_fd)
+
+
+	def on_sent(self, nsent, cur_time_s):
+		if self.max_bytes_per_second > 0:
+			self.recent_sent_history.append((nsent, cur_time_s))
+
 	def on_write_ready(self, cur_time_s):
 		try:
 			# call the write function
-			nsent = getattr(self.fd, self.write_function)(self.pending_write_to_fd)
-			if nsent == None:
-				print (self.fd, self.write_function, self, self.pending_write_to_fd)
-				import traceback
-				traceback.print_stack()
-			if nsent <= 0:
-				Log.debug("Selectible::on_write_ready() wrote 0 bytes")
-				return False
-			self.pending_write_to_fd = self.pending_write_to_fd[nsent:]
+			nsend = self.get_max_send_size(cur_time_s)
+			if nsend > 0:
+				nsent = getattr(self.fd, self.write_function)(self.pending_write_to_fd[:nsend])
+				if nsent == None:
+					print (self.fd, self.write_function, self, self.pending_write_to_fd[:nsend])
+					import traceback
+					traceback.print_stack()
+				if nsent <= 0:
+					Log.debug("Selectible::on_write_ready() wrote 0 bytes")
+					return False
+				self.pending_write_to_fd = self.pending_write_to_fd[nsent:]
+				self.on_sent(nsent, cur_time_s)
 			return True
 		except:
 			Log.debug("Selectible::on_write_ready() failed.", exception=True)

@@ -137,7 +137,9 @@ class ArduinoController(HardwareController):
         self.receive_timeout = -1
         self.num_allowed_halves = 0
         self.is_initialized = False
+        self.total_bytes_received = 0
         super(ArduinoController, self).__init__(hw_manager, comport, baud=9600, fake_serial_port=fake_serial_port)
+        self.max_bytes_per_second = 63
 
     # Initializes the Things that this controller controls
     def initialize_board(self):
@@ -189,6 +191,7 @@ class ArduinoController(HardwareController):
                 self.sync_send_timer = 0
                 self.sync_send_period = 1
                 self.is_initialized = False
+                self.total_bytes_received = 0
             elif set_to == True:
                 self.sync_send_period = 10
                 self.num_allowed_halves = 1
@@ -198,7 +201,7 @@ class ArduinoController(HardwareController):
     # Synchronizes the read buffer with the Arduino if its not already in sync.
     # returns True if the buffer is in sync, False otherwise
     def sync_input_buffer(self, cur_time_s):
-        if cur_time_s >= self.sync_send_timer:
+        if cur_time_s >= self.sync_send_timer and self.total_bytes_received > 0:
             self.sync_send_timer = cur_time_s + self.sync_send_period
             self.write_to_fd(ArduinoProtocol.FULL_SYNC_SEQUENCE if self.half_sync else ArduinoProtocol.SYNC_SEQUENCE)
             Log.hammoud("ArduinoController::sync_input_buffer() wrote a sync sequence {}".format("full" if self.full_sync else ("half" if self.half_sync else "NO SYNC")))
@@ -299,6 +302,7 @@ class ArduinoController(HardwareController):
             b = self.serial_port.read(self.serial_port.in_waiting)
             self.read_buffer += b
             self.receive_timeout = cur_time_s + 13
+            self.total_bytes_received += len(b)
         except:
             Log.error("ArduinoController::on_read_ready() failed", exception=True)
             return False
