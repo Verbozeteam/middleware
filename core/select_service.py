@@ -14,7 +14,8 @@ class Selectible(object):
 		self.pending_write_to_fd = bytearray([])
 		self.fd = fd
 		self.write_function = "write" if "write" in dir(fd) else "send" # some have .write, some have .send
-		self.max_bytes_per_second = 0
+		self.max_bytes_per_unit_time = 0
+		self.unit_time_seconds = 1
 		self.recent_sent_history = [] # list of (num_sent, timestamp)
 		SelectService.register_selectible(self)
 
@@ -28,17 +29,17 @@ class Selectible(object):
 		pass
 
 	def get_max_send_size(self, cur_time_s):
-		if self.max_bytes_per_second > 0:
-			while len(self.recent_sent_history) > 0 and cur_time_s - self.recent_sent_history[0][1] > 1:
+		if self.max_bytes_per_unit_time > 0:
+			while len(self.recent_sent_history) > 0 and cur_time_s - self.recent_sent_history[0][1] > self.unit_time_seconds:
 				# too old, remove from history list
 				self.recent_sent_history = self.recent_sent_history[1:]
 			total_sent_in_last_sec = reduce(lambda a,b: a + b, map(lambda rsh: rsh[0], self.recent_sent_history), 0)
-			return min(max(self.max_bytes_per_second - total_sent_in_last_sec, 0), len(self.pending_write_to_fd))
+			return min(max(self.max_bytes_per_unit_time - total_sent_in_last_sec, 0), len(self.pending_write_to_fd))
 		return len(self.pending_write_to_fd)
 
 
 	def on_sent(self, nsent, cur_time_s):
-		if self.max_bytes_per_second > 0:
+		if self.max_bytes_per_unit_time > 0:
 			self.recent_sent_history.append((nsent, cur_time_s))
 
 	def on_write_ready(self, cur_time_s):
