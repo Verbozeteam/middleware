@@ -17,6 +17,8 @@ if not hasattr(sys, '_called_from_test'):
     parser.add_argument("-c", "--colors", required=False, action='store_true', help="enable printing colored logs")
     parser.add_argument("-d", "--disable", required=False, action='store_true', help="Disables connecting to hardware")
     parser.add_argument("-sp", "--serial-ports", required=False, type=str, help='Define serial ports to override system default enumeration. Format: \'<vendor>:<device_filename>,<vendor>:<device_filename>,...\' where <vendor> is used to determine which controller to assign the device (\'arduino\' for Arduino, \'FT231X USB UART\' for Zigbee) and <device> is the linux device path (e.g. \'/dev/ttyS0\')')
+    parser.add_argument("-key", "--ssl-key", required=False, type=str, help='path to SSL key file')
+    parser.add_argument("-cert", "--ssl-cert", required=False, type=str, help='path to SSL certificate file')
     cmd_args = parser.parse_args()
 
     if cmd_args.verbozity: config.GENERAL_CONFIG.LOG_VERBOZITY = cmd_args.verbozity
@@ -28,5 +30,7 @@ if not hasattr(sys, '_called_from_test'):
     if cmd_args.colors: config.GENERAL_CONFIG.LOG_COLORS = True
     if cmd_args.disable: config.HARDWARE_CONFIG.DISABLE_HARDWARE = True
     if cmd_args.serial_ports: config.HARDWARE_CONFIG.SERIAL_PORTS = cmd_args.serial_ports
+    if cmd_args.ssl_key: config.CONTROLLERS_CONFIG.SSL_KEY_FILE = cmd_args.ssl_key
+    if cmd_args.ssl_cert: config.CONTROLLERS_CONFIG.SSL_CERT_FILE = cmd_args.ssl_cert
 
     if cmd_args.simulate: config.GENERAL_CONFIG.SIMULATE_ARDUINO = True

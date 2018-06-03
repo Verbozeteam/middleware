@@ -1,5 +1,5 @@
 from logs import Log
-from controllers.tcp_socket_controllers import TCPSocketConnectionManager
+from controllers.tcp_socket_controllers import TCPSocketConnectionManager, TCPSSLSocketConnectionManager
 
 from functools import reduce
 
@@ -16,9 +16,9 @@ class ControllersManager(object):
     def __init__(self, core):
         self.core = core
         self.connected_controllers = []
-        self.tcp_socket_connection_manager = TCPSocketConnectionManager(self)
         self.connection_managers = [
-            self.tcp_socket_connection_manager,
+            TCPSocketConnectionManager(self),
+            TCPSSLSocketConnectionManager(self),
         ]
 
     # Registers a controller

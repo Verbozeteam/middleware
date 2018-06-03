@@ -5,14 +5,16 @@ from logs import Log
 from config.controllers_config import CONTROLLERS_CONFIG
 
 import socket
+import ssl
 import netifaces
+import os
 
 class TCPHostedSocket(Selectible):
     def __init__(self, connection_manager, interface, ip):
         self.connection_manager = connection_manager
         self.interface = interface
         self.ip = ip
-        self.sock = TCPHostedSocket.create_server_socket(self.ip)
+        self.sock = self.__class__.create_server_socket(self.ip)
         if self.sock == None:
             raise Exception(1)
         self.initialize_selectible_fd(self.sock)
@@ -44,10 +46,10 @@ class TCPHostedSocket(Selectible):
     # ip  IP to bind the server socket to
     # returns  The create server socket
     @staticmethod
-    def create_server_socket(ip):
+    def create_server_socket(ip, port=CONTROLLERS_CONFIG.SOCKET_SERVER_BIND_PORT):
         s = None
         try:
-            addr = (ip, CONTROLLERS_CONFIG.SOCKET_SERVER_BIND_PORT)
+            addr = (ip, port)
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             s.bind(addr)
@@ -60,14 +62,43 @@ class TCPHostedSocket(Selectible):
             s = None
         return s
 
+class TCPSSLHostedSocket(TCPHostedSocket):
+    def __init__(self, connection_manager, interface, ip):
+        super(TCPSSLHostedSocket, self).__init__(connection_manager, interface, ip)
+
+    # similar to TCPHostedSocket but wraps in SSL socket
+    @staticmethod
+    def create_server_socket(ip, port=CONTROLLERS_CONFIG.SOCKET_SERVER_SSL_BIND_PORT):
+        s = TCPHostedSocket.create_server_socket(ip, port)
+        if s and os.path.isfile(CONTROLLERS_CONFIG.SSL_KEY_FILE) > 0 and os.path.isfile(CONTROLLERS_CONFIG.SSL_CERT_FILE) > 0:
+            ssl_sock = None
+            try:
+                ssl_sock = ssl.wrap_socket(
+                    s,
+                    ssl_version=ssl.PROTOCOL_TLSv1_2,
+                    cert_reqs=ssl.CERT_REQUIRED,
+                    server_side=True,
+                    keyfile=CONTROLLERS_CONFIG.SSL_KEY_FILE,
+                    certfile=CONTROLLERS_CONFIG.SSL_CERT_FILE
+                )
+            except:
+                Log.error("Failed to setup TLS server socket", exception=True)
+            if ssl_sock:
+                Log.info("Successfully created TLS server socket")
+            else:
+                Log.error("Failed to setup TLS server socket")
+            return ssl_sock
+        return s
+
 #
 # A socket-based connection manager for controllers
 #
 class TCPSocketConnectionManager(ConnectionManager):
     def __init__(self, controllers_manager):
         super(TCPSocketConnectionManager, self).__init__(controllers_manager)
-        self.server_socks = {} # dictionary of iface name -> TCPHostedSocket on that iface
+        self.server_socks = {} # dictionary of iface name -> instance of self.hosted_socket_type on that iface
         self.reconnect_timer = 0
+        self.hosted_socket_type = TCPHostedSocket
 
     def register_server_sock(self, iface, s):
         self.server_socks[iface] = s
@@ -88,7 +119,7 @@ class TCPSocketConnectionManager(ConnectionManager):
                     self.server_socks[iface].destroy_selectible()
             for (iface, ip) in available_interfaces:
                 if iface not in self.server_socks:
-                    try: TCPHostedSocket(self, iface, ip) # registers itself
+                    try: self.hosted_socket_type(self, iface, ip) # registers itself
                     except: pass
 
     # non-blocking listening to new connections and connected controllers
@@ -118,3 +149,11 @@ class TCPSocketConnectionManager(ConnectionManager):
                     ifaces.append((i, ip))
             except: pass
         return ifaces
+
+#
+# SSL-enabled version of TCPSocketConnectionManager
+#
+class TCPSSLSocketConnectionManager(TCPSocketConnectionManager):
+    def __init__(self, controllers_manager):
+        super(TCPSSLSocketConnectionManager, self).__init__(controllers_manager)
+        self.hosted_socket_type = TCPSSLHostedSocket

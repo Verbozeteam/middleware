@@ -7,6 +7,13 @@ Middleware between the Arduino and the control systems.
 - Install the requirements
     `pip install -r requirements.txt`
 
+# TLS encryption
+To use TLS encryption, you need to generate a private key and have a certificate. To do so:
+```
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout sslkey.pem -out ../certificate.pem
+```
+Then you can run the middleware with options `-key sslkey.pem -cert ../certificate.pem`. Notice that you will need to use the same certificate in the clients connected to the middleware.
+
 # Running tests
 - Make sure you are in the right virtual environment.
 - Clone the [arduino](https://github.com/Verbozeteam/arduino) repository (in another folder, don't put it in this repo!). Make sure you properly set it up and install [shammam](https://github.com/Verbozeteam/shammam).
