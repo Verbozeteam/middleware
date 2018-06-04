@@ -46,7 +46,7 @@ class TCPSocketController(Controller):
         self.address = addr
         self.buffer = bytearray([])
         self.initialize_selectible_fd(conn)
-        super(TCPSocketController, self).__init__(controllers_manager)
+        super(TCPSocketController, self).__init__(controllers_manager, addr[0])
 
     def __str__(self):
         return str(self.address)

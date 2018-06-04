@@ -1,5 +1,7 @@
 from logs import Log
+from config.controllers_config import CONTROLLERS_CONFIG
 from controllers.tcp_socket_controllers import TCPSocketConnectionManager, TCPSSLSocketConnectionManager
+from controllers.authentication import ControllerAuthentication
 
 from functools import reduce
 
@@ -15,23 +17,37 @@ class CONTROL_CODES:
 class ControllersManager(object):
     def __init__(self, core):
         self.core = core
-        self.connected_controllers = []
+        self.connected_controllers = {} # origin_name -> list of connected controllers from that origin
         self.connection_managers = [
             TCPSocketConnectionManager(self),
             TCPSSLSocketConnectionManager(self),
         ]
+        ControllerAuthentication.initialize()
+
+    # Checks if a connection from the given origin is allowed
+    def can_connect_from_origin(self, origin):
+        return \
+            (origin not in self.connected_controllers or len(self.connected_controllers[origin]) < CONTROLLERS_CONFIG.MAX_CONNECTIONS_PER_ORIGIN) and \
+            reduce(lambda a, b: a+b, map(lambda cc: len(cc), self.connected_controllers.values()), 0) < CONTROLLERS_CONFIG.MAX_CONNECTIONS
 
     # Registers a controller
     # controller  A Controller object that is connected
     def register_controller(self, controller):
-        self.connected_controllers.append(controller)
+        if controller.origin_name in self.connected_controllers:
+            if not self.can_connect_from_origin(controller.origin_name):
+                Log.warning("Controller rejected from origin {} (already at the limit)".format(controller.origin_name))
+                controller.destroy_selectible()
+            else:
+                self.connected_controllers[controller.origin_name].append(controller)
+        else:
+            self.connected_controllers[controller.origin_name] = [controller]
 
     # Disconnects a controller and calls .disconnect() on it
     # controller  The controller to disconnect
     def deregister_controller(self, controller):
-        for c in self.connected_controllers:
+        for c in self.connected_controllers[controller.origin_name]:
             if c == controller:
-                self.connected_controllers.remove(c)
+                self.connected_controllers[c.origin_name].remove(c)
                 break
 
     # called to periodically update this manager
@@ -40,29 +56,52 @@ class ControllersManager(object):
         for C in self.connection_managers:
             C.update(cur_time_s)
 
-        for controller in list(self.connected_controllers):
-            try:
-                keep = controller.update(cur_time_s)
-            except:
-                keep = False
-            if not keep:
-                controller.destroy_selectible()
+        for controllers in list(self.connected_controllers.values()):
+            for controller in controllers:
+                try:
+                    keep = controller.update(cur_time_s)
+                except:
+                    keep = False
+                if not keep:
+                    controller.destroy_selectible()
 
     # Called when this manager needs to free all its resources
     def cleanup(self):
-        for controller in list(self.connected_controllers):
-            controller.destroy_selectible()
+        for controllers in list(self.connected_controllers.values()):
+            for controller in controllers:
+                controller.destroy_selectible()
         for C in self.connection_managers:
             C.cleanup()
 
-    # Called when a controller sends a control command
+    # Called when a controller sends a command
     # controller  Controller that sent the command
-    # command     JSON control command sent
-    def on_control_command(self, controller, command):
-        if len(command) == 0: # heartbeat
+    # command     JSON command sent
+    def on_command(self, controller, command):
+        if not controller.is_authenticated or "authentication" in command:
+            ControllerAuthentication.authenticate(controller, command.get("authentication", {}))
+
+        if not controller.is_authenticated:
+            controller.send_data({"noauth": "noauth"}) # inform the client that he is not authenticated
+            Log.warning("Controller {} trying to communicate without authentication".format(str(controller)))
+            return # don't process anything before authentication
+
+        # heartbeat
+        if len(command) == 0:
             controller.send_data({}) # reply
+
+        # Thing state change command
+        elif "thing" in command:
+            thing_id = command["thing"]
+            if controller.things_listening != None and thing_id not in controller.things_listening:
+                Log.verboze("ControllersManager::on_command({}, {}) BLOCKED (no access)".format(str(self), command))
+                return
+            Log.debug("ControllersManager::on_command({}, {})".format(str(controller), command))
+            thing = self.core.blueprint.get_thing(thing_id)
+            thing.set_state(command, token_from=command.get("token", ""))
+
+        # Control command
         elif "code" in command:
-            Log.debug("ControllersManager::on_control_command({}, {})".format(str(controller), command))
+            Log.debug("ControllersManager::on_command({}, {})".format(str(controller), command))
             try:
                 if command["code"] == CONTROL_CODES.GET_BLUEPRINT:
                     controller.send_data(self.core.blueprint.get_controller_view(), cache=False)

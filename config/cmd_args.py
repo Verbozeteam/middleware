@@ -19,6 +19,10 @@ if not hasattr(sys, '_called_from_test'):
     parser.add_argument("-sp", "--serial-ports", required=False, type=str, help='Define serial ports to override system default enumeration. Format: \'<vendor>:<device_filename>,<vendor>:<device_filename>,...\' where <vendor> is used to determine which controller to assign the device (\'arduino\' for Arduino, \'FT231X USB UART\' for Zigbee) and <device> is the linux device path (e.g. \'/dev/ttyS0\')')
     parser.add_argument("-key", "--ssl-key", required=False, type=str, help='path to SSL key file')
     parser.add_argument("-cert", "--ssl-cert", required=False, type=str, help='path to SSL certificate file')
+    parser.add_argument("-moc", "--max-origin-conns", required=False, type=int, help="Maximum connections per origin (IP)")
+    parser.add_argument("-mc", "--max-conns", required=False, type=int, help="Maximum connections")
+    parser.add_argument("-tf", "--tokens-file", required=False, type=str, help="File that stores tokens allowed to connect (one in each line). The middleware alters this file when new tokens are authenticated")
+    parser.add_argument("-mph", "--master-password-hash", required=False, type=str, help="Hash of the master password that can be used to create new authentication tokens")
     cmd_args = parser.parse_args()
 
     if cmd_args.verbozity: config.GENERAL_CONFIG.LOG_VERBOZITY = cmd_args.verbozity
@@ -32,5 +36,9 @@ if not hasattr(sys, '_called_from_test'):
     if cmd_args.serial_ports: config.HARDWARE_CONFIG.SERIAL_PORTS = cmd_args.serial_ports
     if cmd_args.ssl_key: config.CONTROLLERS_CONFIG.SSL_KEY_FILE = cmd_args.ssl_key
     if cmd_args.ssl_cert: config.CONTROLLERS_CONFIG.SSL_CERT_FILE = cmd_args.ssl_cert
+    if cmd_args.max_origin_conns: config.CONTROLLERS_CONFIG.MAX_CONNECTIONS = cmd_args.max_origin_conns
+    if cmd_args.max_conns: config.CONTROLLERS_CONFIG.MAX_CONNECTIONS_PER_ORIGIN = cmd_args.max_conns
+    if cmd_args.tokens_file: config.CONTROLLERS_CONFIG.ALLOWED_TOKENS_FILE = cmd_args.tokens_file
+    if cmd_args.master_password_hash: config.CONTROLLERS_CONFIG.MASTER_PASSWORD_HASH = cmd_args.master_password_hash
 
     if cmd_args.simulate: config.GENERAL_CONFIG.SIMULATE_ARDUINO = True

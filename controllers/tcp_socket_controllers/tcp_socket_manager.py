@@ -36,7 +36,11 @@ class TCPHostedSocket(Selectible):
     def on_read_ready(self, cur_time_s):
         try:
             conn, addr = self.sock.accept()
-            self.controller_class(self.connection_manager.controllers_manager, conn, addr) # registers itself
+            if self.connection_manager.controllers_manager.can_connect_from_origin(addr[0]):
+                self.controller_class(self.connection_manager.controllers_manager, conn, addr) # registers itself
+            else:
+                conn.close()
+                Log.warning("Controller rejected from origin {} (already at the limit)".format(addr[0]))
         except:
             Log.error("Failed to accept a connection", exception=True)
             return False
@@ -76,7 +80,7 @@ class TCPSSLHostedSocket(TCPHostedSocket):
                 ssl_sock = ssl.wrap_socket(
                     s,
                     ssl_version=ssl.PROTOCOL_TLSv1_2,
-                    cert_reqs=ssl.CERT_REQUIRED,
+                    # cert_reqs=ssl.CERT_REQUIRED,
                     server_side=True,
                     keyfile=CONTROLLERS_CONFIG.SSL_KEY_FILE,
                     certfile=CONTROLLERS_CONFIG.SSL_CERT_FILE
