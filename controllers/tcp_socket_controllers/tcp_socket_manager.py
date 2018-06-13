@@ -15,6 +15,7 @@ class TCPHostedSocket(Selectible):
         self.interface = interface
         self.ip = ip
         self.sock = self.__class__.create_server_socket(self.ip)
+        self.port = self.sock.getsockname()[1]
         if self.sock == None:
             raise Exception(1)
         self.initialize_selectible_fd(self.sock)
@@ -24,7 +25,7 @@ class TCPHostedSocket(Selectible):
             self.controller_class = TCPSocketLegacyController
 
         self.connection_manager.register_server_sock(self.interface, self)
-        Log.info("Listening on {}:{}".format(ip, CONTROLLERS_CONFIG.SOCKET_SERVER_BIND_PORT))
+        Log.info("Listening on {}:{}".format(ip, self.port))
 
     def destroy_selectible(self):
         super(TCPHostedSocket, self).destroy_selectible()
@@ -37,10 +38,13 @@ class TCPHostedSocket(Selectible):
         try:
             conn, addr = self.sock.accept()
             if self.connection_manager.controllers_manager.can_connect_from_origin(addr[0]):
+                Log.info("Accepting controller on manager {}:{}".format(self.ip, self.port))
                 self.controller_class(self.connection_manager.controllers_manager, conn, addr) # registers itself
             else:
                 conn.close()
                 Log.warning("Controller rejected from origin {} (already at the limit)".format(addr[0]))
+        except ssl.SSLError as e:
+            Log.warning("Error when a client tried to connect using TLS: {}".format(e))
         except:
             Log.error("Failed to accept a connection", exception=True)
             return False

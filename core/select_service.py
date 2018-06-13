@@ -20,6 +20,10 @@ class Selectible(object):
         SelectService.register_selectible(self)
 
     def destroy_selectible(self):
+        last_len = 0
+        while len(self.pending_write_to_fd) > 0 and last_len != len(self.pending_write_to_fd):
+            self.on_write_ready(0)
+            last_len = len(self.pending_write_to_fd)
         SelectService.deregister_selectible(self)
 
     def write_to_fd(self, data):

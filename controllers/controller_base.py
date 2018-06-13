@@ -19,6 +19,9 @@ class Controller(Selectible):
 
     # Called for a periodic update
     def update(self, cur_time_s):
+        if not self.is_authenticated:
+            return True
+            
         try:
             my_things = self.manager.core.blueprint.get_things()
             if self.things_listening != None:

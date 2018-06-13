@@ -8,10 +8,10 @@ import time
 from core.select_service import SelectService
 
 class Core(object):
-    cur_time_s = 0
-
     def __init__(self):
         Log.info("Initializing the core...")
+
+        self.cur_time_s = 0
 
         # Load blueprint of the building
         self.blueprint = Blueprint(self)

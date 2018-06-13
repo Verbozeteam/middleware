@@ -11,4 +11,4 @@ class CONTROLLERS_CONFIG:
     SSL_KEY_FILE = ''
     SSL_CERT_FILE = ''
     ALLOWED_TOKENS_FILE = ''
-    MASTER_PASSWORD_HASH = '1234'
+    MASTER_PASSWORD_HASH = 'f7988cdced121be2108ff37c1b79be073e2041a87067995b761f3be22af340dd' # password is yahyas favorite song

@@ -2,6 +2,7 @@ from logs import Log
 from config.controllers_config import CONTROLLERS_CONFIG
 
 import os
+import hashlib
 
 class ControllerAuthentication:
     ALLOWED_TOKENS = None
@@ -15,6 +16,10 @@ class ControllerAuthentication:
             lines = content.split('\n')
             ControllerAuthentication.ALLOWED_TOKENS = list(filter(lambda l: len(l) > 0, lines))
             Log.info("Loaded allowed tokens from {}".format(CONTROLLERS_CONFIG.ALLOWED_TOKENS_FILE))
+        else:
+            Log.warning("All connections will be authenticated automatically (no tokens file provided)")
+        if not CONTROLLERS_CONFIG.MASTER_PASSWORD_HASH:
+            Log.warning("No master password hash provided")
 
     @staticmethod
     def authenticate(controller, authentication_object):
@@ -33,7 +38,11 @@ class ControllerAuthentication:
 
     @staticmethod
     def is_password_correct(password):
-        return password == CONTROLLERS_CONFIG.MASTER_PASSWORD_HASH
+        try:
+            hashed = hashlib.sha256(password.encode('utf-8')).hexdigest()
+            return hashed == CONTROLLERS_CONFIG.MASTER_PASSWORD_HASH
+        except:
+            return False
 
     @staticmethod
     def register_token(token):

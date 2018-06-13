@@ -77,17 +77,22 @@ class ControllersManager(object):
     # controller  Controller that sent the command
     # command     JSON command sent
     def on_command(self, controller, command):
+        if len(command) > 0:
+            Log.debug("ControllersManager::on_command({}, {})".format(str(controller), command))
+
         if not controller.is_authenticated or "authentication" in command:
             ControllerAuthentication.authenticate(controller, command.get("authentication", {}))
 
         if not controller.is_authenticated:
             controller.send_data({"noauth": "noauth"}) # inform the client that he is not authenticated
             Log.warning("Controller {} trying to communicate without authentication".format(str(controller)))
+            controller.destroy_selectible()
             return # don't process anything before authentication
 
         # heartbeat
         if len(command) == 0:
             controller.send_data({}) # reply
+            return
 
         # Thing state change command
         elif "thing" in command:
@@ -95,13 +100,11 @@ class ControllersManager(object):
             if controller.things_listening != None and thing_id not in controller.things_listening:
                 Log.verboze("ControllersManager::on_command({}, {}) BLOCKED (no access)".format(str(self), command))
                 return
-            Log.debug("ControllersManager::on_command({}, {})".format(str(controller), command))
             thing = self.core.blueprint.get_thing(thing_id)
             thing.set_state(command, token_from=command.get("token", ""))
 
         # Control command
         elif "code" in command:
-            Log.debug("ControllersManager::on_command({}, {})".format(str(controller), command))
             try:
                 if command["code"] == CONTROL_CODES.GET_BLUEPRINT:
                     controller.send_data(self.core.blueprint.get_controller_view(), cache=False)

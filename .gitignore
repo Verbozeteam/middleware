@@ -2,6 +2,7 @@ log_files
 .vscode
 sslkey.pem
 sslcert.pem
+allowed_tokens
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
