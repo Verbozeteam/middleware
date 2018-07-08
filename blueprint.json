@@ -78,10 +78,10 @@
             }]
         }, {
             "id": "group-4",
-            "name": "Room Service",
+            "name": "Room Status",
             "things": [{
                 "category": "hotel_controls",
-                "name": "Room Service",
+                "name": "Room Status",
                 "power_port": "d39",
                 "hotel_card": "d25",
                 "hotel_card_output": "d37",
@@ -91,7 +91,6 @@
                 "on_state": 0,
                 "nocard_power_timeout": 30,
                 "bell_port": "d44",
-                "bell_port_on_state": 1,
                 "bell_input_port": "d33",
                 "welcome_input_port": "d31",
                 "welcome_input_port_on_state": 1,
@@ -107,65 +106,131 @@
                 "switch_port": "d23",
                 "pressed_state": 0,
                 "use_pullup": true
-            }, {
-                "category": "bells",
-                "name": "Bell",
-                "bell_port": "d52"
+            }]
+        }, {
+            "id": "group-5",
+            "name": "Alarms",
+            "things": [{
+                "category": "alarm_system",
+                "name": "Alarm"
             }]
         }]
     }],
     "translations": {
         "Room Lights": {
             "en": "Room Lights",
-            "ar": "إضائة الغرفة"
+            "ar": "إضاءة الغرفة",
+            "ru": "Свет в Комнате",
+            "de": "Zimmer Beleuchtung",
+            "zh": "房间灯"
         },
         "Bathroom Lights": {
             "en": "Bathroom Lights",
-            "ar": "إضائة الحمام"
+            "ar": "إضاءة الحمام",
+            "ru": "Свет в Ванной",
+            "de": "Badezimmer Beleuchtung",
+            "zh": "浴室灯"
         },
         "Master Light": {
             "en": "Master Light",
-            "ar": "الضوء الرئيسي"
-         },
+            "ar": "الضوء الرئيسي",
+            "ru": "Главный Свет",
+            "de": "Hauptlicht",
+            "zh": "主灯"
+        },
         "Right Reading Light": {
             "en": "Right Reading Light",
-            "ar": "ظوء القراءة الأيمن"
-         },
+            "ar": "ضوء القراءة الأيمن",
+            "ru": "Правый Светильник",
+            "de": "Recht Leselicht",
+            "zh": "右读灯"
+        },
         "Left Reading Light": {
             "en": "Left Reading Light",
-            "ar": "ظوء القراءة الأيسر"
-         },
+            "ar": "ضوء القراءة الأيسر",
+            "ru": "Левый Светильник",
+            "de": "Linkes Leselicht",
+            "zh": "左读灯"
+        },
         "Mirror Light": {
             "en": "Mirror Light",
-            "ar": "ضوء المرآة"
-         },
+            "ar": "ضوء المرآة",
+            "ru": "Подсветка Зеркала",
+            "de": "Spiegel Licht",
+            "zh": "镜灯"
+        },
         "Thermostat": {
             "en": "Thermostat",
-            "ar": "التكييف"
+            "ar": "التكييف",
+            "ru": "Термостат",
+            "de": "Thermostat",
+            "zh": "温度控制"
         },
         "Room Service": {
             "en": "Room Service",
-            "ar": "خدمات الغرفة"
+            "ar": "خدمات الغرفة",
+            "ru": "Сервис Номера",
+            "de": "Zimmerservice",
+            "zh": "客房服务"
+        },
+        "Room Status": {
+            "en": "Room Status",
+            "ar": "حالة الغرفة",
+            "ru": "Состояние Номера",
+            "de": "Raumstatus",
+            "zh": "房间状态"
+        },
+        "Alarms": {
+            "en": "Alarms",
+            "ar": "منبهات",
+            "ru": "Будильник",
+            "de": "Wecker",
+            "zh": "闹钟"
         },
         "Off": {
             "en": "Off",
-            "ar": "مطفأ"
-         },
+            "ar": "مطفئ",
+            "ru": "Выкл",
+            "de": "Aus",
+            "zh": "关闭"
+        },
         "Low": {
             "en": "Low",
-            "ar": "منخفض"
-         },
+            "ar": "منخفض",
+            "ru": "Низк",
+            "de": "Niedrig",
+            "zh": "低"
+        },
         "Med": {
             "en": "Med",
-            "ar": "وسط"
-         },
+            "ar": "وسط",
+            "ru": "Сред",
+            "de": "Mittel",
+            "zh": "中"
+        },
         "High": {
             "en": "High",
-            "ar": "عالي"
-         },
+            "ar": "عالي",
+            "ru": "Выс",
+            "de": "Hoch",
+            "zh": "高"
+        },
         "Auto": {
             "en": "Auto",
-            "ar": "تلقائي"
-         }
+            "ar": "تلقائي",
+            "ru": "Авто",
+            "de": "Auto",
+            "zh": "自动"
+        },
+        "Master Switch": {
+            "en": "Master Switch",
+            "ar": "الجميع",
+            "ru": "Главный коммутатор",
+            "de": "Hauptschalter",
+            "zh": "主开关"
+        }
+    },
+    "display": {
+        "allSwitchName": "Master Switch"
     }
 }

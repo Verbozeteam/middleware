@@ -109,6 +109,7 @@ class Blueprint(object):
             return
 
         self.id = str(J["id"])
+        self.display = J.get("display", {})
         self.translations = J.get("translations", {})
         self.rooms = [Room(self, R) for R in J["rooms"]]
         found_room_ids = {}
@@ -147,6 +148,7 @@ class Blueprint(object):
     def get_controller_view(self):
         view = {
             "config": {
+                "display": self.display,
                 "translations": self.translations,
                 "rooms": list(map(lambda r: r.config, self.rooms)),
                 "id": str(self.id)
