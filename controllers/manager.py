@@ -1,7 +1,7 @@
 from logs import Log
 from config.controllers_config import CONTROLLERS_CONFIG
 from controllers.tcp_socket_controllers import TCPSocketConnectionManager, TCPSSLSocketConnectionManager
-from controllers.authentication import ControllerAuthentication
+from controllers.authentication import ControllerAuthentication, TOKEN_TYPE
 
 from functools import reduce
 
@@ -75,6 +75,15 @@ class ControllersManager(object):
         for C in self.connection_managers:
             C.cleanup()
 
+    # Gets all connected and authenticated controllers with the given token type
+    def get_controllers_by_type(self, token_type):
+        ret = []
+        for origin in self.connected_controllers:
+            for controller in self.connected_controllers[origin]:
+                if controller.authenticated_user and controller.authenticated_user.token_type == token_type:
+                    ret.append(controller)
+        return ret
+
     # Called when a controller sends a command
     # controller  Controller that sent the command
     # command     JSON command sent
@@ -117,9 +126,18 @@ class ControllersManager(object):
                     if listeners and type(listeners) is list and reduce(lambda l1, l2: l1 and l2, map(lambda s: type(s) is str, listeners)):
                         controller.things_listening = listeners
                 elif command["code"] == CONTROL_CODES.RESET_QRCODE:
-                    pass
+                    # find a hub and forward the code to
+                    hubs = self.get_controllers_by_type(TOKEN_TYPE.HUB)
+                    if len(hubs) > 0:
+                        hubs[0].send_data({"code": CONTROL_CODES.RESET_QRCODE})
                 elif command["code"] == CONTROL_CODES.SET_QRCODE:
-                    pass
+                    self.core.blueprint.display["QRCodeAddress"] = command.get("qr-code", "")
+                    controllers = self.get_controllers_by_type(TOKEN_TYPE.CONTROLLER)
+                    for controller in controllers:
+                        controller.send_data(self.core.blueprint.get_controller_view(), cache=False)
             except:
                 Log.error("Failed to respond to a control command", exception=True)
-                pass
+
+    # Called when a controller authenticates
+    def on_controller_authenticated(self, controller):
+        pass

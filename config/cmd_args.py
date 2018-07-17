@@ -11,6 +11,7 @@ if not hasattr(sys, '_called_from_test'):
     parser.add_argument("-b", "--blueprint", required=False, type=str, help="Building configuration file")
     parser.add_argument("-a", "--address", required=False, type=str, help="Socket server binding IP")
     parser.add_argument("-p", "--port", required=False, type=int, help="Socket server binding port")
+    parser.add_argument("-sslp", "--ssl-port", required=False, type=int, help="SSL Socket server binding port")
     parser.add_argument("-s", "--simulate", action='store_true', required=False, help="Use fake serial communication to talk to arduino on socket (localhost, 9911)")
     parser.add_argument("-r", "--regex", required=False, type=str, help="Only print logging messages that match this regex")
     parser.add_argument("-i", "--interfaces", required=False, nargs='+', help="List of network interfaces to host sockets on")
@@ -30,6 +31,7 @@ if not hasattr(sys, '_called_from_test'):
     if cmd_args.blueprint: config.GENERAL_CONFIG.BLUEPRINT_FILENAME = cmd_args.blueprint
     if cmd_args.address: config.CONTROLLERS_CONFIG.SOCKET_SERVER_BIND_IP = cmd_args.address
     if cmd_args.port: config.CONTROLLERS_CONFIG.SOCKET_SERVER_BIND_PORT = cmd_args.port
+    if cmd_args.ssl_port: config.CONTROLLERS_CONFIG.SOCKET_SERVER_SSL_BIND_PORT = cmd_args.ssl_port
     if cmd_args.interfaces: config.CONTROLLERS_CONFIG.SOCKET_HOSTING_INTERCACES = list(cmd_args.interfaces)
     if cmd_args.colors: config.GENERAL_CONFIG.LOG_COLORS = True
     if cmd_args.disable: config.HARDWARE_CONFIG.DISABLE_HARDWARE = True

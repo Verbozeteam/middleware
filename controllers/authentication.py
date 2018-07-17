@@ -13,8 +13,8 @@ class TOKEN_TYPE:
 class USER(object):
     Anonymous = None
 
-    def __init__(self, token="", uname="Anonymous", token_type=TOKEN_TYPE.CONTROLLER):
-        self.username = uname
+    def __init__(self, token="", username="Anonymous", token_type=TOKEN_TYPE.CONTROLLER):
+        self.username = username
         self.token = token
         self.token_type = token_type
 
@@ -56,9 +56,12 @@ class ControllerAuthentication:
             if token and token in ControllerAuthentication.ALLOWED_TOKENS:
                 controller.authenticated_user = ControllerAuthentication.ALLOWED_TOKENS[token]
             elif token and password and ControllerAuthentication.is_password_correct(password):
-                user = USER(token=token, uname=username, token_type=token_type)
+                user = USER(token=token, username=username, token_type=token_type)
                 ControllerAuthentication.register_user(user)
                 controller.authenticated_user = user
+
+        if controller.authenticated_user:
+            controller.manager.on_controller_authenticated(controller)
 
         Log.debug("Controller {} authentication {}".format(str(controller), "successful" if controller.authenticated_user != None else "unsuccessful"))
 
@@ -75,5 +78,5 @@ class ControllerAuthentication:
         ControllerAuthentication.ALLOWED_TOKENS[user.token] = user
         if os.path.isfile(CONTROLLERS_CONFIG.ALLOWED_TOKENS_FILE):
             with open(CONTROLLERS_CONFIG.ALLOWED_TOKENS_FILE, "w") as F:
-                json.dump(dict(map(lambda u: str(u), ControllerAuthentication.ALLOWED_TOKENS.values())), F)
+                json.dump(dict(map(lambda u: (u.token, json.loads(str(u))), ControllerAuthentication.ALLOWED_TOKENS.values())), F)
 
