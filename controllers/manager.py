@@ -6,9 +6,11 @@ from controllers.authentication import ControllerAuthentication
 from functools import reduce
 
 class CONTROL_CODES:
-    GET_BLUEPRINT = 0
-    GET_THING_STATE = 1
-    SET_LISTENERS = 2
+    GET_BLUEPRINT = 0       # Ask for the blueprint
+    GET_THING_STATE = 1     # Ask for the state of a specific Thing
+    SET_LISTENERS = 2       # Set which Things to listen to updates from
+    RESET_QRCODE = 3        # Request QR code to be reset (sent by controllers)
+    SET_QRCODE = 4          # Set the QR code (sent by a Hub)
 
 #
 # Controllers manager is responsible for all interaction with controller
@@ -80,10 +82,10 @@ class ControllersManager(object):
         if len(command) > 0:
             Log.debug("ControllersManager::on_command({}, {})".format(str(controller), command))
 
-        if not controller.is_authenticated or "authentication" in command:
+        if not controller.authenticated_user or "authentication" in command:
             ControllerAuthentication.authenticate(controller, command.get("authentication", {}))
 
-        if not controller.is_authenticated:
+        if not controller.authenticated_user:
             controller.send_data({"noauth": "noauth"}) # inform the client that he is not authenticated
             Log.warning("Controller {} trying to communicate without authentication".format(str(controller)))
             controller.destroy_selectible()
@@ -114,6 +116,10 @@ class ControllersManager(object):
                     listeners = command.get("things", None)
                     if listeners and type(listeners) is list and reduce(lambda l1, l2: l1 and l2, map(lambda s: type(s) is str, listeners)):
                         controller.things_listening = listeners
+                elif command["code"] == CONTROL_CODES.RESET_QRCODE:
+                    pass
+                elif command["code"] == CONTROL_CODES.SET_QRCODE:
+                    pass
             except:
                 Log.error("Failed to respond to a control command", exception=True)
                 pass

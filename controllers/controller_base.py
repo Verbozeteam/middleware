@@ -5,7 +5,7 @@ class Controller(Selectible):
     def __init__(self, controllers_manager, origin_name):
         self.manager = controllers_manager
         self.origin_name = origin_name
-        self.is_authenticated = False
+        self.authenticated_user = None
         self.manager.register_controller(self)
         self.cache = {} # thing_id -> thing state
         self.things_listening = [] # a list of things this Controller listens to (None means all)
@@ -19,9 +19,9 @@ class Controller(Selectible):
 
     # Called for a periodic update
     def update(self, cur_time_s):
-        if not self.is_authenticated:
+        if not self.authenticated_user:
             return True
-            
+
         try:
             my_things = self.manager.core.blueprint.get_things()
             if self.things_listening != None:
