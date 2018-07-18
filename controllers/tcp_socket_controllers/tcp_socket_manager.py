@@ -1,6 +1,6 @@
 from controllers.connection_manager import ConnectionManager
 from core.select_service import Selectible
-from controllers.tcp_socket_controllers.tcp_socket_controller import TCPSocketController, TCPSocketLegacyController
+from controllers.tcp_socket_controllers.tcp_socket_controller import TCPSocketController
 from logs import Log
 from config.controllers_config import CONTROLLERS_CONFIG
 
@@ -21,8 +21,6 @@ class TCPHostedSocket(Selectible):
         self.initialize_selectible_fd(self.sock)
 
         self.controller_class = TCPSocketController
-        if CONTROLLERS_CONFIG.LEGACY_MODE:
-            self.controller_class = TCPSocketLegacyController
 
         self.connection_manager.register_server_sock(self.interface, self)
         Log.info("Listening on {}:{}".format(ip, self.port))

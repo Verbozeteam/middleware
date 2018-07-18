@@ -1,5 +1,5 @@
 from config.hardware_config import HARDWARE_CONFIG
-from hardware.arduino_controller import ArduinoController, ArduinoLegacyController
+from hardware.arduino_controller import ArduinoController
 from hardware.zigbee_controller import ZigbeeController
 from logs import Log
 
@@ -14,7 +14,7 @@ class HardwareManager(object):
         self.core = core
         self.connected_controllers = {} # dictionary of serial number -> hardware controller
         self.controller_types = [] if HARDWARE_CONFIG.DISABLE_HARDWARE else [
-            ArduinoLegacyController if HARDWARE_CONFIG.LEGACY_MODE else ArduinoController,
+            ArduinoController,
             ZigbeeController,
         ]
 
