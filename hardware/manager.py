@@ -67,7 +67,7 @@ class HardwareManager(object):
             controller.destroy_selectible()
 
     # Called by a device when it has an updated value on a port
-    # device  The HardwareController device that has updated
+    # device  The HardwareController device that has updated (or TCPSocketController if it is an ESP)
     # port    The port on which the update happened
     # value   The new value on that port
     def on_port_update(self, device, port, value):

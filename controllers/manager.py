@@ -138,6 +138,14 @@ class ControllersManager(object):
             except:
                 Log.error("Failed to respond to a control command", exception=True)
 
+        # Hardware changes command
+        elif "port" in command and "value" in command:
+            try:
+                self.core.hw_manager.on_port_update(controller, command["port"], command["value"])
+            except:
+                Log.error("Failed to respond to a port update command", exception=True)
+
+
     # Called when a controller authenticates
     def on_controller_authenticated(self, controller):
         pass

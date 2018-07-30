@@ -2,111 +2,24 @@
     "id": 1,
     "rooms": [{
         "id": "room-1",
-        "name": "Hyatt Demo",
+        "name": "Yahya's House",
         "groups": [{
             "id": "group-1",
-            "name": "Room Lights",
+            "name": "Alhomsi Lights",
             "things": [{
-                "category": "dimmers",
-                "name": "Master Light",
-                "dimmer_ports": ["v1"],
-                "virtual_port_data": [[1, 60, 0, 22]],
-                "max_output_percentage": 80,
-                "has_switch": 1,
-                "id": "master_light",
-                "default_wakeup_value": 100
-            }, {
                 "category": "light_switches",
-                "name": "Left Reading Light",
+                "name": "Living Room",
                 "switch_port": "d46",
                 "on_state": 0,
+                "id": "lightswitch-1",
                 "default_wakeup_value": 0
             }, {
                 "category": "light_switches",
-                "name": "Right Reading Light",
+                "name": "Yahya's Room",
                 "switch_port": "d48",
                 "on_state": 0,
+                "id": "lightswitch-2",
                 "default_wakeup_value": 0
-            }, {
-                "name": "ss_master",
-                "category": "soft_switches",
-                "switch_port": "d29",
-                "light_id": "master_light",
-                "pressed_state": 0,
-                "use_pullup": true
-            }]
-        }, {
-            "id": "group-2",
-            "name": "Bathroom Lights",
-            "things": [{
-                "category": "light_switches",
-                "name": "Master Light",
-                "switch_port": "d52",
-                "id": "brl1",
-                "on_state": 0,
-                "default_wakeup_value": 0
-            }, {
-                "category": "light_switches",
-                "name": "Mirror Light",
-                "switch_port": ["d50", "d34"],
-                "id": "brl2",
-                "on_state": 0,
-                "default_wakeup_value": 0
-            }, {
-                "name": "ss1",
-                "category": "soft_switches",
-                "switch_port": "d29",
-                "light_id": "brl1",
-                "pressed_state": 0,
-                "use_pullup": true
-            }, {
-                "name": "ss2",
-                "category": "soft_switches",
-                "switch_port": "d27",
-                "light_id": "brl2",
-                "pressed_state": 0,
-                "use_pullup": true
-            }]
-        }, {
-            "id": "group-3",
-            "name": "Thermostat",
-            "things": [{
-                "category": "honeywell_thermostat_t7560",
-                "name": "Thermostat",
-                "temperature_port": "v0",
-                "virtual_port_data": [[0, 0]]
-            }]
-        }, {
-            "id": "group-4",
-            "name": "Room Status",
-            "things": [{
-                "category": "hotel_controls",
-                "name": "Room Status",
-                "power_port": "d39",
-                "hotel_card": "d25",
-                "hotel_card_output": "d37",
-                "hotel_card_output_on_state": 1,
-                "do_not_disturb_port": "d38",
-                "room_service_port": "d40",
-                "on_state": 0,
-                "nocard_power_timeout": 30,
-                "bell_port": "d44",
-                "bell_port_on_state": 1,
-                "bell_input_port": "d52",
-                "welcome_input_port": "d31",
-                "welcome_input_port_on_state": 1,
-                "welcome_output_port": "d36",
-                "light_sensor_port": "a4",
-                "light_sensor_port_use_pullup": false,
-                "light_sensor_dark_threshold": 254,
-                "welcome_light_duration": 30,
-                "use_pullup": true
-            }, {
-                "category": "dnd_soft_switches",
-                "name": "DND SS",
-                "switch_port": "d23",
-                "pressed_state": 0,
-                "use_pullup": true
             }]
         }, {
             "id": "group-5",
@@ -232,6 +145,23 @@
         }
     },
     "display": {
-        "allSwitchName": "Master Switch"
+        "UIStyle": "modern",
+        "accentColor": "#BA3737",
+        "sidebar": {
+            "iconHeight": null,
+            "color": null,
+            "separator": false,
+            "topIcon": null,
+            "pull": "right",
+            "underlineColor": "#BA3737",
+            "selectedColor": "#FFFFFF22",
+            "borderColor": "#FFFFFF",
+            "textColor": "#FFFFFF"
+        },
+        "backgroundColor": null,
+        "lightUI": false,
+        "textColor": "#FFFFFF",
+        "acTextColor": "#FFFFFF",
+        "curtainsDisplayAllSwitch": true
     }
 }

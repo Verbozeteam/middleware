@@ -52,6 +52,7 @@ class TCPSocketController(Controller):
                         loaded_json = json.loads(loaded_json)
                     self.on_command(loaded_json)
                 elif command_len > self.MAXIMUM_COMMAND_LENGTH:
+                    Log.warning("Controller sent a command that is too long (or corrupted)")
                     return False
                 else:
                     break

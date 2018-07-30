@@ -6,9 +6,10 @@ import json
 import hashlib
 
 class TOKEN_TYPE:
-    CONTROLLER = 1  # Used by controllers to control Things
-    HUB = 2         # Used by a hub to connect this middleware to the internet
-    UTILITY = 3     # Used by middleware utilities that need to interact with the middleware
+    CONTROLLER = 1                 # Used by controllers to control Things
+    HUB = 2                        # Used by a hub to connect this middleware to the internet
+    UTILITY = 3                    # Used by middleware utilities that need to interact with the middleware (e.g. a logging service, status checker, ...)
+    REMOTE_HARDWARE_CONTROLLER = 4 # Used by e.g. wireless ESP modules that can have sensors or actuators
 
 class USER(object):
     Anonymous = None

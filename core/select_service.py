@@ -53,10 +53,8 @@ class Selectible(object):
             if nsend > 0:
                 nsent = getattr(self.fd, self.write_function)(self.pending_write_to_fd[:nsend])
                 if nsent == None:
-                    print (self.fd, self.write_function, self, self.pending_write_to_fd[:nsend])
-                    import traceback
-                    traceback.print_stack()
-                if nsent <= 0:
+                    Log.error("Failed to call {} on fd {} (returned None, buffer {})".format(self.write_function, self.fd, self.pending_write_to_fd[:nsend]))
+                elif nsent <= 0:
                     Log.debug("Selectible::on_write_ready() wrote 0 bytes")
                     return False
                 self.pending_write_to_fd = self.pending_write_to_fd[nsent:]
