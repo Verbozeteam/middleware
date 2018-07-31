@@ -45,6 +45,11 @@ class RemoteZigbee(ArduinoController):
         self.sync_send_period = 1
         self.receive_timeout = -1
         self.is_initialized = False
+        
+        self.num_allowed_halves = 0
+        self.total_bytes_received = 0
+        self.max_bytes_per_unit_time = 63
+        self.unit_time_seconds = 0.5
 
     def write_to_fd(self, data):
         self.master.zigbeeTx(self.address16, self.address64, data)
