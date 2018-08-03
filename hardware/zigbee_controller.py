@@ -92,6 +92,7 @@ class RemoteZigbee(ArduinoController):
         try:
             self.read_buffer += data
             self.receive_timeout = cur_time_s + 13
+            self.total_bytes_received += len(data)
         except:
             Log.error("RemoteZigbee::on_read_ready() failed", exception=True)
             return False
