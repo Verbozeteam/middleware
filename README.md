@@ -10,9 +10,9 @@ Middleware between the Arduino and the control systems.
 # TLS encryption
 To use TLS encryption, you need to generate a private key and have a certificate. To do so:
 ```
-openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout sslkey.pem -out sslcert.pem
+openssl req -newkey rsa:2048 -nodes -keyout sslkey.pem -x509 -days 7300 -out sslcert.pem -subj '/CN=www.verboze.com/O=Verboze QSTP-LLC./C=QA'
 ```
-Then you can run the middleware with options `-key sslkey.pem -cert sslcert.pem`. Notice that you will need to use the same certificate in the clients connected to the middleware.
+Then you can run the middleware with options `-key sslkey.pem -cert sslcert.pem`.
 
 # Running tests
 - Make sure you are in the right virtual environment.
