@@ -33,6 +33,12 @@ class ControllerAuthentication:
 
     @staticmethod
     def initialize():
+        if not os.path.isfile(CONTROLLERS_CONFIG.ALLOWED_TOKENS_FILE) and len(CONTROLLERS_CONFIG.ALLOWED_TOKENS_FILE) > 0:
+            try:
+                with open(CONTROLLERS_CONFIG.ALLOWED_TOKENS_FILE, "w") as F:
+                    F.write("{}")
+            except: pass
+
         if os.path.isfile(CONTROLLERS_CONFIG.ALLOWED_TOKENS_FILE):
             with open(CONTROLLERS_CONFIG.ALLOWED_TOKENS_FILE, "r") as F:
                 content = json.load(F)

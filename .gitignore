@@ -3,6 +3,7 @@ log_files
 sslkey.pem
 sslcert.pem
 allowed_tokens
+credentials
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
