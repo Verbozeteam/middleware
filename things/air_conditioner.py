@@ -20,6 +20,7 @@ class CentralAC(Thing):
             ParamSpec("max_temperature", 30), # Maximum temperature
             ParamSpec("default_sleep_temperature", 25), # Default temperasture when asleep
             ParamSpec("default_wakeup_temperature", 25), # Default temperature when awoken
+            ParamSpec("has_auto", False), # whether or not there is auto fan speed
 
             InputPortSpec("temperature_port", 5000, is_required=True), # Temperature reading port
             InputPortSpec("smoke_detector_port", 0), # Smoke detector reading port (when on, AC fan turns off)
@@ -45,6 +46,8 @@ class CentralAC(Thing):
             self.fan_speeds.append("Med")
         if self.params.get("fan_high_port"):
             self.fan_speeds.append("High")
+        if self.params.get("has_auto"):
+            self.fan_speeds.append("Auto")
 
         self.current_set_point = int((self.params.get("max_temperature")+self.params.get("min_temperature"))/2)
         self.current_temperature = self.current_set_point
@@ -153,7 +156,12 @@ class CentralAC(Thing):
         i = 1
         for speed in self.fan_speeds:
             f_on_state = self.params.get("fan_"+speed.lower()+"_port", "on_state")
-            state[self.params.get("fan_"+speed.lower()+"_port")] = f_on_state if i == self.current_fan_speed else 1- f_on_state
+            if f_on_state != None: # this is low/med/high speed, check if selected then set output port in state to 1 (0 otherwise)
+                state[self.params.get("fan_"+speed.lower()+"_port")] = f_on_state if i == self.current_fan_speed else 1 - f_on_state
+            else if i == self.current_fan_speed: # this is auto speed and it is selected
+                highest_fan_speed = filter(lambda fs: self.params.get("fan_"+fs.lower()+"_port") != None, self.fan_speeds)[-1]
+                f_on_state = self.params.get("fan_"+highest_fan_speed.lower()+"_port", "on_state")
+                state[self.params.get("fan_"+highest_fan_speed.lower()+"_port")] = f_on_state if int(self.digital_valve_output) else 1 - f_on_state
             i += 1
         if self.params.get("valve_port"):
             state[self.params.get("valve_port")] = int(self.current_airflow)
