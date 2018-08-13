@@ -158,7 +158,7 @@ class CentralAC(Thing):
             f_on_state = self.params.get("fan_"+speed.lower()+"_port", "on_state")
             if f_on_state != None: # this is low/med/high speed, check if selected then set output port in state to 1 (0 otherwise)
                 state[self.params.get("fan_"+speed.lower()+"_port")] = f_on_state if i == self.current_fan_speed else 1 - f_on_state
-            else if i == self.current_fan_speed: # this is auto speed and it is selected
+            elif i == self.current_fan_speed: # this is auto speed and it is selected
                 highest_fan_speed = filter(lambda fs: self.params.get("fan_"+fs.lower()+"_port") != None, self.fan_speeds)[-1]
                 f_on_state = self.params.get("fan_"+highest_fan_speed.lower()+"_port", "on_state")
                 state[self.params.get("fan_"+highest_fan_speed.lower()+"_port")] = f_on_state if int(self.digital_valve_output) else 1 - f_on_state
