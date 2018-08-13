@@ -28,6 +28,20 @@
                 "category": "alarm_system",
                 "name": "Alarm"
             }]
+        }, {
+            "id": "group-4",
+            "name": "ACs",
+            "things": [{
+                "category": "central_acs",
+                "name": "AC",
+                "has_auto": true,
+                "temperature_port": "v0",
+                "virtual_port_data": [[0, 0]],
+                "fan_low_port": "d20",
+                "fan_med_port": "d21",
+                "fan_high_port": "d22",
+                "digital_valve_port": "d23"
+            }]
         }]
     }],
     "translations": {
