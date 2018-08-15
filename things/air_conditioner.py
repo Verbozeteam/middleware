@@ -1,6 +1,7 @@
 from things.thing import Thing, ParamSpec, InputPortSpec, OutputPortSpec, GlobalSubParamSpec, ThingParams
 from logs import Log
 import json
+import math
 
 class SplitAC(Thing):
     def __init__(self, blueprint, ac_json):
@@ -22,7 +23,7 @@ class CentralAC(Thing):
             ParamSpec("default_wakeup_temperature", 25), # Default temperature when awoken
             ParamSpec("has_auto", False), # whether or not there is auto fan speed
 
-            InputPortSpec("temperature_port", 5000, is_required=True), # Temperature reading port
+            InputPortSpec("temperature_port", 5000, is_required=True), # Temperature reading port (virtual port for digital or ntc sensor), reads every 5 seconds
             InputPortSpec("smoke_detector_port", 0), # Smoke detector reading port (when on, AC fan turns off)
 
             OutputPortSpec("fan_low_port"), # Fan LOW port
