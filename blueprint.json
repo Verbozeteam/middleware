@@ -1,46 +1,165 @@
 {
     "id": 1,
     "rooms": [{
-        "id": "room-1",
-        "name": "Yahya's House",
+        "id": "exhibition-demo-room",
+        "name": "Verboze Demo",
         "groups": [{
             "id": "group-1",
-            "name": "Alhomsi Lights",
+            "name": "Room Lights",
             "things": [{
-                "category": "light_switches",
-                "name": "Living Room",
-                "switch_port": "d46",
+                "category": "dimmers",
+                "name": "Bedside Light",
+                "dimmer_port": "d7",
                 "on_state": 0,
-                "id": "lightswitch-1",
+                "id": "dimmer-1",
                 "default_wakeup_value": 0
             }, {
                 "category": "light_switches",
-                "name": "Yahya's Room",
-                "switch_port": "d48",
+                "name": "Reading Light",
+                "switch_port": "d49",
                 "on_state": 0,
                 "id": "lightswitch-2",
                 "default_wakeup_value": 0
+            }, {
+                "category": "light_switches",
+                "name": "Ceiling Light",
+                "switch_port": "d51",
+                "on_state": 0,
+                "id": "lightswitch-3",
+                "default_wakeup_value": 0
+            }, {
+                "category": "light_switches",
+                "name": "Bathroom Light",
+                "switch_port": "d47",
+                "on_state": 0,
+                "id": "lightswitch-1",
+                "default_wakeup_value": 0
+            }]
+        }, {
+            "id": "group-3",
+            "name": "Curtains",
+            "things": [{
+                "category": "curtains",
+                "name": "Main Curtain",
+                "up_port": "d24",
+                "down_port": "d25"
+            }]
+        }, {
+            "id": "group-4",
+            "name": "AC",
+            "things": [{
+                "category": "central_acs",
+                "name": "AC",
+                "has_auto": true,
+                "temperature_port": "v0",
+                "virtual_port_data": [[4, 3, 100]],
+                "fan_low_port": "d30",
+                "fan_med_port": "d31",
+                "fan_high_port": "d32",
+                "digital_valve_port": "d33"
             }]
         }, {
             "id": "group-5",
+            "name": "Room Services",
+            "things": [{
+                "category": "hotel_controls",
+                "name": "Room Services",
+                "hotel_card": "d46"
+            }]
+        }, {
+            "id": "group-6",
+            "name": "Room Amenities",
+            "things": [{
+                "category": "hotel_orders",
+                "name": "Room Amenities",
+                "menu": {
+                    "heading": "At Your Service",
+                    "subheading": "You can order any amenities you'd like, and we'll deliver it to your room",
+                    "groups": [{
+                        "name": "Toiletries",
+                        "items": [{
+                            "name": "Shampoo, Conditioner & Shower Gel",
+                            "icon": "shampoo",
+                            "promptParams": [{
+                                "name": "Shampoos",
+                                "type": "number",
+                                "default": 1
+                            }, {
+                                "name": "Conditioners",
+                                "type": "number",
+                                "default": 1
+                            }, {
+                                "name": "Shower Gels",
+                                "type": "number",
+                                "default": 1
+                            }]
+                        }, {
+                            "name": "Toilet Paper",
+                            "icon": "toilet_paper"
+                        }, {
+                            "name": "Toothpaste",
+                            "icon": "toothpaste"
+                        }, {
+                            "name": "Tootbrush",
+                            "icon": "toothbrush"
+                        }, {
+                            "name": "Bar Soap",
+                            "icon": "bar_soap"
+                        }]
+                    }, {
+                        "name": "Bed",
+                        "items": [{
+                            "name": "Bed Linens",
+                            "icon": "bed"
+                        }, {
+                            "name": "Pillows",
+                            "icon": "pillow"
+                        }]
+                    }, {
+                        "name": "Utilities",
+                        "items": [{
+                            "name": "Iron",
+                            "icon": "iron",
+                            "customPreorderPrompt": "We will bring housekeeping staff to your room to deliver the ironing tools.",
+                            "customOrderPrompt": "Housekeeping will pass by your room to give you ironing tools :)"
+                        }, {
+                            "name": "Chargers",
+                            "icon": "chargers"
+                        }]
+                    }, {
+                        "name": "Beverages",
+                        "items": [{
+                            "name": "Soft Drinks"
+                        }]
+                    }, {
+                        "name": "Services",
+                        "items": [{
+                            "name": "Laundry",
+                            "icon": "laundry",
+                            "customOrderPrompt": "Housekeeping will pass by your room to collect your laundry shortly :)"
+                        }, {
+                            "name": "Concierge",
+                            "icon": "concierge"
+                        }]
+                    }, {
+                        "name": "Other",
+                        "items": []
+                    }]
+                }
+            }]
+        }, {
+            "id": "group-7",
             "name": "Alarms",
             "things": [{
                 "category": "alarm_system",
                 "name": "Alarm"
             }]
         }, {
-            "id": "group-4",
-            "name": "ACs",
+            "id": "group-8",
+            "name": "Telephone",
             "things": [{
-                "category": "central_acs",
-                "name": "AC",
-                "has_auto": true,
-                "temperature_port": "v5",
-                "virtual_port_data": [[4, 3, 100]],
-                "fan_low_port": "d20",
-                "fan_med_port": "d21",
-                "fan_high_port": "d22",
-                "digital_valve_port": "d23"
+                "category": "telephone",
+                "name": "Telephone"
             }]
         }]
     }],
@@ -66,12 +185,9 @@
             "de": "Hauptlicht",
             "zh": "主灯"
         },
-        "Right Reading Light": {
-            "en": "Right Reading Light",
-            "ar": "ضوء القراءة الأيمن",
-            "ru": "Правый Светильник",
-            "de": "Recht Leselicht",
-            "zh": "右读灯"
+        "Reading Light": {
+            "en": "Reading Light",
+            "ar": "ضوء القراءة"
         },
         "Left Reading Light": {
             "en": "Left Reading Light",
@@ -156,6 +272,22 @@
             "ru": "Главный коммутатор",
             "de": "Hauptschalter",
             "zh": "主开关"
+        },
+        "Bedside Light": {
+            "en": "Bedside Light",
+            "ar": "ضوء جانب السرير"
+        },
+        "Bathroom Light": {
+            "en": "Bathroom Light",
+            "ar": "ضوء الحمام"
+        },
+        "Ceiling Light": {
+            "en": "Ceiling Light",
+            "ar": "ضوء السقف"
+        },
+        "Main Curtain": {
+            "en": "Main Curtain",
+            "ar": "الستارة الرئيسية"
         }
     },
     "display": {

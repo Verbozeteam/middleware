@@ -150,7 +150,25 @@ class HotelOrders(Thing):
     def __init__(self, blueprint, J):
         super(HotelOrders, self).__init__(blueprint, J)
         self.params = ThingParams(J, [
-            ParamSpec("menu", None, is_required=True), # A JSON object of {"name": string, "icon": string, "children": [{same object}]} OPTIONAL: {"customPreorderPrompt": string, "customOrderPrompt": string, "promptParams": {"name": string, "type": string, "default": <any>}}
+            # A JSON object of {
+            #   heading: string,
+            #   subheading: string,
+            #   groups: [{
+            #     name: string,
+            #     items: [{
+            #       name: string,
+            #       icon: string,
+            #       customPreorderPrompt?: string,
+            #       customOrderPrompt?: string,
+            #       promptParams?: {
+            #         name: string,
+            #         type: string,
+            #         default: any
+            #       }
+            #     }]
+            #   }]
+            # }
+            ParamSpec("menu", None, is_required=True),
         ])
         self.id = J.get("id", "hotel_orders")
 
