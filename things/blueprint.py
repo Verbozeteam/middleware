@@ -1,7 +1,7 @@
 from things.light import Dimmer, LightSwitch
 from things.curtain import Curtain
 from things.air_conditioner import SplitAC, CentralAC
-from things.hotel_controls import HotelControls
+from things.hotel_controls import HotelControls, HotelOrders
 from things.kitchen_controls import KitchenControls
 from things.water_fountain import WaterFountain
 from things.soft_switch import SoftSwitch, TwoWaySwitch, DNDSoftSwitch, RSSoftSwitch
@@ -9,6 +9,7 @@ from things.honeywell_thermostat import HoneywellThermostatT7560
 from things.penthouse_disco import PenthouseDisco
 from things.alarm import AlarmSystem
 from things.bell import Bell
+from things.telephone import Telephone
 from logs import Log
 from config.general_config import GENERAL_CONFIG
 
@@ -93,6 +94,8 @@ class Blueprint(object):
             PenthouseDisco,
             AlarmSystem,
             Bell,
+            Telephone,
+            HotelOrders,
         ]))
 
         filename = GENERAL_CONFIG.BLUEPRINT_FILENAME

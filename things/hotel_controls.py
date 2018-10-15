@@ -144,3 +144,40 @@ class HotelControls(Thing):
     # Used to Things (lights) when they wake-up to see if they should turn on (if room is dark)
     def is_room_dark(self):
         return self.light_sensor <= self.params.get("light_sensor_dark_threshold")
+
+
+class HotelOrders(Thing):
+    def __init__(self, blueprint, J):
+        super(HotelOrders, self).__init__(blueprint, J)
+        self.params = ThingParams(J, [
+            ParamSpec("menu", None, is_required=True), # A JSON object of {"name": string, "icon": string, "children": [{same object}]} OPTIONAL: {"customPreorderPrompt": string, "customOrderPrompt": string, "promptParams": {"name": string, "type": string, "default": <any>}}
+        ])
+        self.id = J.get("id", "hotel_orders")
+
+        self.input_ports = self.params.get_input_ports()
+        self.output_ports = self.params.get_output_ports()
+
+    # Should return the key in the blueprint that this Thing captures
+    @staticmethod
+    def get_blueprint_tag():
+        return "hotel_orders"
+
+    def set_state(self, data, token_from="system"):
+        super(HotelOrders, self).set_state(data, token_from)
+        if "place_order" in data:
+            pass
+        return False
+
+    def get_state(self):
+        return {
+        }
+
+    def get_hardware_state(self):
+        return {
+        }
+
+    def get_metadata(self):
+        return {
+            "menu": self.params.get("menu"),
+        }
+

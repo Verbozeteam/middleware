@@ -17,8 +17,8 @@ class CentralAC(Thing):
     def __init__(self, blueprint, J):
         super(CentralAC, self).__init__(blueprint, J)
         self.params = ThingParams(J, [
-            ParamSpec("min_temperature", 12), # Minimum temperature
-            ParamSpec("max_temperature", 30), # Maximum temperature
+            ParamSpec("min_temperature", 16), # Minimum temperature
+            ParamSpec("max_temperature", 28), # Maximum temperature
             ParamSpec("default_sleep_temperature", 25), # Default temperasture when asleep
             ParamSpec("default_wakeup_temperature", 25), # Default temperature when awoken
             ParamSpec("has_auto", False), # whether or not there is auto fan speed
