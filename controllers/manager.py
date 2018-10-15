@@ -130,6 +130,8 @@ class ControllersManager(object):
                     hubs = self.get_controllers_by_type(TOKEN_TYPE.HUB)
                     if len(hubs) > 0:
                         hubs[0].send_data({"code": CONTROL_CODES.RESET_QRCODE})
+                    else:
+                        Log.warning("Trying to reset QR code but no connected hub was found")
                 elif command["code"] == CONTROL_CODES.SET_QRCODE:
                     self.core.blueprint.display["QRCodeAddress"] = command.get("qr-code", "")
                     controllers = self.get_controllers_by_type(TOKEN_TYPE.CONTROLLER)
