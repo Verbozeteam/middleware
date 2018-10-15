@@ -175,6 +175,9 @@ class HotelOrders(Thing):
         self.input_ports = self.params.get_input_ports()
         self.output_ports = self.params.get_output_ports()
 
+        self.orders = [] # list of current outstanding orders, format: [{name: "order name", id: unique-id}]
+        self.current_id = 1
+
     # Should return the key in the blueprint that this Thing captures
     @staticmethod
     def get_blueprint_tag():
@@ -183,11 +186,21 @@ class HotelOrders(Thing):
     def set_state(self, data, token_from="system"):
         super(HotelOrders, self).set_state(data, token_from)
         if "place_order" in data:
-            pass
+            self.orders.append({
+                "name": data["place_order"],
+                "id": self.current_id
+            })
+            self.current_id += 1
+        if "resolve_order" in data:
+            for i in range(0, len(self.orders)):
+                if self.orders[i]["id"] == data["resolve_order"]:
+                    self.orders.pop(i)
+                    break
         return False
 
     def get_state(self):
         return {
+            "orders": self.orders
         }
 
     def get_hardware_state(self):

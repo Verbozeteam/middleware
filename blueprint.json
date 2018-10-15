@@ -129,7 +129,8 @@
                     }, {
                         "name": "Beverages",
                         "items": [{
-                            "name": "Soft Drinks"
+                            "name": "Soft Drinks",
+                            "icon": "beverages"
                         }]
                     }, {
                         "name": "Services",
@@ -141,9 +142,6 @@
                             "name": "Concierge",
                             "icon": "concierge"
                         }]
-                    }, {
-                        "name": "Other",
-                        "items": []
                     }]
                 }
             }]
