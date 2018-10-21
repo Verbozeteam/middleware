@@ -112,7 +112,8 @@ class ControllersManager(object):
                 Log.verboze("ControllersManager::on_command({}, {}) BLOCKED (no access)".format(str(self), command))
                 return
             thing = self.core.blueprint.get_thing(thing_id)
-            thing.set_state(command, token_from=command.get("token", ""))
+            if thing:
+                thing.set_state(command, token_from=command.get("token", ""))
 
         # Control command
         elif "code" in command:

@@ -60,6 +60,13 @@ class HardwareManager(object):
             if not keep:
                 controller.destroy_selectible()
 
+    # whether or not the controller is synced and functional
+    def is_synced(self):
+        sync = True
+        for controller in list(self.connected_controllers.values()):
+            sync = sync and controller.is_synced()
+        return sync
+
     # Called when this manager needs to free all its resources
     def cleanup(self):
         # detach all devices

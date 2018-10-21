@@ -65,6 +65,10 @@ class HardwareController(Selectible):
             return False
         return True
 
+    # whether or not the controller is synced and functional
+    def is_synced(self):
+        return True
+
     # Sends a command to the controller to set a port to a certain output value
     def set_port_value(self, port, value):
         Log.hammoud("HardwareController::set_port_value({}, {})".format(port, value))

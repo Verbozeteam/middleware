@@ -139,7 +139,7 @@ class ArduinoController(HardwareController):
         self.is_initialized = False
         self.total_bytes_received = 0
         super(ArduinoController, self).__init__(hw_manager, comport, baud=9600, fake_serial_port=fake_serial_port)
-        self.max_bytes_per_unit_time = 63
+        self.max_bytes_per_unit_time = 50
         self.unit_time_seconds = 0.5
 
     # Initializes the Things that this controller controls
@@ -197,6 +197,9 @@ class ArduinoController(HardwareController):
                 self.sync_send_period = 10
                 self.num_allowed_halves = 1
 
+        return self.full_sync
+
+    def is_synced(self):
         return self.full_sync
 
     # Synchronizes the read buffer with the Arduino if its not already in sync.

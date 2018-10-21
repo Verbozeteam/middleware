@@ -10,28 +10,28 @@
                 "category": "dimmers",
                 "name": "Bedside Light",
                 "dimmer_port": "d7",
-                "on_state": 0,
+                "on_state": 1,
                 "id": "dimmer-1",
                 "default_wakeup_value": 0
             }, {
                 "category": "light_switches",
                 "name": "Reading Light",
-                "switch_port": "d49",
-                "on_state": 0,
+                "switch_port": "d50",
+                "on_state": 1,
                 "id": "lightswitch-2",
                 "default_wakeup_value": 0
             }, {
                 "category": "light_switches",
                 "name": "Ceiling Light",
                 "switch_port": "d51",
-                "on_state": 0,
+                "on_state": 1,
                 "id": "lightswitch-3",
                 "default_wakeup_value": 0
             }, {
                 "category": "light_switches",
                 "name": "Bathroom Light",
-                "switch_port": "d47",
-                "on_state": 0,
+                "switch_port": "d52",
+                "on_state": 1,
                 "id": "lightswitch-1",
                 "default_wakeup_value": 0
             }]
@@ -65,6 +65,11 @@
                 "category": "hotel_controls",
                 "name": "Room Services",
                 "hotel_card": "d46"
+            }, {
+                "category": "room_diagnostics",
+                "name": "Room Diagnostics",
+                "sensor_port": "v1",
+                "virtual_port_data": [[5, 0]]
             }]
         }, {
             "id": "group-6",

@@ -61,8 +61,8 @@ class Thing(object):
 
     # Called by the blueprint when a controller sends a message
     # data       Message sent by the controller
-    # token_from
-    # returns    True iff the changes made to the state are more than just the input
+    # token_from A token to identify the source of the command to set state
+    # returns    XXX True iff the changes made to the state are more than just the input (DEPRICATED)
     def set_state(self, data, token_from="system"):
         self.last_change_token = token_from
         return True

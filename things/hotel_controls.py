@@ -41,6 +41,7 @@ class HotelControls(Thing):
         self.door_open = 0
         self.welcome_light_start_time = 0
         self.light_sensor = 0
+        self.is_in_diagnostics = 0
 
     # Should return the key in the blueprint that this Thing captures
     @staticmethod
@@ -50,6 +51,9 @@ class HotelControls(Thing):
     def sleep(self, source=None):
         super(HotelControls, self).sleep(source)
         #self.do_not_disturb = 0 # turn off DND on sleep
+
+    def set_diagnostics_mode(self, dm):
+        self.is_in_diagnostics = dm
 
     def set_hardware_state(self, port, value):
         super(HotelControls, self).set_hardware_state(port, value)
@@ -96,7 +100,7 @@ class HotelControls(Thing):
             self.card_out_start = -1
             self.power = 1 # turn on power
 
-        if self.power == 0: # force sleep everything, every update...
+        if self.power == 0 and not self.is_in_diagnostics: # force sleep everything, every update...
             things = self.blueprint.get_things()
             for thing in things:
                 thing.sleep(self)
