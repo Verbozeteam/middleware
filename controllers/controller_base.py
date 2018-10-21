@@ -1,6 +1,8 @@
 from core.select_service import Selectible
 from logs import Log
 
+import json
+
 class Controller(Selectible):
     def __init__(self, controllers_manager, origin_name):
         self.manager = controllers_manager
@@ -31,7 +33,7 @@ class Controller(Selectible):
             for thing in my_things:
                 state = thing.get_state()
                 state["token"] = thing.last_change_token
-                if not thing.id in self.cache or self.cache[thing.id] != state: # @TODO: FIX EQUALITY?
+                if not thing.id in self.cache or not self.check_equal(self.cache[thing.id], state):
                     big_update[thing.id] = state
                     big_update[thing.id]["token"] = thing.last_change_token
 
@@ -43,12 +45,25 @@ class Controller(Selectible):
             return False
         return True
 
+    # Checks if the two objects are equal in actual value
+    # obj1     Anything
+    # obj2     Anything
+    # returns  True iff obj1 and obj2 have the same VALUE (objects in python could be the same in value but will be different pointers)
+    def check_equal(self, obj1, obj2):
+        return obj1 == obj2 # @TODO: FIX EQUALITY?
+        # if type(obj1) != type(obj2):
+        #     return False
+        # elif type(obj1) == type({}):
+        #     return obj1 == obj2
+        # else:
+        #     return obj1 == obj2
+
     # Sends a JSON object to the controller
     # json_data  JSON data to send to the controller
     # cache      Whether or not to cache this data
     def send_data(self, json_data, cache=True):
         if cache:
-            self.cache.update(json_data) # update the cache
+            self.cache.update(json.loads(json.dumps(json_data))) # update the cache
         return True
 
     # Called when the controller sends a command
