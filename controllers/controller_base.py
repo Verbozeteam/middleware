@@ -38,6 +38,7 @@ class Controller(Selectible):
                     big_update[thing.id]["token"] = thing.last_change_token
 
             if big_update != {}:
+                Log.hammoud("Controller::update(): [{}] sending {}".format(str(self), big_update))
                 self.send_data(big_update)
 
         except:

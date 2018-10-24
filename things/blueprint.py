@@ -11,6 +11,7 @@ from things.alarm import AlarmSystem
 from things.bell import Bell
 from things.telephone import Telephone
 from things.room_diagnostics import RoomDiagnostics
+from things.room_key import RoomKey
 from logs import Log
 from config.general_config import GENERAL_CONFIG
 
@@ -98,6 +99,7 @@ class Blueprint(object):
             Telephone,
             HotelOrders,
             RoomDiagnostics,
+            RoomKey,
         ]))
 
         filename = GENERAL_CONFIG.BLUEPRINT_FILENAME

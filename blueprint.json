@@ -4,6 +4,13 @@
         "id": "exhibition-demo-room",
         "name": "Verboze Demo",
         "groups": [{
+            "id": "group-key",
+            "name": "",
+            "things": [{
+                "category": "room_keys",
+                "name": "Front Door"
+            }]
+        }, {
             "id": "group-1",
             "name": "Room Lights",
             "things": [{
