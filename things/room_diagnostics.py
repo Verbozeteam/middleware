@@ -1,4 +1,5 @@
 from things.thing import Thing, ParamSpec, InputPortSpec, OutputPortSpec, GlobalSubParamSpec, ThingParams
+from hardware.arduino_controller import ArduinoProtocol
 from logs import Log
 import json
 
@@ -194,7 +195,7 @@ class DiagnosticsReport(object):
             pass
 
         # send message to Arduino telling it to set the sensor reading interval to on-change
-        #
+        self.blueprint.core.hw_manager.special_command(ArduinoProtocol.create_register_pin_listener(self.diagnostics_thing.params.get("sensor_port"), 100))
 
         # make hotel controls in diagnostics mode
         if self.hotel_controls:
@@ -202,7 +203,8 @@ class DiagnosticsReport(object):
 
     def end_diagnostics(self):
         # send message to Arduino telling it to set the sensor reading interval to never
-        #
+        self.blueprint.core.hw_manager.special_command(ArduinoProtocol.create_register_pin_listener(self.diagnostics_thing.params.get("sensor_port"), 100000))
+
         # leave diagnostics mode in hotel_controls
         if self.hotel_controls:
             self.hotel_controls.set_diagnostics_mode(0)
@@ -241,18 +243,16 @@ class DiagnosticsReport(object):
         return False
 
     def getJSON(self):
-        if self.status == DiagnosticsReport.STATUS.ERROR or self.status == DiagnosticsReport.STATUS.OK:
-            return {
-                "status": self.status,
-                "errors": self.errors,
-            }
-        return {}
+        return {
+            "status": self.status,
+            "errors": self.errors,
+        }
 
 class RoomDiagnostics(Thing):
     def __init__(self, blueprint, J):
         super(RoomDiagnostics, self).__init__(blueprint, J)
         self.params = ThingParams(J, [
-            InputPortSpec("sensor_port", 100, is_required=True), # Sensor reading port, big number to indicate that we don't want to read
+            InputPortSpec("sensor_port", 100000, is_required=True), # Sensor reading port, big number to indicate that we don't want to read
         ])
         self.id = J.get("id", "room_diagnostics")
 
@@ -267,7 +267,7 @@ class RoomDiagnostics(Thing):
         return "room_diagnostics"
 
     def set_state(self, data, token_from="system"):
-        super(RoomDiagnostics, self).set_state(data, token_from)
+        super(RoomDiagnostics, self).set_state(data, "system") # Never use user token
         if "start_diagnostics" in data:
             self.report.start(data["start_diagnostics"])
         if "clear_report" in data:

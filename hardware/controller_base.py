@@ -74,6 +74,10 @@ class HardwareController(Selectible):
         Log.hammoud("HardwareController::set_port_value({}, {})".format(port, value))
         self.cache[port] = value
 
+    # Sends a special controller-specific command
+    def special_command(self, *args, **kwargs):
+        pass
+
     # called to identify if any device that this controller controls is in
     # the serial ports
     # ports  list of pyserial COM ports

@@ -86,3 +86,7 @@ class HardwareManager(object):
                 thing.set_hardware_state(port, value)
         except:
             Log.error("HardwareManager::on_port_update({}, {}, {})".format(device, port, value), exception=True)
+
+    def special_command(self, *args, **kwargs):
+        for controller in list(self.connected_controllers.values()):
+            controller.special_command(*args, **kwargs)

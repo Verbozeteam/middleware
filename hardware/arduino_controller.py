@@ -301,6 +301,14 @@ class ArduinoController(HardwareController):
         if self.is_in_sync():
             self.write_to_fd(ArduinoProtocol.create_set_pin_output(port, value))
 
+    # Special commands for  fine control over the Arduino
+    def special_command(self, *args, **kwargs):
+        if len(args) > 0 and (isinstance(args[0], bytearray) or isinstance(args[0], bytes)):
+            Log.hammoud("ArduinoController::special_command({})".format(list(args[0])))
+            self.write_to_fd(args[0]) # dumb implementation: send whatever bytes the user wishes for!
+        else:
+            Log.error("ArduinoController::special_command({}) invalid argument (type {}, expected {})".format(list(args[0]), type(args[0]), type(bytearray([]))))
+
     def on_read_ready(self, cur_time_s):
         try:
             b = self.serial_port.read(self.serial_port.in_waiting)
